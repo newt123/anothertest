@@ -12,6 +12,7 @@ NEXT support from karthy@dannug.dk (Karsten Thygesen
 DECC support. zinser@axp614.gsi.de Martin P.J. Zinser
 AIX now uses fork instead of vfork
 SPLITPATH now set up for UNIX (:), NT (;), VMS (,)
+SubDir now computes TOP.
 
 Release notes for Jam 2.0.
 

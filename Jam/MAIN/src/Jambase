@@ -164,6 +164,8 @@ if $(UNIX)
 	CCFLAGS		default = ;
 	CP		default = cp ;
 	CHMOD		default = chmod ;
+	DOT		default	= . ;
+	DOTDOT		default	= .. ;
 	EXEMODE		default = 711 ;
 	FILEMODE	default = 644 ;
 	FORTRAN		default = f77 ;
@@ -195,6 +197,8 @@ if $(UNIX)
 else if $(NT)
 {
     	CP		default = copy ;
+	DOT		default	= . ;
+	DOTDOT		default	= .. ;
     	MV		default = move ;
     	RM		default = del/f/q ;
     	SLASH		default = \\ ;
@@ -247,6 +251,8 @@ else if $(VMS)
 	CC		default = cc ;
 	CCFLAGS		default = ;
 	CRELIB		default = true ;
+	DOT		default	= "" ;
+	DOTDOT		default	= - ;
 	EXEMODE		default = (w:e) ;
 	FILEMODE	default = (w:r) ;
 	HDRS		default = ;
@@ -760,7 +766,31 @@ rule SubDir
 
 	if ! $($(<[1]))
 	{
-	    EXIT Top level of source tree has not been set with $(<[1]) ;
+	    if ! $(<[1])
+	    {
+		EXIT SubDir syntax error ;
+	    }
+
+	    if ! $(<[2]) 
+	    {
+		d = $(DOT) ;
+	    } 
+	    else
+	    {
+		d = $(DOTDOT) ;
+
+		for i in $(<[3-])
+		{
+		    d = $(d)$(SLASH)$(DOTDOT) ;
+		}
+	    }
+
+	    if $(VMS)
+	    {
+		d = [$(d)] ;
+	    }
+
+	    $(<) = $(d) ;
 	}
 
 	#
@@ -785,6 +815,7 @@ rule SubDir
 	    # Include it.
 
 	    include $(r) ;
+
 	}
 
 	# Get the grist $(g), search $(s), by concatenating the
@@ -816,7 +847,7 @@ rule SubDir
 	# subsequently be redefined.
 
 	SEARCH_SOURCE = $(SUBDIR) ;
-	LOCATE_TARGET = $(SUBDIR) ;
+	LOCATE_TARGET = $(ALL_LOCATE_TARGET) $(SUBDIR) ;
 	SOURCE_GRIST = $(g) ;
 
 	# Reset per-directory ccflags, hdrs
