@@ -270,7 +270,7 @@ void (*func)();
 
 	    strncpy( lar_name, ar_hdr.ar_name, sizeof(ar_hdr.ar_name) );
 	    c = lar_name + sizeof( lar_name );
-	    while( *--c == ' ' || *c == '\\' )
+	    while( *--c == ' ' || *c == '/' )
 		    ;
 	    *++c = '\0';
 

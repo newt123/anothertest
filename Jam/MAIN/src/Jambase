@@ -188,7 +188,7 @@ else if $(NT)
     {
 	ECHO "Compiler is Microsoft Visual C++" ;
 
-	AR		default = lib32 ;
+	AR		default = lib ;
 	CC		default = cl ;
 	CCFLAGS		default = /D \"NT\" ;
 	MV		default = rename ;
@@ -849,6 +849,11 @@ else if $(NT)
     actions File
     {
 	copy $(>) $(<)
+    }
+
+    actions quietly updated piecemeal together RmTemps
+    {
+	$(RM) $(>)
     }
 }
 else if $(VMS)
