@@ -38,7 +38,7 @@ char **argv;
 
 	if( !( fout = fopen( argv[1], "w" ) ) )
 	{
-	    perror( argv[2] );
+	    perror( argv[1] );
 	    return -1;
 	}
 
