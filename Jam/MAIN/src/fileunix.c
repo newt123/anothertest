@@ -121,7 +121,7 @@ void	(*func)();
 # endif
 	    f.f_base.len = strlen( f.f_base.ptr );
 
-	    file_build( &f, filename );
+	    file_build( &f, filename, 0 );
 
 	    (*func)( filename, 0 /* not stat()'ed */, (time_t)0 );
 	}

@@ -41,7 +41,7 @@ time_t	*time;
 	    f->f_root.ptr = varlist->string;
 	    f->f_root.len = strlen( varlist->string );
 
-	    file_build( f, buf );
+	    file_build( f, buf, 1 );
 
 	    if( DEBUG_SEARCH )
 		printf( "locate %s: %s\n", target, buf );
@@ -57,7 +57,7 @@ time_t	*time;
 		f->f_root.ptr = varlist->string;
 		f->f_root.len = strlen( varlist->string );
 
-		file_build( f, buf );
+		file_build( f, buf, 1 );
 
 		if( DEBUG_SEARCH )
 		    printf( "search %s: %s\n", target, buf );
@@ -78,7 +78,7 @@ time_t	*time;
 	f->f_root.ptr = 0;
 	f->f_root.len = 0;
 
-	file_build( f, buf );
+	file_build( f, buf, 1 );
 
 	if( DEBUG_SEARCH )
 	    printf( "search %s: %s\n", target, buf );

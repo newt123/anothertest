@@ -148,9 +148,10 @@ int	len;
  */
 
 void
-file_build( f, file )
+file_build( f, file, binding )
 FILENAME	*f;
 char		*file;
+int		binding;
 {
 	char *ofile = file;
 
@@ -237,7 +238,7 @@ char		*file;
 	    memcpy( file, f->f_suffix.ptr, f->f_suffix.len );
 	    file += f->f_suffix.len;
 	}
-	else if( f->f_base.len )
+	else if( binding && f->f_base.len )
 	{
 	    *file++ = '.';
 	}

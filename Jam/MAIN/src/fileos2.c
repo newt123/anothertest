@@ -79,7 +79,7 @@ void	(*func)();
 		f.f_base.ptr = finfo->name;
 		f.f_base.len = strlen( finfo->name );
 
-		file_build( &f, filename );
+		file_build( &f, filename, 0 );
 
 		(*func)( filename, 0 /* not stat()'ed */, (time_t)0 );
 	    }

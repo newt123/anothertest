@@ -105,7 +105,7 @@ time_t	*time;
 	    BINDING binding, *b = &binding;
 
 	    f2.f_dir = f1.f_dir;
-	    file_build( &f2, buf );
+	    file_build( &f2, buf, 0 );
 
 	    b->name = buf;
 	    b->time = b->flags = 0;

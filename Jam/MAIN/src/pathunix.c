@@ -134,9 +134,10 @@ FILENAME	*f;
  */
 
 void
-file_build( f, file )
+file_build( f, file, binding )
 FILENAME	*f;
 char		*file;
+int		binding;
 {
 	/* Start with the grist.  If the current grist isn't */
 	/* surrounded by <>'s, add them. */

@@ -167,7 +167,7 @@ file_dirscan( char *dir, void (*func)() )
 	    f.f_suffix.len = xnam.nam$b_type;
 	}
 
-	file_build( &f, filename2 );
+	file_build( &f, filename2, 0 );
 
 	/* debugging
 	printf("root '%s' base %.*s suf %.*s = %s\n",
