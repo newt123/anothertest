@@ -157,7 +157,7 @@ if $(UNIX)
 	SHELLMODE	default = 755 ;
 	SLASH		default = / ;
 	STDHDRS		default = /usr/include ;
-	SUBLIB		default = .a ;
+	SUFLIB		default = .a ;
 	SUFOBJ		default = .o ;
 	SUFEXE		default = "" ;
 	UNDEFFLAG	default = "-u _" ;
@@ -182,7 +182,7 @@ else if $(NT)
 	SLASH		default = \\ ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
-	SUBLIB		default = .lib ;
+	SUFLIB		default = .lib ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
     }
@@ -207,7 +207,7 @@ else if $(NT)
 	OPTIM		default =  ;
 	SLASH		default = \\ ;
 	STDHDRS		default = $(MSVCNT)\\include ;
-	SUBLIB		default = .lib ;
+	SUFLIB		default = .lib ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
 	UNDEFFLAG	default = "/u _" ;
@@ -232,7 +232,7 @@ else if $(VMS)
 	SHELLMODE	default = (w:er) ;
 	SLASH		default = . ;
 	STDHDRS		default = "" decc$library_include ;
-	SUBLIB		default = .olb ;
+	SUFLIB		default = .olb ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
 
@@ -415,7 +415,7 @@ rule LibraryFromObjects
 {
 	# library depends on its member objects
 
-	L = $(<:S=$(SUBLIB)) ;
+	L = $(<:S=$(SUFLIB)) ;
 	S = $(>) ;
 
 	if $(SOURCE_GRIST)
