@@ -28,6 +28,10 @@ Changes since 2.1
     with $(1) and $(2).  Actions can still only take two sets parameters,
     i.e. $(<) and $(>).
 
+    On command failure, jam now emits the text of the command that failed.
+    This is a compromise between the normal -d1 behavior (where commands
+    were never seen) and -d2 (where commands are always seen).
+
 Release notes for Jam 2.1.
 
 1.  Release info:

@@ -355,6 +355,11 @@ int	status;
 
 	if( status == EXEC_CMD_FAIL && DEBUG_MAKE )
 	{
+	    /* Print command text on failure, if we haven't printed it before. */
+
+	    if( !DEBUG_EXEC )
+		printf( "%s\n", cmd->buf );
+
 	    printf( "...failed %s ", cmd->rule->name );
 	    list_print( lol_get( &cmd->args, 0 ) );
 	    printf( "...\n" );
