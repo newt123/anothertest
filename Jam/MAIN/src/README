@@ -1,33 +1,33 @@
 Jam - make(1) redux
 
-November, 1993 - release 1
-January, 1995 - release 2
+Jam is a make-like program.
 
 FEATURES
 
-    Jam is a make-like program that supplants make's implicit rules
-    with a real language for defining dependencies and update
-    actions.   Its features include:
+   ->	Jam's language is expressive, making Jamfiles (c.f. Makefiles) 
+	compact.  Here's a sample:
 
-    o       Jam finds header file dependencies using regexp(3)
-	    patterns.
+	    MAIN smail : main.c map.c resolve.c deliver.c
+			 misc.c parser.y alias.c pw.c headers.c
+			 scanner.l getpath.c str.c ;
 
-    o       Jam has a real language, including conditionals and
-	    list valued variables.
+	This builds "smail" from a dozen source files, handling header 
+	file dependencies automatically.
 
-    o       A central Jambase defines the rules, which can be
-	    customized for large products.
+   ->	Jam is very portable: it runs on UNIX, VMS, and NT.  Most
+	Jamfiles themselves are portable (like the sample above).
 
-    o       Per directory Jamfiles are simple and are normally
-	    system independent.
+   ->   Jam is unintrusive: it is small, it has negligible CPU 
+	overhead, and it doesn't create any of its own funny files.
 
-    o       Jam can build large systems without recursing.
+   ->	Jam can build large projects spread across many directories
+	in one pass, without recursing, tracking the relationships
+	among all files.  (See the accompanying paper.)
 
-    o	    Jam never tries to store state in any funny files.
+   ->   Jam isn't under the abhorable GNU copyright - you can do
+        anything you want with it (except copyright it yourself).
 
-    o	    Jam runs on UNIX and VMS, and is portable.
-
-PORTING
+INSTALLING
 
     Build jam with make(1) on:
 
@@ -43,6 +43,8 @@ PORTING
 	    Sun 4           Solaris 2	*+
 	    Sun 4           SunOS4.1
 	    VAX             Ultrix 4.2
+
+	    IBM PC	    NT		*
 	
 	    * requires editing Makefile
 	    + only works with SUNSwpro CC (dirent confusion) 
@@ -56,7 +58,9 @@ PORTING
 
     See the "Porting" file for info on more wildcat ports.
 
-OTHER FILES
+    See the manual page "Jamfile.5" for using jam.
+
+SEE ALSO
 
     Aside from source files, there is:
 
@@ -66,10 +70,14 @@ OTHER FILES
 	Porting		notes on porting jam
 	Jambase.5	Jambase man page
 	Jamfile.5	Easy reading on writing a Jamfile
+	Paper.ps	UNIX Application Development Symposion paper
 	jam.1		jam man page
 	yyacc		a yacc pre-preprocessor
 
 Comments to the author!
 
+November, 1993 - release 1
+January, 1995 - release 2
+
 Christopher Seiwald
-Seiwald@Vix.Com
+Seiwald@Tea.Org
