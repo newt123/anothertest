@@ -186,6 +186,10 @@ int unlink( char *f ); 	/* In filevms.c */
 # ifdef linux
 # define OSSYMS "UNIX=true","OS=LINUX"
 # endif
+# ifdef __Lynx__
+# define OSSYMS "UNIX=true","OS=LYNX"
+# define unix
+# endif
 # ifdef __MACHTEN__
 # define OSSYMS "UNIX=true","OS=MACHTEN"
 # endif

@@ -14,6 +14,7 @@
 # if defined( _AIX) || \
 	(defined (COHERENT) && defined (_I386)) || \
 	defined(__sgi) || \
+	defined(__Lynx__) || \
 	defined(M_XENIX) || \
 	defined(__QNX__) || \
 	defined(__BEOS__) || \
