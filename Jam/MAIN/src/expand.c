@@ -45,13 +45,13 @@ static void	var_mods();
  */
 
 LIST *
-var_expand( l, in, end, targets, sources, copyin )
+var_expand( l, in, end, targets, sources, cancopyin )
 LIST	*l;
 char	*in;
 char	*end;
 LIST	*targets;
 LIST	*sources;
-int	copyin;
+int	cancopyin;
 {
 	char out_buf[ MAXSYM ];
 	char *out = out_buf;
@@ -80,12 +80,14 @@ int	copyin;
 		goto expand;
 
 	/* No variables expanded - just add copy of input string to list. */
-	/* Copyin means the input was already a list item, and can be */
-	/* had with copystr().  Otherwise, we use the slower newstr(). */
+
+	/* Cancopyin is an optimization: if the input was already a list */
+	/* item, we can use the copystr() to put it on the new list. */
+	/* Otherwise, we use the slower newstr(). */
 
 	*out = '\0';
 
-	if( copyin )
+	if( cancopyin )
 	    return list_new( l, copystr( inp ) );
 	else
 	    return list_new( l, newstr( out_buf ) );
