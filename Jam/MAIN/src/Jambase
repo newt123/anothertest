@@ -674,7 +674,13 @@ rule Object
 
 	Clean clean : $(<) ;
 
-	LOCATE on $(<) = $(LOCATE_TARGET) ;
+	if $(LOCATE_TARGET)
+	{
+	    LOCATE on $(<) = $(LOCATE_TARGET) ;
+	    DEPENDS $(<) : $(LOCATE_TARGET) ;
+	    MkDir $(LOCATE_TARGET) ;
+	}
+
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 
 	# Save HDRS for -I$(HDRS) on compile.
@@ -683,7 +689,7 @@ rule Object
 	# yacc, lex, etc) are located in $(LOCATE_TARGET), possibly
 	# different from $(SEARCH_SOURCE).
 
-	HDRS on $(<) = $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
+	HDRS on $(<) = $(SEARCH_SOURCE) $(HDRS) $(SUBDIRHDRS) ;
 
 	# handle #includes for source: Jam scans for headers with
 	# the regexp pattern $(HDRSCAN) and then invokes $(HDRRULE)
@@ -1096,7 +1102,7 @@ if $(UNIX)
 
     actions As
     {
-	$(AS) $(ASFLAGS) -o $(<) $(>) ;
+	$(AS) $(ASFLAGS) -I$(HDRS) -o $(<) $(>)
     }
 
     actions C++
