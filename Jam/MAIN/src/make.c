@@ -105,7 +105,11 @@ int	anyhow;
 	memset( (char *)counts, 0, sizeof( *counts ) );
 
 	for( i = 0; i < n_targets; i++ )
-	    make0( bindtarget( targets[i] ), (time_t)0, 0, counts, anyhow );
+	{
+	    TARGET *t = bindtarget( targets[i] );
+
+	    make0( t, T_BIND_UNBOUND, (time_t)0, 0, counts, anyhow );
+	}
 
 	if( DEBUG_MAKEQ )
 	{
@@ -141,12 +145,13 @@ int	anyhow;
  */
 
 static void
-make0( t, parent, depth, counts, anyhow )
+make0( t, pbinding, ptime, depth, counts, anyhow )
 TARGET	*t;
-time_t	parent;
-int	depth;
-COUNTS	*counts;
-int	anyhow;
+int	pbinding;	/* parent target's binding */
+time_t	ptime;		/* parent target's timestamp */
+int	depth;		/* for display purposes */
+COUNTS	*counts;	/* for reporting */
+int	anyhow;		/* forcibly touch all (real) targets */
 {
 	TARGETS	*c;
 	int	fate, hfate;
@@ -194,9 +199,9 @@ int	anyhow;
 
 	/* If temp file doesn't exist, use parent */
 
-	if( t->binding == T_BIND_MISSING && t->flags & T_FLAG_TEMP && parent )
+	if( t->binding == T_BIND_MISSING && t->flags & T_FLAG_TEMP && ptime )
 	{
-	    t->time = parent;
+	    t->time = ptime;
 	    t->binding = t->time ? T_BIND_PARENTS : T_BIND_MISSING;
 	}
 
@@ -247,7 +252,7 @@ int	anyhow;
 
 	for( c = t->deps[ T_DEPS_DEPENDS ]; c; c = c->next )
 	{
-	    make0( c->target, t->time, depth + 1, counts, anyhow );
+	    make0( c->target, t->binding, t->time, depth + 1, counts, anyhow );
 	    leaf = max( leaf, c->target->leaf );
 	    leaf = max( leaf, c->target->hleaf );
 
@@ -285,7 +290,8 @@ int	anyhow;
 		If temp's children newer, make temp.
 		If deliberately touched, make it.
 		If up-to-date temp file present, use it.
-		If target newer than parent, mark it so.
+		If target exists but parent not, mark target newer.
+		If target newer than parent, mark target newer.
 	*/
 
 	if( fate >= T_FATE_BROKEN )
@@ -320,7 +326,11 @@ int	anyhow;
 	{
 	    fate = T_FATE_ISTMP;
 	}
-	else if( t->binding == T_BIND_EXISTS && parent && t->time > parent )
+	else if( t->binding == T_BIND_EXISTS && pbinding == T_BIND_MISSING )
+	{
+	    fate = T_FATE_NEWER;
+	}
+	else if( t->binding == T_BIND_EXISTS && ptime && t->time > ptime )
 	{
 	    fate = T_FATE_NEWER;
 	}
@@ -366,7 +376,7 @@ int	anyhow;
 
 	for( c = t->deps[ T_DEPS_INCLUDES ]; c; c = c->next )
 	{
-	    make0( c->target, parent, depth + 1, counts, anyhow );
+	    make0( c->target, pbinding, ptime, depth + 1, counts, anyhow );
 	    hlast = max( hlast, c->target->time );
 	    hlast = max( hlast, c->target->htime );
 	    hleaf = max( hleaf, c->target->leaf );
@@ -399,7 +409,7 @@ int	anyhow;
 
 	if( !( t->flags & T_FLAG_NOTFILE ) && fate >= T_FATE_SPOIL )
 	    flag = "+";
-	else if( t->binding == T_BIND_EXISTS && parent && t->time > parent )
+	else if( t->binding == T_BIND_EXISTS && ptime && t->time > ptime )
 	    flag = "*";
 
 	if( DEBUG_MAKEPROG )
