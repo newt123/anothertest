@@ -168,6 +168,8 @@ case HPUX :	RANLIB default = "" ;
 case IRIX :	RANLIB default = "" ;
 		INSTALL default = "" ;
 case MVS :	RANLIB default = "" ; RELOCATE = true ;
+case NEXT :	AR default = libtool -o ;
+		RANLIB default = "" ;
 case NCR :	RANLIB default = "" ;
 		INSTALL default = "" ;
 case PTX :	RANLIB default = "" ;
