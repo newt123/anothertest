@@ -97,7 +97,7 @@ HASHDATA **data;
 	ITEM **base;
 	register ITEM *i;
 	char *b = (*data)->key;
-	int keyval = 0;
+	int keyval;
 
 	if( enter && !hp->items.more )
 	    hashrehash( hp );
@@ -105,8 +105,11 @@ HASHDATA **data;
 	if( !enter && !hp->items.nel )
 	    return 0;
 
+	keyval = *b;
+
 	while( *b )
-		keyval = ( ( keyval << 7 ) + ( keyval >> 25 ) ) + *b++;
+		keyval = keyval * 2903657531u + *b++;
+
 	keyval &= 0x7FFFFFFF;
 
 	base = hp->tab.base + ( keyval % hp->tab.nel );
