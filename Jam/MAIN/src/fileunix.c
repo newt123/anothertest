@@ -9,7 +9,8 @@
 
 # ifdef unix
 
-# if defined(_SEQUENT_) || defined(__DGUX__) || defined(M_XENIX)
+# if defined(_SEQUENT_) || defined(__DGUX__) || \
+     defined(M_XENIX) || defined(__ISC)
 # define PORTAR 1
 # endif
 

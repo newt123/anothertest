@@ -30,7 +30,6 @@
 # include <ssdef.h>
 # include <string.h>
 # include <stdlib.h>
-# include <ctype.h>
 # include <stdio.h>
 # include <descrip.h>
 
@@ -137,9 +136,6 @@ file_dirscan( char *dir, void (*func)() )
 	sys$close( &xfab );
 
 	filename[xnam.nam$b_rsl] = '\0';
-	for( s = xnam.nam$l_name; *s; s++ )
-	    if( isupper( *s ) )
-		*s = tolower( *s );
 
 	f.f_base.ptr = xnam.nam$l_name;
 	f.f_base.len = xnam.nam$b_name;
@@ -200,7 +196,7 @@ unsigned long *rfa;
     file_cvttime( &mhd->mhd$l_datim, &library_date );
 
     for ( i = 0, p = module->dsc$a_pointer; i < module->dsc$w_length; i++, p++ )
-	filename[i] = _tolower( *p );
+	filename[i] = *p;
 
     filename[i] = '\0';
 

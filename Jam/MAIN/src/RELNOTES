@@ -68,6 +68,11 @@ Changes since 2.1
     If a command line is longer than MAXCMD (which is OS dependent),
     jam now issues an error and exits rather than dumping core.
 
+    Interactive UNIX (ISC) supported, thanks to Matthew Newhook.
+
+    Targets are universally lowercased on NT and VMS.  Great minds think
+    alike.  (NT courtesy of Matthew Newhook.)
+
 Release notes for Jam 2.1.
 
 1.  Release info:

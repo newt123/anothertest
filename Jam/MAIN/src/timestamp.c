@@ -67,6 +67,16 @@ time_t	*time;
 	BINDING	binding, *b = &binding;
 	char buf[ MAXPATH ];
 
+#if defined( NT ) || defined( VMS )
+	char path[ MAXPATH ];
+	char *p = path;
+
+	do *p++ = tolower( *target );
+	while( *target++ );
+
+	target = path;
+#endif /* NT or VMS */
+
 	if( !bindhash )
 	    bindhash = hashinit( sizeof( BINDING ), "bindings" );
 
@@ -155,6 +165,16 @@ int	found;
 time_t	time;
 {
 	BINDING	binding, *b = &binding;
+
+#if defined( NT ) || defined( VMS )
+	char path[ MAXPATH ];
+	char *p = path;
+
+	do *p++ = tolower( *target );
+	while( *target++ );
+
+	target = path;
+#endif /* NT or VMS */
 
 	b->name = target;
 	b->flags = 0;

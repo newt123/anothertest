@@ -161,6 +161,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # ifdef __sgi
 # define OTHERSYMS "UNIX=true","OS=IRIX"
 # endif
+# ifdef __ISC
+# define OTHERSYMS "UNIX=true","OS=ISC"
+# endif
 # ifdef linux
 # define OTHERSYMS "UNIX=true","OS=LINUX"
 # endif

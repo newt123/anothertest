@@ -15,7 +15,8 @@
 	(defined (COHERENT) && defined (_I386)) || \
 	defined(__sgi) || \
 	defined(M_XENIX) || \
-	defined(__QNX__)
+	defined(__QNX__) || \
+	defined(__ISC)
 # define vfork() fork()
 # endif
 
