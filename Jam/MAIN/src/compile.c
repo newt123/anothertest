@@ -14,7 +14,6 @@
 # include "newstr.h"
 # include "make.h"
 # include "search.h"
-# include "scan.h"
 
 /*
  * compile.c - compile parsed jam statements
@@ -322,9 +321,8 @@ LOL		*args;
 	    t->boundname = search( t->name, &t->time );
 	    popsettings( t->settings );
 
-	    yyfparse( t->boundname );
+	    parse_file( t->boundname );
 	}
-
 
 	list_free( nt );
 }

@@ -26,6 +26,7 @@
 # include "lists.h"
 # include "parse.h"
 # include "variable.h"
+# include "compile.h"
 # include "rules.h"
 # include "newstr.h"
 # include "scan.h"
@@ -259,19 +260,17 @@ char	**argv;
 	    var_defines( symv );
 	}
 
+	/* Initialize builtins */
+
+	compile_builtins();
+
 	/* Parse ruleset */
 
 	for( n = 0; s = getoptval( optv, 'f', n ); n++ )
-	{
-	    yyfparse( s );
-	    yyparse();
-	}
+	    parse_file( s );
 
 	if( !n )
-	{
-	    yyfparse( "+" );
-	    yyparse();
-	}
+	    parse_file( "+" );
 
 	status = yyanyerrors();
 

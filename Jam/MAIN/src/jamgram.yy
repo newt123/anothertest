@@ -56,28 +56,13 @@
 # define pcomp( c,l,r )	  parse_make( F0,P0,P0,S0,S0,l,r,c )
 # define plol( p,l )	  parse_make( F0,p,P0,S0,S0,l,L0,0 )
 
+
 %}
 
 %%
 
-/*
- * stmts - the contents of a JAMFILE
- */
-
-stmts	: 
-		{
-			compile_builtins();
-		}
-	| stmts rule
-		{ 
-			/* no target, sources in global scope */
-			/* invoke statement and then free its parse */
-
-			LOL l;
-			lol_init( &l );
-			(*($2.parse->func))( $2.parse, &l );
-			parse_free( $2.parse );
-		}
+run	: rules
+		{ parse_save( $1.parse ); }
 	;
 
 /*
@@ -250,4 +235,5 @@ bindlist : /* empty */
 	| `bind` args
 		{ $$.list = $2.list; }
 	;
+
 

@@ -139,6 +139,15 @@ Changes since 2.1
     handle the vagaries of combining directory and file names
     properly.
 
+    The 'include' bug has finally been fixed, so that include statements
+    take effect exactly when they are executed, rather than after the
+    current statement block.  This also corrects the problem where an
+    'include' within an 'if' block would wind up including the file
+    one token after the 'if' block's closing brace.  Credit goes to
+    Thomas Woods for suggesting that the parse tree generation and
+    parse tree execution be paired in their own loop, rather than having
+    the parser execute the tree directly.  (2.1.21)
+
 Release notes for Jam 2.1.
 
 1.  Release info:

@@ -520,11 +520,6 @@ Jamfile
 
 .SH BUGS, LIMITATIONS
 .PP
-If the \fBinclude\fR statement appears inside an \fBif\fR block, the
-parser's attempt to find the \fBelse\fR will cause the text of the
-included file to appear after the first token following the statement
-block.  This is rarely what is intended.
-.PP
 In a rule's actions, only $(<) and $(>) refer to the bound file names:
 all other variable references get the unbound names.
 .PP

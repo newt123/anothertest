@@ -7,11 +7,52 @@
 # include "jam.h"
 # include "lists.h"
 # include "parse.h"
+# include "scan.h"
 # include "newstr.h"
 
 /*
  * parse.c - make and destroy parse trees as driven by the parser
  */
+
+static PARSE *yypsave;
+
+void
+parse_file( f )
+char *f;
+{
+	/* Suspend scan of current file */
+	/* and push this new file in the stream */
+
+	yyfparse(f);
+
+	/* Now parse each block of rules and execute it. */
+	/* Execute it outside of the parser so that recursive */
+	/* calls to yyrun() work (no recursive yyparse's). */
+
+	for(;;)
+	{
+	    LOL l;
+	    PARSE *p;
+
+	    lol_init( &l );
+
+	    yypsave = 0;
+
+	    if( yyparse() || !( p = yypsave ) || !p->left )
+		break;
+
+	    (*(p->func))( p, &l );
+
+	    parse_free( p );
+	}
+}
+
+void
+parse_save( p )
+PARSE *p;
+{
+	yypsave = p;
+}
 
 PARSE *
 parse_make( func, left, right, string, string1, llist, rlist, num )

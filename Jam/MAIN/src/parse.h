@@ -25,5 +25,7 @@ struct _PARSE {
 	int	num;
 } ;
 
+void 	parse_file();
+void 	parse_save();
 PARSE	*parse_make();
 void	parse_free();
