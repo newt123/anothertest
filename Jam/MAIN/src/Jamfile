@@ -78,32 +78,6 @@ actions Groff
 	groff -Tps -man $(>) > $(<)
 }
 
-rule Shar
-{
-	DEPENDS $(<) : $(>) ;
-}
-
-rule Tar
-{
-	DEPENDS $(<) : $(>) ;
-}
-
-actions Tar
-{
-	mv Jamfile Jamfile.sav
-	sed '/--- cut/,$d' Jamfile.sav > Jamfile
-	tar cvf $(<) $(>)
-	mv Jamfile.sav Jamfile
-}
-
-actions Shar
-{
-	mv Jamfile Jamfile.sav
-	sed '/--- cut/,$d' Jamfile.sav > Jamfile
-	shar -l97 -o $(<) $(>) 
-	mv Jamfile.sav Jamfile
-}
-
 ALLSOURCE = 
 	    README RELNOTES Build.com Jambase Jamfile Jambase.5 Jambase.ps
 	    Jamfile.5 Jamfile.ps Makefile Paper.ps Porting command.c command.h
@@ -121,8 +95,52 @@ Groff jam.ps : jam.1 ;
 Groff Jamfile.ps : Jamfile.5 ;
 Groff Jambase.ps : Jambase.5 ;
 
-Shar SHAR : $(ALLSOURCE) ;
-Tar TAR : $(ALLSOURCE) ;
+rule Ball
+{
+	DEPENDS $(<) : $(>) ;
 
-RmTemps SHAR : Paper.ps ;
-RmTemps TAR : Paper.ps ;
+	PreBall $(<) ;
+
+	switch $(<) 
+	{
+	case TAR : Tar $(<) : $(>) ;
+	case SHAR : Shar $(<) : $(>) ;
+	case ZIP : Zip $(<) : $(>) ;
+	}
+
+	PostBall $(<) ;
+
+	RmTemps $(<) : Paper.ps ;
+}
+
+actions PreBall 
+{
+	mv Jamfile Jamfile.sav
+	sed '/--- cut/,$d' Jamfile.sav > Jamfile
+}
+
+actions PostBall 
+{
+	mv Jamfile.sav Jamfile
+}
+
+	
+actions Tar
+{
+	tar cvf $(<) $(>)
+}
+
+actions Shar
+{
+	shar -l97 -o $(<) $(>) 
+}
+
+actions Zip
+{
+	zip $(<) $(>) 
+}
+
+Ball SHAR : $(ALLSOURCE) ;
+Ball TAR : $(ALLSOURCE) ;
+Ball ZIP : $(ALLSOURCE) ;
+
