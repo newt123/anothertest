@@ -10,6 +10,9 @@ Release notes for Jam 2.0.
 
 	The new Windows/NT support has only been marginally tested.
 
+	Jam clean when there is nothing to clean claims it is updating
+	a target.
+
 3.  Porting
 
 	Windows/NT is now (crudely) supported, courtesy of Brett Taylor

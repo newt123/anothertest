@@ -36,6 +36,7 @@
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  * 01/22/94 (seiwald) - pass per-target JAMSHELL down to execcmd().
+ * 02/28/95 (seiwald) - Handle empty "existing" actions.
  */
 
 # include "jam.h"
@@ -376,10 +377,10 @@ ACTIONS	*a0;
 		a1->action->progress = T_MAKE_RUNNING;
 	    }
 
-	    /* If doing only updated sources, but none have been updated */
-	    /* Skip this action. */
+	    /* If doing only updated (or existing) sources, but none have */
+	    /* been updated (or exist), skip this action. */
 
-	    if( ( rule->flags & RULE_NEWSRCS ) && !ns )
+	    if( !ns && ( rule->flags & ( RULE_NEWSRCS | RULE_EXISTING ) ) )
 	    {
 		list_free( nt );
 		continue;
