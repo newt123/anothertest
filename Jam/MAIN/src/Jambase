@@ -230,7 +230,7 @@ else if $(NT)
     {
 	ECHO "Compiler is Microsoft Visual C++" ;
 
-	AR		default = lib ;
+	AR		default = lib /nologo ;
 	CC		default = cl /nologo ;
 	CCFLAGS		default = /D \"NT\" ;
 	C++		default = $(CC) ;
