@@ -83,7 +83,8 @@
 # define psete( s,l,s1,f ) parse_make( compile_setexec,P0,P0,s,s1,l,L0,f )
 # define pincl( l )       parse_make( compile_include,P0,P0,S0,S0,l,L0,0 )
 # define pswitch( l,p )   parse_make( compile_switch,p,P0,S0,S0,l,L0,0 )
-# define plocal( l,p )	  parse_make( compile_local,p,P0,S0,S0,l,L0,0 );
+# define plocal( l,r,p )  parse_make( compile_local,p,P0,S0,S0,l,r,0 )
+# define pnull()	  parse_make( compile_null,P0,P0,S0,S0,L0,L0,0 )
 # define pcases( l,r )    parse_make( F0,l,r,S0,S0,L0,L0,0 )
 # define pcase( s,p )     parse_make( F0,p,P0,s,S0,L0,L0,0 )
 # define pif( l,r )	  parse_make( compile_if,l,r,S0,S0,L0,L0,0 )
@@ -98,27 +99,32 @@
 %%
 
 run	: block
-		{ parse_save( $1.parse ); }
+		{ 
+		    if( $1.parse->func == compile_null )
+		    {
+			parse_free( $1.parse );
+			parse_save( P0 );
+		    }
+		    else
+		    {
+			parse_save( $1.parse ); 
+		    }
+		}
 	;
 
 /*
- * block - zero or more locals, then zero or more rules
- * rules - one or more rules
+ * block - one or more rules
  * rule - any one of jam's rules
  */
 
 block	: /* empty */
-		{ $$.parse = 0; }
-	| rules
-		{ $$.parse = $1.parse; }
-	| LOCAL args _SEMIC block
-		{ $$.parse = plocal( $2.list, $4.parse ); }
-	;
-
-rules	: rule
-		{ $$.parse = $1.parse; }
-	| rules rule
+		{ $$.parse = pnull(); }
+	| rule block
 		{ $$.parse = prules( $1.parse, $2.parse ); }
+	| LOCAL args _SEMIC block
+		{ $$.parse = plocal( $2.list, L0, $4.parse ); }
+	| LOCAL args _EQUALS args _SEMIC block
+		{ $$.parse = plocal( $2.list, $4.list, $6.parse ); }
 	;
 
 rule	: _LBRACE block _RBRACE
@@ -138,7 +144,7 @@ rule	: _LBRACE block _RBRACE
 	| SWITCH args _LBRACE cases _RBRACE
 		{ $$.parse = pswitch( $2.list, $4.parse ); }
 	| IF cond _LBRACE block _RBRACE 
-		{ $$.parse = pif( $2.parse, pthen( $4.parse, P0 ) ); }
+		{ $$.parse = pif( $2.parse, pthen( $4.parse, pnull() ) ); }
 	| IF cond _LBRACE block _RBRACE ELSE rule
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, $7.parse ) ); }
 	| RULE ARG rule

@@ -16,6 +16,7 @@ void compile_foreach();
 void compile_if();
 void compile_include();
 void compile_local();
+void compile_null();
 void compile_rule();
 void compile_rules();
 void compile_set();

@@ -24,6 +24,7 @@
  *	compile_if() - compile 'if' rule
  *	compile_include() - support for 'include' - call include() on file
  *	compile_local() - declare (and set) local variables
+ *	compile_null() - do nothing -- a stub for parsing
  *	compile_rule() - compile a single user defined rule
  *	compile_rules() - compile a chain of rules
  *	compile_set() - compile the "set variable" statement
@@ -149,8 +150,7 @@ LOL		*args;
 
 	    var_set( parse->string, val, VAR_SET );
 
-	    if( parse->left )
-		(*parse->left->func)( parse->left, args );
+	    (*parse->left->func)( parse->left, args );
 	}
 
 	list_free( nv );
@@ -169,15 +169,14 @@ compile_if( parse, args )
 PARSE		*parse;
 LOL		*args;
 {
-	PARSE *then;
-
 	if( evaluate_if( parse->left, args ) )
-	    then = parse->right->left;
+	{
+	    (*parse->right->left->func)( parse->right->left, args );
+	}
 	else
-	    then = parse->right->right;
-
-	if( then )
-	    (*then->func)( then, args );
+	{
+	    (*parse->right->right->func)( parse->right->right, args );
+	}
 }
 
 /*
@@ -373,13 +372,21 @@ LOL		*args;
 	/* variable, making it not so much local as layered. */
 
 	pushsettings( s );
-
-	if( parse->left )
-	    (*parse->left->func)( parse->left, args );
-
+	(*parse->left->func)( parse->left, args );
 	popsettings( s );
 
 	freesettings( s );
+}
+
+/*
+ * compile_null() - do nothing -- a stub for parsing
+ */
+
+void
+compile_null( parse, args )
+PARSE		*parse;
+LOL		*args;
+{
 }
 
 /*
@@ -467,11 +474,8 @@ compile_rules( parse, args )
 PARSE		*parse;
 LOL		*args;
 {
-	if( parse->left )
-	    (*parse->left->func)( parse->left, args );
-
-	if( parse->right )
-	    (*parse->right->func)( parse->right, args );
+	(*parse->left->func)( parse->left, args );
+	(*parse->right->func)( parse->right, args );
 }
 
 /*
