@@ -97,7 +97,7 @@ ALLSOURCE =
 	    README RELNOTES Build.com Jam.paper.ps Jambase Jamfile
 	    Jambase.5 Jambase.ps Jamfile.5 Jamfile.ps Makefile
 	    Porting command.c command.h compile.c compile.h execcmd.h
-	    execnt.c execunix.c execvms.c expand.c expand.h filent.c
+	    execunix.c execvms.c expand.c expand.h filent.c
 	    fileos2.c filesys.h fileunix.c filevms.c glob.c hash.c
 	    hash.h headers.c headers.h jam.1 jam.c jam.h jam.ps
 	    jambase.c jambase.h jamgram.c jamgram.h jamgram.y
