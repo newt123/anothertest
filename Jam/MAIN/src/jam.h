@@ -130,7 +130,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "MAC=true","OS=MAC"
 # define SPLITPATH ','
-# define MAXCMD 1024
+# define MAXLINE 1024
 # define EXITOK 0
 # define EXITBAD 1
 
