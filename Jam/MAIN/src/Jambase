@@ -578,7 +578,7 @@ rule InstallShell
 rule Lex
 {
 	DEPENDS $(<) : $(>) ;
-	LOCATE on $(<) = $(LOCATE_SOURCE) ;
+	MakeLocate $(<) : $(LOCATE_SOURCE) ;
 	Clean clean : $(<) ;
 }
 
@@ -603,7 +603,7 @@ rule LibraryFromObjects
 	# Set LOCATE for the library and its contents.  The bound
 	# value shows up as $(NEEDLIBS) on the Link actions.
 
-	LOCATE on $(<) $(<)($(_s:BS)) = $(LOCATE_TARGET) ;
+	MakeLocate $(<) $(<)($(_s:BS)) : $(LOCATE_TARGET) ;
 
 	if $(NOARSCAN) 
 	{ 
@@ -685,17 +685,29 @@ rule MainFromObjects
 
 	DEPENDS exe : $(_t) ;
 	DEPENDS $(_t) : $(_s) ;
-	LOCATE on $(_t) $(<) = $(LOCATE_TARGET) ;
+	MakeLocate $(_t) $(<) : $(LOCATE_TARGET) ;
 
 	Clean clean : $(_t) ;
 
 	Link $(_t) : $(_s) ;
 }
 
+rule MakeLocate
+{
+	if $(>)
+	{
+	    LOCATE on $(<) = $(>) ;
+	    Depends $(<) : $(>) ;
+	    MkDir $(>) ;
+	}
+}
+
 rule MkDir
 {
 	if $(<) != $(DOT) && ! $($(<)-mkdir) 
 	{
+	    local _s ;
+
 	    # Cheesy gate to prevent multiple invocations on same dir
 	    # MkDir1 has the actions 
 	    # If dir exists, don't update it
@@ -721,26 +733,13 @@ rule MkDir
 	}
 }
 
-rule MkDirFor
-{
-	Depends $(<) : $(<:D) ;
-	NoUpdate $(<:D) ;
-	MkDir $(<:D) ;
-}
-
 rule Object
 {
 	# locate object and search for source, if wanted
 
 	Clean clean : $(<) ;
 
-	if $(LOCATE_TARGET)
-	{
-	    LOCATE on $(<) = $(LOCATE_TARGET[1]) ;
-	    DEPENDS $(<) : $(LOCATE_TARGET[1]) ;
-	    MkDir $(LOCATE_TARGET[1]) ;
-	}
-
+	MakeLocate $(<) : $(LOCATE_TARGET) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 
 	# Save HDRS for -I$(HDRS) on compile.
@@ -994,6 +993,8 @@ rule UserObject
 
 rule Yacc
 {
+	local _h ;
+
 	_h = $(<:BS=.h) ;
 
 	# Some places don't have a yacc.
@@ -1009,7 +1010,7 @@ rule Yacc
 	# a deadly independent target
 
 	INCLUDES $(<) : $(_h) ;
-	LOCATE on $(<) $(_h) = $(LOCATE_SOURCE) ;
+	MakeLocate $(<) $(_h) : $(LOCATE_SOURCE) ;
 }
 
 #
@@ -1018,6 +1019,8 @@ rule Yacc
 
 rule makeSubDir
 {
+	local _i _d ;
+
 	# If $(>) is the path to the current directory, compute the
 	# path (using ../../ etc) back to that root directory.
 	# Sets result in $(<)
@@ -1046,6 +1049,8 @@ rule makeSubDir
 
 rule addDirName
 {
+	local _s _i ;
+
 	# Turn individual elements in $(>) into a usable path.
 	# Add result to $(<).
 
@@ -1078,6 +1083,8 @@ rule makeDirName
 
 rule makeGrist
 {
+	local _g _i ;
+
 	# Turn individual elements in $(>) into grist.
 	# Return result in $(<)
 
@@ -1093,6 +1100,8 @@ rule makeGrist
 
 rule makeGristedName
 {
+	local _i _o ;
+
 	# Produce name with grist in it, if SOURCE_GRIST is set.
 
 	if ! $(SOURCE_GRIST)
@@ -1126,26 +1135,28 @@ rule makeCommon
 
 rule makeRelPath 
 {
+	local _l _r ;
+
 	# first strip off common parts
 
-	l = $(<[2-]) ;
-	r = $(>) ;
+	_l = $(<[2-]) ;
+	_r = $(>) ;
 
-	makeCommon l : r ;
+	makeCommon _l : _r ;
 
 	# now make path to root and path down
 
-	makeSubDir l : $(l) ;
-	makeDirName r : $(r) ;
+	makeSubDir _l : $(_l) ;
+	makeDirName _r : $(_r) ;
 
 	# Concatenate and save
 
 	# XXX This should be better
 
-	if $(r) = $(DOT) {
-	    $(<[1]) = $(l) ;
+	if $(_r) = $(DOT) {
+	    $(<[1]) = $(_l) ;
 	} else {
-	    $(<[1]) = $(r:R=$(l)) ;
+	    $(<[1]) = $(_r:R=$(l)) ;
 	}
 }
 

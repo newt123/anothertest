@@ -6,6 +6,8 @@
 # If $(OSVER) isn't set, second value is used.
 
 LOCATE_TARGET ?= BIN.$(OS)$(OSVER) BIN.$(OS) ;
+LOCATE_SOURCE ?= $(LOCATE_TARGET) ;
+SEARCH_SOURCE = $(DOT) ;
 
 #
 # We have some different files for UNIX, VMS, and NT.
