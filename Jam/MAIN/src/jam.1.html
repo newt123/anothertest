@@ -1,0 +1,667 @@
+<HTML>
+<TITLE>
+JAM(1)
+</TITLE>
+<BODY>
+<H2>
+NAME       
+</H2>
+	jam - make(1) redux
+
+
+<H2>
+SYNOPSIS
+</H2>
+<PRE>
+	jam [ -a ] [ -n ] [ -v ] [ -d <I>debug</I> ] [ -f <I>file</I> ... ] 
+	    [ -j <I>jobs</I> ] [ -s <I>var</I>=<I>value</I> ... ] [ -t <I>target</I> ... ] 
+	    [  <I>target</I> ... ]
+</PRE>
+
+<H2>
+DESCRIPTION
+</H2>
+<P>
+       Jam  recursively  builds  target  files  from their source
+       files, using two files to define the dependency graph  and
+       the  updating  actions  for all targets.  The file Jambase
+       (usually located in /usr/local/lib) defines rules, and the
+       file  Jamfile (located in the current directory) lists the
+       targets and sources in terms of those rules.  Jam does not
+       need  to rely on suffix-driven implicit rules or directory
+       contents.  A Jambase is provided with jam; the  user  supplies the Jamfile.
+<P>
+       See  Jamfile(5) for information on writing Jamfiles.  This
+       manual page describes the program that interprets  Jambase
+       and Jamfile.
+<P>
+<H2>
+
+OPTIONS
+</H2>
+<P>
+       If target is provided on the command line, jam attempts to
+       build that target; otherwise jam  attempts  to  build  the
+       target all.
+<P>
+       Jam supports the following options:
+<PRE>
+       -a     Build all targets, even if they are up-to-date.
+
+       -d&lt;n&gt;  Enable debugging levels from 1 to &lt;n&gt;.  Interesting
+              values are:
+
+              1 Emit update action tracing (on by default)
+              2 Emit update commands
+              3 Produce dependency information
+              4 Show modification times of bound files
+              5 Show rule invocation
+              6-9 debugging
+
+       -d+&lt;n&gt; Enable debugging level &lt;n&gt;.
+
+       -d0    Turn off all debugging levels.  Only errors are not
+              suppressed.
+
+       -f&lt;file&gt;
+              Read &lt;file&gt; instead of Jambase.
+
+       -j&lt;jobs&gt;
+              Run  up to &lt;jobs&gt; shell commands concurrently (UNIX
+              only).  The default is 1.
+
+       -n     Don't actually execute the updating actions, but do
+              everything else.  This implies -d2.
+
+       -s&lt;var&gt;=&lt;value&gt;
+              Set  the variable &lt;var&gt; to &lt;value&gt;, overriding both
+              internal variables and variables imported from  the
+              environment.
+
+       -t&lt;target&gt;
+              Rebuild &lt;target&gt;, even if it is up-to-date.
+
+       -v     Print the version of jam and exit.
+</PRE>
+<P>
+<H2>
+THE JAM LANGUAGE
+</H2>
+<P>
+       The  jam language supports defining rules, invoking rules,
+       and setting variables.  It also has a few  flow-of-control
+       statements.  Jambase and Jamfile share this language.
+<P>
+<H3>
+   Lexical Features
+</H3>
+<P>
+       Jam treats its input files as whitespace-separated tokens,
+       with two exceptions: double quotes (") can enclose whitespace  to embed it into a token, and everything between the
+       matching curly braces ({}) in the  definition  of  a  rule
+       action is treated as a single string.  A backslash (\) can
+       escape a double quote.
+<P>
+       Jam requires whitespace (blanks,  tabs,  or  newlines)  to
+       surround all tokens, including the colon (:) and semicolon
+       (;) tokens.  This is because jam runs  on  many  platforms
+       and  no  characters,  save whitespace, are uncommon in the
+       file names on all of those platforms.
+<P>
+<H3>
+   Targets
+</H3>
+<P>
+       Targets are files to be updated and sources are the  files
+       used  in  updating  those targets.  Collectively, they are
+       just referred to as "targets".  A target is simply a  file
+       name,  either rooted or relative to the directory of jam's
+       invocation.  The special syntax, file(member),  refers  to
+       an ar(1) library member.  The special syntax, &lt;grist&gt;file,
+       perturbs a file name to distinguish it  from  other  files
+       with the same name.  The &lt;grist&gt; is stripped from the name
+       during binding (q.v., below).
+<P>
+<H3>
+   Rules
+</H3>
+<P>
+       Jam's basic entity is called a  rule,  which  is  used  to
+       relate targets to their sources.  A rule is defined in two
+       parts: the jam statements to  execute  when  the  rule  is
+       invoked  (essentially  a  procedure call), and the actions
+       (shell commands) to execute in order to update the targets
+       of  the  rule.   A  rule  may have a procedure definition,
+       actions, or both.
+<P>
+       The jam statements for defining and invoking rules are  as
+       follows.  &lt;targets&gt; and &lt;sources&gt; are lists of file names;
+       &lt;statements&gt; are jam statements; and &lt;string&gt; is  a  shell
+       script:
+<PRE>
+              rule &lt;rulename&gt; { &lt;statements&gt; }
+
+              actions [ modifiers ] &lt;rulename&gt; { &lt;string&gt; }
+
+              &lt;rulename&gt; &lt;targets&gt; [ : &lt;sources&gt; ] ;
+</PRE>
+<P>
+       The  first  form  defines  a  rule's procedure; the second
+       defines the rule's updating actions; the third invokes the
+       rule.   Redefining  a rule's procedure or actions replaces
+       the previous definition.
+<P>
+       Invoking a rule executes the procedure for  the  rule  (if
+       any)  and  associates  any update actions for the targets.
+       More than one update action may be associated with a  target:  the  actions are executed in the order in which they
+       are added.
+<P>
+       In both the rule's procedure  definition  and  the  rule's
+       actions,  the special variables $(&lt;) and $(&gt;) refer to the
+       &lt;targets&gt; and &lt;sources&gt; given at  rule  invocation.   However,  in  the  rule's actions, $(&lt;) and $(&gt;) refer to the
+       &lt;targets&gt; and &lt;sources&gt; after they have been bound by  the
+       binding phase (q.v., below).  Jam issues a warning if $(&lt;)
+       or $(>) have elements not in the dependency graph.
+<P>
+       The following action modifiers are understood:
+<PRE>
+              actions existing
+                     $(>) includes only sources currently  existing.
+
+              actions ignore
+                     The  return  status of the shell commands is
+                     ignored.
+
+              actions piecemeal
+                     The shell commands  are  repeatedly  invoked
+                     with a subset of $(>) small enough to fit in
+                     a command buffer.
+
+              actions quietly
+                     The action is not  echoed  to  the  standard
+                     output.
+
+              actions together
+                     The $(>) from multiple instances of the same
+                     action  on  the  same  target  are   glommed
+                     together.
+
+              actions updated
+                     $(>) includes only targets marked for updating.
+</PRE>
+<H3>
+   Built-in Rules
+</H3>
+<P>
+       Jam has ten built-in rules, none of  which  have  updating
+       actions:
+<PRE>
+
+              ALWAYS &lt;targets&gt; ;
+                     Rebuilds  &lt;targets&gt;, even if they are up-to-date.
+
+              DEPENDS &lt;targets&gt; : &lt;sources&gt; ;
+                     Makes &lt;sources&gt; dependencies of &lt;targets&gt;.
+
+              ECHO &lt;args&gt; ;
+                     Blurts out the message &lt;args&gt; to stdout.
+
+              EXIT &lt;args&gt; ;
+                     Blurts out the message &lt;args&gt; to stdout  and
+                     then exits with a failure status.
+
+              INCLUDES &lt;targets&gt; : &lt;sources&gt; ;
+                     Makes  &lt;sources&gt; dependencies of anything of
+                     which &lt;targets&gt; are dependencies.
+
+              LEAVES &lt;targets&gt; ;
+                     Makes each of &lt;targets&gt; depend only  on  its
+                     leaf  sources,  and  not on any intermediate
+                     targets.  Its leaf sources are those  dependencies 
+		     without any dependencies themselves.
+
+              NOCARE &lt;targets&gt; ;
+                     Marks &lt;targets&gt; as possibly being bogus.
+
+              NOTFILE &lt;targets&gt; ;
+                     Marks &lt;targets&gt; as not being files.
+
+              NOUPDATE &lt;targets&gt; ;
+                     Causes the timestamps  of  &lt;targets&gt;  to  be
+                     ignored:  either  the  target  exists  or it
+                     doesn't.  If it  exists,  it  is  considered
+                     eternally old.
+
+              TEMPORARY &lt;targets&gt; ;
+                     Marks &lt;targets&gt; as temporary.
+</PRE>
+<P>
+       The  ALWAYS, LEAVES, NOCARE, NOTFILE, NOUPDATE, and TEMPORARY affect only the binding phase (q.v.).
+<P>
+<H3>
+   Flow-of-Control
+</H3>
+<P>
+       Jam has several simple flow-of-control statements:
+<PRE>
+              include &lt;a&gt; ;
+
+              for &lt;a&gt; in &lt;args&gt; { &lt;statements&gt; }
+
+              switch &lt;a&gt; { case &lt;v1&gt; : &lt;statements&gt; ; case &lt;v2&gt; :
+              &lt;statements&gt; ; ... }
+
+              if  &lt;cond&gt; { &lt;statements&gt; } [ else { &lt;statements&gt; } ]
+</PRE>
+       The include statement includes the named file.   The  file
+       is  bound  like  regular targets (see Binding, below), but
+       unlike regular targets the include file cannot be built.
+<P>
+       The for loop  executes  &lt;statements&gt;  for  each  value  in
+       &lt;args&gt;, setting the variable &lt;a&gt; to the value.
+<P>
+       The  switch statement executes zero or one of the enclosed
+       &lt;statements&gt;, depending on which value &lt;a&gt;  matches.   The
+       &lt;v&gt;  values are not variable-expanded.  The &lt;v&gt; values may
+       include the following wildcards:
+<P>
+<CENTER>
+<TABLE>
+<TR><TD>
+              ?         
+<TD>		match any single character
+<TR><TD>
+              *         
+<TD>		match zero or more characters
+<TR><TD>
+              [&lt;chars&gt;] 
+<TD>		match any single character in &lt;chars&gt;
+
+</TABLE>
+</CENTER>
+<P>
+       The if statement does the  obvious;  the  else  clause  is
+       optional.  &lt;cond&gt; is built of:
+<P>
+<CENTER>
+<TABLE> 
+<TR><TD>
+              &lt;a&gt;
+<TD>		true if &lt;a&gt; is a non-zero-length string
+<TR><TD>
+              &lt;a&gt; = &lt;b&gt; 
+<TD>		strings equal
+<TR><TD>
+              &lt;a&gt; != &lt;b&gt;     
+<TD>		strings not equal
+<TR><TD>
+              &lt;a&gt; &lt; &lt;b&gt; 
+<TD>		string less than
+<TR><TD>
+              &lt;a&gt; &lt;= &lt;b&gt;     
+<TD>		string less than or equal to
+<TR><TD>
+              &lt;a&gt; &gt; &lt;b&gt; 
+<TD>		string greater than
+<TR><TD>
+              &lt;a&gt; &gt;= &lt;b&gt;     
+<TD>		string greater than or equal to
+<TR><TD>
+              ! &lt;cond&gt;       
+<TD>		condition not true
+<TR><TD>
+              &lt;cond&gt; && &lt;cond&gt;    
+<TD>		conjunction
+<TR><TD>
+              &lt;cond&gt; || &lt;cond&gt;    
+<TD>		disjunction
+<TR><TD>
+              ( &lt;cond&gt; )          
+<TD>		grouping
+</TABLE>
+</CENTER>
+<P>
+       In comparisons, the arguments may (through variable expansion) be more than one token, but  only  the  first  token
+       takes part in the comparison.  If, through variable expansion, the argument is zero tokens, a  single  token  of  a
+       zero-length string is used instead.
+<P>
+<H3>
+   Variables
+</H3>
+<P>
+       Jam variables are lists of strings, with zero or more elements.  An undefined variable is indistinguishable from  a
+       variable  whose  value  is  an  empty list.  Variables are
+       either global or target-specific.  All variables are  referenced as $(VARIABLE).
+<P>
+       A variable is defined with:
+<PRE>
+              &lt;variable&gt; = &lt;values&gt; ;
+
+              &lt;variable&gt; += &lt;values&gt; ;
+
+              &lt;variable&gt; on &lt;targets&gt; = &lt;values&gt; ;
+
+              &lt;variable&gt; on &lt;targets&gt; += &lt;values&gt; ;
+
+              &lt;variable&gt; default = &lt;values&gt; ;
+</PRE>
+<P>
+       The  first  two  forms set &lt;variable&gt; globally.  The third
+       and forth forms  set  a  target-specific  variable,  where
+       &lt;variable&gt;  takes  on  a value only during the binding and
+       updating &lt;targets&gt;.  The = operator replaces any  previous
+       value  of  &lt;variable&gt;  with  &lt;values&gt;;  the  +=  operation
+       appends &lt;values&gt; to any previous value.   The  final  form
+       sets  &lt;variable&gt;  globally,  but only if it was previously
+       unset.
+<P>
+       On program start-up, jam imports the environment  variable
+       settings  into  jam  variables.  Environment variables are
+       split at blanks with each word becomming an element in the
+       variable's  list value.  Environment variables whose names
+       end in PATH are split at colons (":").  Environment  variable values can be overridden on the command line with the
+       -s flag.  Jam variables are not re-exported to  the  shell
+       that  executes  the  updating  actions,  but  the updating
+       actions can reference jam variables with $(VARIABLE).
+<P>
+<H3>
+   Variable Expansion
+</H3>
+<P>
+       Before executing a statement, jam performs variable expansion  on  each  token  that is not a keyword or rule name.
+       Such tokens with embedded variable references are replaced
+       with  zero or more tokens.  Variable references are of the
+       form $(v) or $(vm), where v is the variable  name,  and  m
+       are optional modifiers.
+<P>
+       Variable expansion in a rule's actions is similar to variable expansion  in  statements,  except  that  the  action
+       string is tokenized at whitespace regardless of quoting.
+<P>
+       The  result  of  a  token  after variable expansion is the
+       product of the components of the token, where each  component is a literal substring or a list substituting a variable reference.  For example:
+<PRE>
+              $(X)      -> a b c
+              t$(X)     -> ta tb tc
+              $(X)z     -> az bz cz
+              $(X)-$(X) -> a-a a-b a-c b-a b-b b-c c-a c-b c-c
+</PRE>
+<P>
+       The variable name and modifiers can themselves  contain  a
+       variable  reference,  and  this partakes of the product as
+       well:
+<PRE>
+              $(X)      -> a b c
+              $(Y)      -> 1 2
+              $(Z)      -> X Y
+              $($(Z))   -> a b c 1 2
+</PRE>
+<P>
+       Because of this product expansion, if any variable  reference  in a token is undefined, the result of the expansion
+       is an empty list.
+<P>
+       Modifiers to a variable are of two varieties:  sub-element
+       selection and file name editing.  They are:
+<PRE>
+
+       [&lt;n&gt;]  Select only element number &lt;n&gt; (starting at 1).  If
+              the variable contains fewer than &lt;n&gt; elements,  the
+              result is a zero-element list.
+
+       [&lt;n&gt;-&lt;m&gt;]
+              Select only elements number &lt;n&gt; through &lt;m&gt;.
+
+       [&lt;n&gt;-] Select only elements number &lt;n&gt; through the last.
+
+       :G=&lt;grist&gt;
+              Replace the grist of the file name with &lt;grist&gt;.
+
+       :D=&lt;path&gt;
+              Replace  directory  component  of  file  name  with
+              &lt;path&gt;.
+
+       :B=&lt;base&gt;
+              Replace the base part of file name with &lt;base&gt;.
+
+       :S=&lt;suf&gt;
+              Replace the suffix of file name with &lt;suf&gt;.
+
+       :M=&lt;mem&gt;
+              Replace the archive member name with &lt;mem&gt;.
+
+       :R=&lt;root&gt;
+              Prepend &lt;root&gt; to  the  whole  file  name,  if  not
+              already rooted.
+
+       :&lt;components&gt;
+              Remove  components not listed; components is one or
+              more of GDBSM.
+</PRE>
+
+<H2>
+OPERATION
+</H2>
+<P>
+       Jam has three phases of operation: parsing,  binding,  and
+       updating.
+<H3>
+   Parsing
+</H3>  
+<P>    
+       Jam  parses the Jambase file, which includes Jamfile.  The
+       results of parsing are: the dependency graph  of  targets;
+       update  actions associated with the targets; and variables
+       set to specific values.
+
+<H3>
+   Binding
+</H3>  
+<P>    
+       After parsing, jam  recursively  descends  the  dependency
+       graph, attempting to locate each target file and determine
+       if it is in need of updating.  If jam detects a  cycle  in
+       the graph, it issues a warning.
+<P>
+       By  default, a target is located at the actual path of the
+       target, relative to the directory of jam's invocation.  If
+       the special variable $(LOCATE) is set to a directory name,
+       jam prepends that directory name to the  target;  else  if
+       the special variable $(SEARCH) is set to a directory list,
+       jam searches along the directory list for the target file,
+       and  if  the  file is found prepends the directory name to
+       the target.  If the target name  has  a  rooted  directory
+       component  then  $(SEARCH) and $(LOCATE) do not apply: the
+       target is located at the actual path of the target.  If  a
+       target  is  marked as not being a file (using the built-in
+       rule NOTFILE), it is left unbound to a file name.
+<P>
+       After binding each target, jam determines whether the target  needs updating, and marks the target if necessary for
+       the updating phase.  A target is marked for  updating  for
+       any of these three reasons:
+<UL>
+<LI>
+              It is missing.
+<LI>
+              Its  filesystem modification time is older than any
+              of its sources.
+<LI>
+              Any of its sources are marked for updating.
+</UL>
+<P>
+       This basic behavior can be modified applying (usually  one
+       of) the following six built-in rules to the target:
+<P>
+<BLOCKQUOTE>
+<DL>
+<DT>
+              ALWAYS 
+<DD>
+		The target is always updated.
+<DT>
+              LEAVES 
+<DD>
+		The  target is only updated if it is missing
+                     or if its  leaf  sources  are  newer.   Leaf
+                     sources are those dependencies of the target
+                     that have no dependencies themselves.
+<DT>
+              NOCARE 
+<DD>
+		The target is ignored if it is  missing  and
+                     has  no  updating  actions.   Normally,  jam
+                     issues a warning  and  skips  other  targets
+                     that   depend  on  missing  targets  without
+                     updating actions.
+<DT>
+              TEMPORARY
+<DD>
+                     If the target is missing, then its  parent's
+                     modification  time  is  used  when comparing
+                     against sources.
+<DT>
+              NOTFILE
+<DD>
+                     The target is only updated  if  any  of  its
+                     sources are marked for updating.
+<DT>
+              NOUPDATE
+<DD>
+                     The target is only updated if it is missing.
+                     Also, if it exists, it will appear eternally
+                     old;  that  is,  older  than  anything  that
+                     depends on it.
+</DL>
+</BLOCKQUOTE>
+<P>
+       If a target is a source file that  includes  other  files,
+       jam  scans  the source file for header file include lines.
+       It scans the file by matching each  line  against  a  regexp(3) pattern that has ()'s surrounding the included file
+       name.  The pattern is provided by  the  user  through  the
+       special variable $(HDRSCAN) (see HDRPATTERN in Jambase for
+       an example).  The result of the scan is formed into a rule
+       invocation,  with  the  scanned file as the target and the
+       found included  file  names  as  the  sources.   The  rule
+       invoked  is named by the special variable $(HDRRULE).  Jam
+       only scans files if $(HDRSCAN) is set, and  $(HDRSCAN)  is
+       normally set target-specific.
+<P>
+       Between  binding and updating, jam announces the number of
+       targets to be updated.
+<P>
+<H3>
+   Updating
+</H3>  
+<P>    
+       After binding, jam again recursively descends  the  dependency  graph,  this  time executing the update actions for
+       each target marked for update during  the  binding  phase.
+       If  a  target's  updating  actions  fail, then all targets
+       which depend on it are skipped.
+<P>
+       (UNIX only).  The -j flag instructs jam to build more than
+       one  target at a time.  If there are multiple actions on a
+       single target, they are run sequentially.
+<P>
+       (UNIX only).  The special variable $(JAMSHELL) gives jam a
+       command  execution  shell  to  be used instead of /bin/sh.
+       This variable's value must be a multi-element list, corresponding to the argument vector for the command shell.  An
+       element "%" is replaced with the command  string  to  execute.   An  element  "!" is replaced with the multiprocess
+       slot number, which is (inclusively) between 1 and the maximum  number of concurrent jobs specified with the -j flag
+       (default 1).  If no element of the list is "%",  the  command  string  is  tacked  on  as  the  last argument.  The
+       default value is: "/bin/sh -c %".
+<P>
+<H2>
+DIAGNOSTICS
+</H2>  
+<P>    
+       In addition to generic error messages, jam may emit one of
+       the following:
+<PRE>
+       warning: unknown rule X
+
+              A  rule  was invoked that has not been defined with
+              an "actions" or "rule" statement.
+
+       using N temp target(s)
+
+              Targets marked as being temporary (but  nonetheless
+              present) have been found.
+
+       updating N target(s)
+
+              Targets are out-of-date and will be updated.
+
+       can't find N target(s)
+
+              Source  files  can't  be  found  and  there  are no
+              actions to create them.
+
+       can't make N target(s)
+
+              Due to sources not being found, other targets  cannot be made.
+
+       warning: X depends on itself
+
+              A  target  depends  on  itself  either  directly or
+              through its sources.
+
+       don't know how to make X
+
+              A target is not present and no  actions  have  been
+              defined to create it.
+
+       X skipped for lack of Y
+
+              A  source failed to build, and thus a target cannot
+              be built.
+
+       warning: using independent target X
+
+              A target that does is not a dependency of any other
+              target is being referenced with $(&lt;) or $(&gt;).
+
+       X removed
+
+              Jam  removed  a  partially built target after being
+              interrupted.
+</PRE>
+<H2>
+FILES
+</H2>  
+<P>    
+<UL>
+<LI>
+       /usr/local/lib/Jambase
+<LI>
+       Jamfile
+</UL>
+
+<P>
+<H2>
+BUGS, LIMITATIONS
+</H2>
+<P>
+       In a rule's actions, only $(&lt;) and $(&gt;) refer to the bound
+       file  names: all other variable references get the unbound
+       names.
+<P>
+       With the -j flag, errors  from  failed  commands  can  get
+       staggeringly  mixed up.  Also, because targets tend to get
+       built in a quickest-first ordering, dependency information
+       must  be  quite  exact.   Finally, beware of parallelizing
+       commands that drop  fixed-named  files  into  the  current
+       directory, like yacc(1) does.
+<P>
+       A  poorly  set  $(JAMSHELL)  is likely to result in silent
+       failure.
+<P>
+<H2>
+SEE ALSO
+</H2>
+<P>
+       Jambase(5), Jamfile(5)
+<P>    
+<H2>
+AUTHOR
+</H2>  
+<P>   
+       Christopher Seiwald (seiwald@perforce.com)
+</BODY>
