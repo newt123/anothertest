@@ -1,5 +1,7 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 # include "jam.h"
@@ -26,7 +28,11 @@
  *
  * Internal routines:
  *
+ *	var_enter() - make new var symbol table entry, returning var ptr
  *	var_dump() - dump a variable to stdout
+ *
+ * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
+ * 08/23/94 (seiwald) - Support for '+=' (append to variable)
  */
 
 static struct hash *varhash = 0;
@@ -42,6 +48,7 @@ struct _variable {
 	LIST	*value;
 } ;
 
+static VARIABLE	*var_enter();
 static void	var_dump();
 
 
@@ -62,7 +69,7 @@ char **e;
 	    {
 		strncpy( sym, *e, val - *e );
 		sym[ val - *e ] = '\0';
-		var_set( sym, list_new( (LIST *)0, newstr( val + 1 ) ) );
+		var_set( sym, list_new( L0, newstr( val + 1 ) ), VAR_SET );
 	    }
 	}
 }
@@ -135,7 +142,7 @@ LIST	*sources;
 	    {
 		LIST	*l;
 
-		l = var_expand( (LIST *)0, lastword, out, targets, sources );
+		l = var_expand( L0, lastword, out, targets, sources );
 
 		out = lastword;
 
@@ -181,15 +188,46 @@ char	*symbol;
 /*
  * var_set() - set a variable in jam's user defined symbol table
  *
- * Copies symbol.  Takes ownership of list.
+ * 'flag' controls the relationship between new and old values of
+ * the variable: SET replaces the old with the new; APPEND appends
+ * the new to the old; DEFAULT only uses the new if the variable
+ * was previously unset.
+ *
+ * Copies symbol.  Takes ownership of value.
  */
 
 void
-var_set( symbol, value )
+var_set( symbol, value, flag )
 char	*symbol;
 LIST	*value;
+int	flag;
 {
-	list_free( var_swap( symbol, value ) );
+	VARIABLE *v = var_enter( symbol );
+
+	if( DEBUG_VARSET )
+	    var_dump( symbol, value, "set" );
+
+	switch( flag )
+	{
+	case VAR_SET:
+	    /* Replace value */
+	    list_free( v->value );
+	    v->value = value;
+	    break;
+
+	case VAR_APPEND:
+	    /* Append value */
+	    v->value = list_append( v->value, value );
+	    break;
+
+	case VAR_DEFAULT:
+	    /* Set only if unset */
+	    if( !v->value )
+		v->value = value;
+	    else
+		list_free( value );
+	    break;
+	}
 }
 
 /*
@@ -201,11 +239,28 @@ var_swap( symbol, value )
 char	*symbol;
 LIST	*value;
 {
-	VARIABLE var, *v = &var;
-	LIST *oldvalue;
+	VARIABLE *v = var_enter( symbol );
+	LIST 	 *oldvalue = v->value;
 
 	if( DEBUG_VARSET )
 	    var_dump( symbol, value, "set" );
+
+	v->value = value;
+
+	return oldvalue;
+}
+
+
+
+/*
+ * var_enter() - make new var symbol table entry, returning var ptr
+ */
+
+static VARIABLE *
+var_enter( symbol )
+char	*symbol;
+{
+	VARIABLE var, *v = &var;
 
 	if( !varhash )
 	    varhash = hashinit( sizeof( VARIABLE ), "variables" );
@@ -216,13 +271,8 @@ LIST	*value;
 	if( hashenter( varhash, (HASHDATA **)&v ) )
 	    v->symbol = newstr( symbol );	/* never freed */
 
-	oldvalue = v->value;
-	v->value = value;
-
-	return oldvalue;
+	return v;
 }
-
-
 
 /*
  * var_dump() - dump a variable to stdout

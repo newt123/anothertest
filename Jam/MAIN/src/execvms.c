@@ -1,5 +1,7 @@
 /* 
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 # ifdef VMS
@@ -18,6 +20,8 @@
 
 /*
  * execvms.c - execute a shell script, ala VMS
+ *
+ * 05/04/94 (seiwald) - async multiprocess interface; noop on VMS
  */
 
 #define WRTLEN 240
@@ -29,11 +33,14 @@
 #define DESCALLOC( name ) struct dsc$descriptor_s \
 	(name) = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_D, NULL }
 
-
-int
-execcmd( string )
+void
+execcmd( string, func, closure  )
 char *string;
+void (*func)();
+void *closure;
 {
+    int rstat = EXEC_CMD_OK;
+
     /* Split string at newlines, and don't execute empty lines */
     /* Bail if any lines fail. */
 
@@ -67,7 +74,8 @@ char *string;
 		if( !f )
 		{
 		    printf( "can't open command file\n" );
-		    return EXEC_CMD_FAIL;
+		    rstat = EXEC_CMD_FAIL;
+		    break;
 		}
 
 	        fputc( '$', f );
@@ -99,11 +107,20 @@ char *string;
 	    /* OK on OK, warning, or info exit */
 
 	    if( status == 2 || status == 4 )
-		return EXEC_CMD_FAIL;
+	    {
+		rstat = EXEC_CMD_FAIL;
+		break;
+	    }
 	}
     }
 
-    return EXEC_CMD_OK;
+    (*func)( closure, rstat );
+}
+
+int 
+execwait()
+{
+	return 0;
 }
 
 # endif /* VMS */

@@ -1,5 +1,7 @@
 /*
  * Copyright 1994 Christopher Seiwald.  All rights reserved. 
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 /*

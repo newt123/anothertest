@@ -1,5 +1,7 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 # include "jam.h"
@@ -20,6 +22,9 @@
  *
  *     var_edit() - copy input target name to output, performing : modifiers
  *     var_mods() - parse : modifiers into FILENAME structure
+ *
+ * 01/25/94 (seiwald) - $(X)$(UNDEF) was expanding like plain $(X)
+ * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
  */
 
 static void	var_edit();
@@ -133,9 +138,9 @@ LIST	*sources;
 	    /* Recursively expand variable name & rest of input */
 
 	    if( out < ov )
-		variables = var_expand( (LIST *)0, out, ov, targets, sources );
+		variables = var_expand( L0, out, ov, targets, sources );
 	    if( in < end )
-		remainder = var_expand( (LIST *)0, in, end, targets, sources );
+		remainder = var_expand( L0, in, end, targets, sources );
 
 	    /* Now produce the result chain */
 
@@ -186,7 +191,7 @@ LIST	*sources;
 
 		/* The fast path: $(x) - just copy the variable value. */
 
-		if( out == out_buf && !bracket && !colon && !remainder )
+		if( out == out_buf && !bracket && !colon && in == end )
 		{
 		    l = list_copy( l, value );
 		    continue;

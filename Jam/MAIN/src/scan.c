@@ -1,5 +1,7 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 # include "jam.h"
@@ -11,6 +13,12 @@
 
 /*
  * scan.c - the jam yacc scanner
+ *
+ * 12/26/93 (seiwald) - bump buf in yylex to 10240 - yuk.
+ * 09/16/94 (seiwald) - check for overflows, unmatched {}'s, etc.
+ *			Also handle tokens abutting EOF by remembering
+ *			to return EOF now matter how many times yylex()
+ *			reinvokes yyline().
  */
 
 struct keyword {
@@ -63,8 +71,7 @@ char *s;
 	if( strcmp( s, "-" ) && !( f = fopen( s, "r" ) ) )
 	    perror( s );
 
-	incdepth++;
-	incp = &includes[ incdepth - 1 ];
+	incp = &includes[ incdepth++ ];
 	incp->string = "";
 	incp->file = f;
 	incp->fname = s;
@@ -91,10 +98,21 @@ top:
 		    fclose( incp->file );
 	} 
 
-	if( !--incdepth )
-	    return EOF;
+	/* Last include file? */
 
-	incp = &includes[ incdepth - 1 ];
+	if( incdepth <= 1  )
+	{
+	    /* Make sure subsequent calls get EOF, too */
+
+	    incdepth = 0;
+	    incp->string = "";
+
+	    return EOF;
+	}
+
+	/* Pop to previous include */
+
+	incp = &includes[ --incdepth - 1 ];
 
 	if( !*incp->string )
 	    goto top;
@@ -110,23 +128,34 @@ top:
 
 yylex()
 {
-	char buf[512];
 	int c = *incp->string;
+	char buf[10240];
 
 	for( ;; )
 	{
-		while( !c || isspace( c ) && c != EOF )
+		/* Skip past the "" that yyfparse() points incp->string at. */
+
+		if( !c )
+		    c = yychar();
+
+		/* Skip past white space */
+
+		while( c != EOF && isspace( c ) )
 			c = yychar();
+
+		/* Not a comment?  Swallow up comment line. */
+
 		if( c != '#' )
 			break;
 		while( ( c = yychar() ) != EOF && c != '\n' )
 			;
 	}
 
+	/* c now points to the first character of a token. */
+
 	if( c == EOF )
 	{
-		yylval.type = EOF;
-		return EOF;
+	    goto eof;
 	} 
 	else if( c == '{' && scan_asstring )
 	{
@@ -135,7 +164,7 @@ yylex()
 		char *b = buf;
 		int nest = 1;
 
-		while( ( c = yychar() ) != EOF )
+		while( ( c = yychar() ) != EOF && b < buf + sizeof( buf ) )
 		{
 			if( c == '{' )
 				nest++;
@@ -145,6 +174,21 @@ yylex()
 			    break;
 			*b++ = c;
 		}
+
+		/* Check obvious errors. */
+
+		if( b == buf + sizeof( buf ) )
+		{
+		    yyerror( "action block too big" );
+		    goto eof;
+		}
+
+		if( nest )
+		{
+		    yyerror( "unmatched {} in action block" );
+		    goto eof;
+		}
+
 		*b = 0;
 		yylval.type = STRING;
 		yylval.string = newstr( buf );
@@ -160,7 +204,8 @@ yylex()
 		int hasquote = 0;
 		struct keyword *k;
 
-		do {
+		while( b < buf + sizeof( buf ) )
+		{
 		    if( literal )
 			*b++ = c, literal = 0;
 		    else if( c == '\\' )
@@ -169,13 +214,32 @@ yylex()
 			inquote = !inquote, hasquote++;
 		    else
 			*b++ = c;
+
+		    if( ( c = yychar() ) == EOF || !inquote && isspace( c ) )
+			break;
 		}
-		while( ( c=yychar() ) != EOF && ( inquote || !isspace( c ) ) );
+
+		/* Check obvious errors. */
+
+		if( b == buf + sizeof( buf ) )
+		{
+		    yyerror( "string too big" );
+		    goto eof;
+		}
+
+		if( inquote )
+		{
+		    yyerror( "unmatched \" in string" );
+		    goto eof;
+		}
+
+		/* We looked ahead a character - back up. */
+
 		incp->string--;
-		*b = 0;
 
 		/* scan token table, except for $anything and quoted anything */
 
+		*b = 0;
 		yylval.type = ARG;
 
 		if( *buf != '$' && !hasquote )
@@ -194,6 +258,10 @@ yylex()
 	if( DEBUG_SCAN )
 		printf( "scan %s\n", symdump( &yylval ) );
 
+	return yylval.type;
+
+eof:
+	yylval.type = EOF;
 	return yylval.type;
 }
 

@@ -1,5 +1,7 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 # include "jam.h"
@@ -15,6 +17,7 @@
  *
  * External routines:
  *
+ *	list_append() - append a list onto another one, returning total
  *	list_new() - tack a string onto the end of a list of strings
  * 	list_copy() - copy a whole list of strings
  *	list_sublist() - copy a subset of a list of strings
@@ -30,9 +33,38 @@
  * chain onto freelist and list_new() looks on freelist first for an 
  * available list struct.  list_free() does not free the strings in the 
  * chain: it lazily lets list_new() do so.
+ *
+ * 08/23/94 (seiwald) - new list_append()
  */
 
 static LIST *freelist = 0;	/* junkpile for list_free() */
+
+/*
+ * list_append() - append a list onto another one, returning total
+ */
+
+LIST *
+list_append( l, nl )
+LIST	*l;
+LIST	*nl;
+{
+	if( !nl )
+	{
+	    /* Just return l */
+	}
+	else if( !l )
+	{
+	    l = nl;
+	}
+	else
+	{
+	    /* Graft two non-empty lists. */
+	    l->tail->next = nl;
+	    l->tail = nl->tail;
+	}
+
+	return l;
+}
 
 /*
  * list_new() - tack a string onto the end of a list of strings
@@ -78,7 +110,7 @@ char	*string;
 }
 
 /*
- * list_copy() - copy a whole list of strings
+ * list_copy() - copy a whole list of strings (nl) onto end of another (l)
  */
 
 LIST *

@@ -1,9 +1,14 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 /*
  * compile.h - compile parsed jam statements
+ *
+ * 06/01/94 (seiwald) - new 'actions existing' does existing sources
+ * 08/23/94 (seiwald) - Support for '+=' (append to variable)
  */
 
 void compile_builtins();
@@ -14,10 +19,15 @@ void compile_rule();
 void compile_rules();
 void compile_set();
 void compile_setcomp();
-void compile_setdefault();
 void compile_setexec();
 void compile_settings();
 void compile_switch();
+
+/* Flags for compile_set(), etc */
+
+# define ASSIGN_SET	0x00	/* = assign variable */
+# define ASSIGN_APPEND	0x01	/* += append variable */
+# define ASSIGN_DEFAULT	0x02	/* set only if unset */
 
 /* Flags for compile_setexec() */
 
@@ -26,6 +36,7 @@ void compile_switch();
 # define EXEC_IGNORE	0x04	/* executes ignore */
 # define EXEC_QUIETLY	0x08	/* executes quietly */
 # define EXEC_PIECEMEAL	0x10	/* executes piecemeal */
+# define EXEC_EXISTING	0x20	/* executes existing */
 
 /* Conditions for compile_if() */
 

@@ -1,5 +1,7 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 # include "jam.h"
@@ -25,6 +27,8 @@
  *
  * Internal routines:
  *    headers1() - using regexp, scan a file and build include LIST
+ *
+ * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
  */
 
 static LIST *headers1();
@@ -65,12 +69,12 @@ TARGET *t;
 	/* Doctor up call to HDRRULE rule */
 	/* Call headers1() to get LIST of included files. */
 
-	p->llist = list_new( (LIST *)0, t->name );
+	p->llist = list_new( L0, t->name );
 	p->rlist = headers1( headlist, fname, rec, re );
 	p->string = hdrrule->string;
 
 	if( p->rlist )
-	    compile_rule( p, (LIST *)0, (LIST *)0 );
+	    compile_rule( p, L0, L0 );
 
 	/* Clean up */
 

@@ -1,9 +1,15 @@
 /*
- * Copyright 1993 Christopher Seiwald.
+ * Copyright 1993, 1995 Christopher Seiwald.
+ *
+ * This file is part of Jam - see jam.c for Copyright information.
  */
 
 /*
  * jam.h - includes and globals for jam
+ *
+ * 04/08/94 (seiwald) - Coherent/386 support added.
+ * 04/21/94 (seiwald) - DGUX is __DGUX__, not just __DGUX.
+ * 05/04/94 (seiwald) - new globs.jobs (-j jobs)
  */
 
 # ifdef VMS
@@ -43,6 +49,25 @@
 
 # else
 
+# ifdef NT
+
+# include <fcntl.h>
+# include <stdlib.h>
+# include <stdio.h>
+# include <ctype.h>
+# include <malloc.h>
+# include <memory.h>
+# include <signal.h>
+# include <string.h>
+# include <time.h>
+
+# define OTHERSYMS "NT=true","OS=NT"
+# define JAMBASE "Jambase.NT"
+# define MAXCMD	10240	/* longest command */
+# define EXITOK 0
+
+# else
+
 # include <sys/types.h>
 # include <sys/file.h>
 # include <sys/stat.h>
@@ -60,13 +85,14 @@
 # include <string.h>
 # include <time.h>
 
-# ifdef AIX
+# ifdef _AIX
+# define unix
 # define OTHERSYMS "UNIX=true","OS=AIX"
 # endif
 # ifdef __bsdi__
 # define OTHERSYMS "UNIX=true","OS=BSDI"
 # endif
-# ifdef __DGUX
+# ifdef __DGUX__
 # define OTHERSYMS "UNIX=true","OS=DGUX"
 # endif
 # ifdef __hpux
@@ -91,6 +117,9 @@
 # ifdef ultrix
 # define OTHERSYMS "UNIX=true","OS=ULTRIX"
 # endif
+# if defined (COHERENT) && defined (_I386)
+# define OTHERSYMS "UNIX=true","OS=COHERENT/386"
+# endif
 # ifndef OTHERSYMS
 # define OTHERSYMS "UNIX=true"
 # endif
@@ -98,6 +127,8 @@
 # define JAMBASE "/usr/local/lib/jam/Jambase"
 # define MAXCMD	10240	/* longest command */
 # define EXITOK 0
+
+# endif /* NT */
 
 # endif /* UNIX */
 
@@ -112,6 +143,7 @@
 struct globs {
 	int	debug;
 	int	noexec;
+	int	jobs;
 } ;
 
 extern struct globs globs;

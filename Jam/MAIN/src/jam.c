@@ -1,14 +1,13 @@
 /*
  * /+\
- * +\	Copyright 1993 Christopher Seiwald.
+ * +\	Copyright 1993, 1995 Christopher Seiwald.
  * \+/
  *
- * Permission is granted to use this software and distribute it
+ * License is hereby granted to use this software and distribute it
  * freely, as long as this notice is retained and modifications are
  * clearly marked.
  *
- * The author assumes no liability for the consequences of using this
- * software.
+ * ALL WARRANTIES ARE HEREBY DISCLAIMED.
  */
 
 # include "jam.h"
@@ -18,7 +17,9 @@
 /*
  * jam.c - make redux
  *
- * See jam(1) and Jambase(5) for usage information.
+ * See jam(1), Jambase(5), and Jamfile(5) for usage information.
+ *
+ * These comments document the code.
  *
  * The top half of the code is structured such:
  *
@@ -34,11 +35,11 @@
  *           |    /    \       / |  \
  *           |   /      \     /  |   \
  *           |  /        \   /   |    \
- *         parse         rules  search execute
- *                               |
- *                               |
- *                               |
- *                           timestamp
+ *         parse         rules  search make1
+ *                               |	|   \
+ *                               |	|    \
+ *                               |	|     \
+ *                           timestamp command execute
  *
  *
  * The support routines are called by all of the above, but themselves
@@ -60,6 +61,7 @@
  *
  * Roughly, the modules are:
  *
+ *	command.c - maintain lists of commands
  *	compile.c - compile parsed jam statements
  *	execunix.c - execute a shell script on UNIX
  *	execvms.c - execute a shell script, ala VMS
@@ -70,6 +72,7 @@
  *	headers.c - handle #includes in source files
  *	lists.c - maintain lists of strings
  *	make.c - bring a target up to date, once rules are in place
+ *	make1.c - execute command to bring targets up to date
  *	newstr.c - string manipulation routines
  *	option.c - command line option processing
  *	parse.c - make and destroy parse trees as driven by the parser
@@ -80,11 +83,14 @@
  *	timestamp.c - get the timestamp of a file or archive member
  *	variable.c - handle jam multi-element variables
  *	jamgram.yy - jam grammar
+ *
+ * 05/04/94 (seiwald) - async multiprocess (-j) support
  */
 
 struct globs globs = {
 	1,			/* debug */
-	0			/* noexec */
+	0,			/* noexec */
+	1			/* jobs */
 } ;
 
 /* Symbols to be defined as true for use in Jambase */
@@ -93,7 +99,7 @@ static char *othersyms[] = { OTHERSYMS, 0 } ;
 extern char **environ;
 
 char *usage = 
-	"jam [-n] [-f<Jambase>] [-d<debuglevel>] [-t<target>...] [target...]";
+	"jam -na -j<jobs> -f<Jambase> -d<debuglevel> -t<target>... target...";
 
 main( argc, argv )
 char	**argv;
@@ -103,10 +109,11 @@ char	**argv;
 	struct option	optv[N_OPTS];
 	char		*ruleset = JAMBASE;
 	char		*all = "all";
+	int		anyhow = 0;
 
 	argc--, argv++;
 
-	if( ( n = getoptions( argc, argv, "d:f:t:n", optv ) ) < 0 )
+	if( ( n = getoptions( argc, argv, "d:j:f:t:na", optv ) ) < 0 )
 	{
 		printf( "usage: %s\n", usage );
 		exit( 1 );
@@ -121,6 +128,12 @@ char	**argv;
 
 	if( ( s = getoptval( optv, 'd', 0 ) ) )
 	    globs.debug = atoi( s );
+
+	if( ( s = getoptval( optv, 'a', 0 ) ) )
+	    anyhow++;
+
+	if( ( s = getoptval( optv, 'j', 0 ) ) )
+	    globs.jobs = atoi( s );
 
 	/* load up environment variables */
 
@@ -149,9 +162,9 @@ char	**argv;
 	/* Now make target */
 
 	if( argc )
-	    make( argc, argv );
+	    make( argc, argv, anyhow );
 	else
-	    make( 1, &all );
+	    make( 1, &all, anyhow );
 
 	/* Widely scattered cleanup */
 
