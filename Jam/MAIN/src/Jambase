@@ -425,6 +425,26 @@ else if $(VMS)
 	case VMS     : LINKLIBS default = sys$library:vaxcrtl.olb/lib ;
 	}
 }
+else if $(MAC)
+{
+	CC		default = mwcppc ;
+	CCFLAGS		default = -w off ;
+	CP		default = copy ;
+	DOT		default = "" ;
+	DOTDOT		default = :: ;
+	HDRS		default = ;
+	LINK		default = mwlinkppc ;
+	LINKFLAGS	default = -mpwtool ;
+	MKDIR		default = newfolder ;
+	MV		default = rename ;
+	OPTIM		default = ;
+	RM		default = delete ;
+	SLASH		default = ":" ;
+	STDHDRS		default = $(MWCIncludes) ;
+	SUFLIB		default = .lib ;
+	SUFOBJ		default = .o ;
+	SUFEXE		default = "" ;
+}
 
 # 
 # Define some MS-specific commands for MS-specific actions (which
@@ -1760,6 +1780,69 @@ else if $(VMS)
 	$(YACC) $(YACCFLAGS) $(>)
 	$(MV) $(YACCFILES).c $(<[1])
 	$(MV) $(YACCFILES).h $(<[2])
+    }
+}
+else if $(MAC)
+{
+
+    actions together piecemeal Archive 
+    {
+	$(LINK) -library -o $(<) $(>)
+    }
+
+    actions Cc
+    { 
+	$(CC) -o $(<) $(CCFLAGS) $(OPTIM) $(>) 
+    }
+
+    actions C++
+    { 
+	$(CC) -o $(<) $(CCFLAGS) $(OPTIM) $(>) 
+    }
+
+    actions Chmod
+    {
+	set file/prot=$(MODE) $(<)
+    }
+
+    actions piecemeal together existing Clean
+    {
+	$(RM) $(>)
+    }
+
+    actions File
+    {
+	copy $(>) $(<)
+    }
+
+    actions GenFile1
+    {
+	$(>[1]) $(<) $(>[2-])
+    }
+
+    actions Install
+    {
+	copy $(>) $(<)
+    }
+
+    actions Link bind NEEDLIBS
+    {
+	$(LINK) -o $(<) $(LINKFLAGS) $(>) $(NEEDLIBS) $(LINKLIBS)
+    }
+
+    actions MkDir1
+    {
+	$(MKDIR) $(<)
+    }
+
+    actions quietly updated piecemeal together RmTemps
+    {
+	$(RM) $(>)
+    }
+
+    actions Shell
+    {
+	copy $(>) $(<)
     }
 }
 

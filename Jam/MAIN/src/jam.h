@@ -122,6 +122,20 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # else /* QNX */
 
+# ifdef macintosh
+# include <time.h>
+# include <stdlib.h>
+# include <string.h>
+# include <stdio.h>
+
+# define OTHERSYMS "MAC=true","OS=MAC"
+# define SPLITPATH ','
+# define MAXCMD 1024
+# define EXITOK 0
+# define EXITBAD 1
+
+# else /* not MAC */
+
 # include <sys/types.h>
 # include <sys/file.h>
 # include <sys/stat.h>
@@ -227,6 +241,8 @@ int unlink( char *f ); 	/* In filevms.c */
 # define SPLITPATH ':'
 # define EXITOK 0
 # define EXITBAD 1
+
+# endif /* mac */
 
 # endif /* QNX */
 

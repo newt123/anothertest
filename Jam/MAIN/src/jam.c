@@ -127,8 +127,12 @@ extern char **environ;
 # endif
 # endif
 
+# ifdef macintosh
+main( int argc, char **argv, char **environ )
+# else
 main( argc, argv )
 char	**argv;
+# endif
 {
 	int		n;
 	char		*s;
