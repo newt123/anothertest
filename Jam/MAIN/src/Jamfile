@@ -28,6 +28,32 @@ if $(NT)
 	OSFILES = execnt.c filent.c ; 
 }
 
+#
+# Ugly support for the .yy file: yyacc is a preprocessor to yacc,
+# turning a .yy file into a .y file and a tab.h file.
+#
+
+rule UserObject
+{
+    if $(>:S) = .yy 
+    {
+	if $(UNIX)
+	{
+	    DEPENDS $(<) $(<:B)tab.h : $(>) ;
+	    YYacc $(<) $(<:B)tab.h : $(>) ;
+	    LOCATE on $(<) $(<:B)tab.h = $(LOCATE_TARGET) ;
+	    Clean clean : $(<) $(<:B)tab.h ;
+	}
+	Cc $(<) : $(<:S=.c) ; 
+	Yacc $(<:S=.c) : $(<:S=.y) ;
+    }
+}
+
+actions YYacc
+{
+	sh yyacc $(>) $(<)
+}
+
 Main 		jam : jam.c ;
 LinkLibraries 	jam : $(JAMLIB) ;
 

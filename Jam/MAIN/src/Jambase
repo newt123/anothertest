@@ -17,6 +17,7 @@
 # 08/29/94 (seiwald) - new CcAddHdrs rule to append to per-target HDRS
 # 09/19/94 (seiwald) - LinkLibraries and Undefs now append
 # 		     - Rule names downshifted.
+# 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
 
 # Rules defined by this file:
 #
@@ -32,7 +33,6 @@
 # Cc obj.o : source.c ;		.c -> .o
 # Lex source.c : source.l ;	.l -> .c
 # Yacc source.c : source.y ; 	.y -> .c
-# YYacc source.y : source.yy ; 	.yy -> .y
 # Bulk dir : files ;		populate directory with many files
 # File dest : source ;		copy file
 # Shell exe : source ;		install a shell executable
@@ -299,9 +299,6 @@ rule Object
 			Lex $(<:S=.c) : $(>) ;
 	    case .y : 	Cc $(<) : $(<:S=.c) ; 
 			Yacc $(<:S=.c) : $(>) ;
-	    case .yy : 	Cc $(<) : $(<:S=.c) ; 
-			Yacc $(<:S=.c) : $(<:S=.y) ;
-			YYacc $(<:S=.y) : $(>) ;
 	    case * :	UserObject $(<) : $(>) ;
 	}
 }
@@ -419,19 +416,6 @@ actions Yacc1
 	}
 }
 
-rule YYacc
-{
-	DEPENDS $(<) $(<:B)tab.h : $(>) ;
-	YYacc1 $(<) $(<:B)tab.h : $(>) ;
-	LOCATE on $(<) $(<:B)tab.h = $(LOCATE_TARGET) ;
-	Clean clean : $(<) $(<:B)tab.h ;
-}
-
-actions YYacc1
-{
-	sh yyacc $(>) $(<)
-}
-
 rule Bulk 
 {
 	for i in $(>) 
@@ -485,7 +469,7 @@ rule InstallBin
 	for i in $(<)
 	{
 	    Install $(i:D=$(BINDIR)) : $(i) ;
-	    InstallMODE on $(i:D=$(BINDIR)) = $(EXEMODE) ;
+	    INSTALLMODE on $(i:D=$(BINDIR)) = $(EXEMODE) ;
 	}
 }
 
@@ -494,7 +478,7 @@ rule InstallLib
 	for i in $(<) 
 	{
 	    Install $(i:D=$(LIBDIR)) : $(i) ;
-	    InstallMODE on $(i:D=$(LIBDIR)) = $(FILEMODE) ;
+	    INSTALLMODE on $(i:D=$(LIBDIR)) = $(FILEMODE) ;
 	}
 }
 
@@ -515,7 +499,7 @@ rule InstallMan
 	    D = $(i:D=$(MANDIR)/man$(S):S=.$(S)) ;
 
 	    Install $(D) : $(i) ;
-	    InstallMODE on $(D) = $(FILEMODE) ;
+	    INSTALLMODE on $(D) = $(FILEMODE) ;
 	}
 }
 
