@@ -52,6 +52,8 @@ Copies \fIsource\fR into \fItarget\fR.  Dependent of \fIfiles\fR.
 .RP "Fortran obj.o : source.f ;"
 Compile the Fortran source file \fIsource.f\fR.  
 Called by the \fIObject\fR rule.
+.RP "HardLink target : source ;"
+Makes \fItarget\fR a hard link to \fIsource\fR, if it isn't one already.
 .RP "HdrRule source : headers ;"
 Arranges the proper dependencies when the file \fIsource\fR 
 includes the files \fIheaders\fR through the "#include" C preprocessor
@@ -235,6 +237,11 @@ The directory for object modules and other intermediate files generated
 by \fBObject\fR.  This works by setting the \fBjam\fR special variable
 \fBLOCATE\fR to the value of $(\fBLOCATE_TARGET\fR) for each of
 \fBObject\fR's targets.
+.PP
+LN (default \fIln\fR)
+.PP
+The hard link command for \fIHardLink\fR.
+.IP
 .PP
 MV (default \fImv -f\fR)
 .IP

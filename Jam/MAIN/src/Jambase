@@ -31,6 +31,7 @@
 # Clean clean : sources ;		remove sources with 'jam clean'
 # File dest : source ;			copy file
 # Fortran obj.o : source.f ;		.f -> .o
+# Hardlink target : source ;		make link from source to target
 # HdrRule source : headers ;		handle #includes
 # Install target : source ;		install any single file
 # InstallBin sources ;			install binaries
@@ -132,6 +133,7 @@ LIBDIR		default = /usr/local/lib ;
 LINK 		default = $(CC) ;
 LINKFLAGS 	default = $(CCFLAGS) ;
 LINKLIBS 	default = ;
+LN		default = ln ;
 MANDIR		default = /usr/local/man ;
 MV 		default = mv -f ;
 OPTIM		default = -O ;
@@ -493,6 +495,18 @@ actions File
 	$(RM) $(<)
 	cp $(>) $(<) &&
 	chmod $(FILEMODE) $(<)
+}
+
+rule HardLink
+{
+	DEPENDS files : $(<) ;
+	DEPENDS $(<) : $(>) ;
+	SEARCH on $(>) = $(SEARCH_SOURCE) ;
+}
+
+actions HardLink
+{
+	$(RM) $(<) && $(LN) $(>) $(<)
 }
 
 rule Shell
