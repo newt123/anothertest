@@ -13,8 +13,8 @@
 # 05/05/94 (seiwald) - all supported C compilers support -o: relegate
 #		       RELOCATE as an option; set Ranlib to "" to disable it
 # 06/01/94 (seiwald) - new 'actions existing' to do existing sources
-# 08/25/94 (seiwald) - new CcAddFlags rule to append to per-target CCFLAGS
-# 08/29/94 (seiwald) - new CcAddHdrs rule to append to per-target HDRS
+# 08/25/94 (seiwald) - new ObjectCcFlags rule to append to per-target CCFLAGS
+# 08/29/94 (seiwald) - new ObjectHdrs rule to append to per-target HDRS
 # 09/19/94 (seiwald) - LinkLibraries and Undefs now append
 # 		     - Rule names downshifted.
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
@@ -28,8 +28,6 @@
 # Bulk dir : files ;			populate directory with many files
 # Cc obj.o : source.c ;			.c -> .o
 # C++ obj.o : source.cc ;		.cc -> .o
-# CcAddFlags source : flags ;		add compiler flags for object
-# CcAddHdrs source : dirs ;		add include directories for object
 # Clean clean : sources ;		remove sources with 'jam clean'
 # File dest : source ;			copy file
 # Fortran obj.o : source.f ;		.f -> .o
@@ -47,10 +45,14 @@
 # Main image : source ;			link executable from compiled sources
 # MainFromObjects image : objects ;	link executable from objects
 # Object object : source ;		compile object from source
+# ObjectCcFlags source : flags ;	add compiler flags for object
+# ObjectHdrs source : dirs ;		add include directories for object
 # Objects sources ;			compile sources
 # RmTemps target : sources ;		remove temp sources after target made
 # Setuid image ;			mark an executable Setuid
 # SubDir TOP d1 d2 ... ;		start a subdirectory Jamfile
+# SubDirObjectCcFlags flags ;		add compiler flags until next SubDir
+# SubDirObjectHdrs dirs ;		add include dirs until next SubDir
 # SubInclude TOP d1 d2 ... ;		include a subdirectory Jamfile
 # Shell exe : source ;			make a shell executable
 # Undefines image : symbols ;		save undef's for linking
@@ -314,7 +316,7 @@ rule Object
 	# yacc, lex, etc) are located in $(LOCATE_TARGET), possibly 
 	# different from $(SEARCH_SOURCE).
 
-	HDRS on $(<) = $(HDRS) $(SEARCH_SOURCE) ;
+	HDRS on $(<) = $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
 
 	# handle #includes for source: Jam scans for headers with
 	# the regexp pattern $(HDRSCAN) and then invokes $(HDRRULE)
@@ -323,7 +325,7 @@ rule Object
 
 	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
-	HDRSEARCH on $(>) = $(HDRS) $(STDHDRS) $(SEARCH_SOURCE) ;
+	HDRSEARCH on $(>) = $(STDHDRS) $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
 
 	# if source is not .c, generate .c with specific rule
 
@@ -345,8 +347,8 @@ rule Object
 
 rule UserObject
 {
-	ECHO "Unknown source file suffix on" $(>) "-"
-		"try defining your own UserObject rule." ;
+	ECHO "Unknown suffix on" $(>) "-"
+		"see UserObject rule in Jambase(5)." ;
 }
 
 rule HdrRule
@@ -384,7 +386,7 @@ actions As
 	$(AS) $(ASFLAGS) -o $(<) $(>) ;
 }
 
-rule CcAddFlags
+rule ObjectCcFlags
 {
 	S = $(<:S=.o) ;
 
@@ -396,7 +398,7 @@ rule CcAddFlags
 	CCFLAGS on $(S) += $(>) ;
 }
 
-rule CcAddHdrs
+rule ObjectHdrs
 {
 	S = $(<:S=.o) ;
 
@@ -422,9 +424,9 @@ rule Cc
 	}
 
 	# Just to clarify here: this sets the per-target CCFLAGS to
-	# be the current value of (global) CCFLAGS and CCDIRFLAGS.
+	# be the current value of (global) CCFLAGS and SUBDIRCCFLAGS.
 
-	CCFLAGS on $(<) += $(CCFLAGS) $(CCDIRFLAGS) ;
+	CCFLAGS on $(<) += $(CCFLAGS) $(SUBDIRCCFLAGS) ;
 }
 
 actions "Cc -o"
@@ -677,7 +679,21 @@ rule SubDir
 	SEARCH_SOURCE = $(SUBDIR) ;
 	LOCATE_TARGET = $(SUBDIR) ;
 	SOURCE_GRIST = $(g) ;
-	CCDIRFLAGS = ;
+
+	# Reset per-directory ccflags, hdrs
+
+	SUBDIRCCFLAGS = ;
+	SUBDIRHDRS = ;
+}
+
+rule SubDirCcFlags
+{
+	SUBDIRCCFLAGS += $(<) ;
+}
+
+rule SubDirHdrs
+{
+	SUBDIRHDRS += $(<) ;
 }
 
 rule SubInclude

@@ -215,18 +215,18 @@ Library libximage.a : xtiff.c xjpeg.c xgif.c ;
 HDRS on xjpeg.o = /usr/local/src/jpeg ;
 CCFLAGS on xtiff.o = -DHAVE_TIFF ;
 .XE
-.SS CcAddFlags, CcAddHdrs Rules
+.SS ObjectCcFlags, ObjectHdrs Rules
 .PP
 $(CCFLAGS) and $(HDRS) can be manipulated directly, but there are two
 rules that allow these variables to be set by referring to the original
 source file name, rather than to the derived object file name.
-\fICcAddFlags\fR adds object-specific flags to the $(CCFLAGS) variable,
-and \fICcAddHdrs\fR add object-specific directories to the $(HDRS)
+\fIObjectCcFlags\fR adds object-specific flags to the $(CCFLAGS) variable,
+and \fIObjectHdrs\fR add object-specific directories to the $(HDRS)
 variable.
 .XB
 Main xviewer : viewer.c ;
-CcAddFlags viewer.c : -DXVERSION ;
-CcAddHdrs viewer.c : /usr/include/X11 ;
+ObjectCcFlags viewer.c : -DXVERSION ;
+ObjectHdrs viewer.c : /usr/include/X11 ;
 .XE
 .PP
 Actually, the file suffix (\fB.c\fR in this case) is ignored: the
@@ -434,12 +434,12 @@ use of the \fIObjects\fR or \fIObject\fR rule for that.
 LibraryFromObjects max.o min.o ;
 Object max.o : maxmin.c ;
 Object min.o : maxmin.c ;
-CcAddFlags max.c : -DUSEMAX ;
-CcAddFlags min.c : -DUSEMIN ;
+ObjectCcFlags max.c : -DUSEMAX ;
+ObjectCcFlags min.c : -DUSEMIN ;
 .XE
 .PP
 This compiles the same source file into two different objects, with different
-compile flags, and archives them.  Note that \fICcAddFlags\fR refered to the
+compile flags, and archives them.  Note that \fIObjectCcFlags\fR refered to the
 (nonexistent) source file names for the objects.
 .SS MainFromObjects Rule
 .PP
@@ -450,7 +450,7 @@ MainFromObjects w : w.o ;
 MainFromObjects uptime : uptime.o ;
 Object w.o : uptime.c ;
 Object uptime.o : uptime.c ;
-CcAddFlags w.c : -DW_CODE ;
+ObjectCcFlags w.c : -DW_CODE ;
 .XE
 .SS RmTemps Rule
 .PP
