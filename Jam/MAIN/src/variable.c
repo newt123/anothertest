@@ -33,6 +33,7 @@
  *
  * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
  * 08/23/94 (seiwald) - Support for '+=' (append to variable)
+ * 01/22/94 (seiwald) - split environment variables at blanks or :'s
  */
 
 static struct hash *varhash = 0;
@@ -55,6 +56,9 @@ static void	var_dump();
 
 /*
  * var_defines() - load a bunch of variable=value settings
+ *
+ * If variable name ends in PATH, split value at :'s.  
+ * Otherwise, split at blanks.
  */
 
 void
@@ -63,13 +67,37 @@ char **e;
 {
 	for( ; *e; e++ )
 	{
-	    char sym[ MAXSYM ], *val;
+	    char *val;
 
 	    if( val = strchr( *e, '=' ) )
 	    {
-		strncpy( sym, *e, val - *e );
-		sym[ val - *e ] = '\0';
-		var_set( sym, list_new( L0, newstr( val + 1 ) ), VAR_SET );
+		LIST *l = L0;
+		char *pp, *p;
+		char split = ' ';
+		char buf[ MAXSYM ];
+
+		/* Split *PATH at :'s, not spaces */
+
+		if( val - 4 >= *e && !strncmp( val - 4, "PATH", 4 ) )
+		    split = ':';
+
+		/* Do the split */
+
+		for( pp = val + 1; p = strchr( pp, split ); pp = p + 1 )
+		{
+		    strncpy( buf, pp, p - pp );
+		    buf[ p - pp ] = '\0';
+		    l = list_new( l, newstr( buf ) );
+		}
+
+		l = list_new( l, newstr( pp ) );
+
+		/* Get name */
+
+		strncpy( buf, *e, val - *e );
+		buf[ val - *e ] = '\0';
+
+		var_set( buf, l, VAR_SET );
 	    }
 	}
 }

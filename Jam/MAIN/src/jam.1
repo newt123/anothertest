@@ -306,9 +306,10 @@ The final two forms set \fI<variable>\fR globally, but only if it was
 previously unset.  The two forms are synonymous.
 .PP
 On program start-up, \fBjam\fR imports the environment variable
-settings into \fBjam\fR variables.  Environment variables are not split
-at whitespace (or anywhere else): each imported variable's value is a
-single element list.  \fBJam\fR variables are not re-exported.
+settings into \fBjam\fR variables.  Environment variables are split at
+blanks with each word becomming an element in the variable's list
+value.  Environment variables whose names end in \fBPATH\fR are split
+at colons ("\fB:\fR").  \fBJam\fR variables are not re-exported.
 .SS "Variable Expansion"
 .PP
 Before executing a statement,
@@ -472,8 +473,7 @@ is replaced with the command string to execute.  An element "\fB!\fR"
 is replaced with the multiprocess slot number, beginning at 0.  If
 \fB-j\fR is not given, the slot number is always 0.  One element of the
 list must be "\fB%\fR" (so that the command string is passed).  The
-default value is: /bin/sh sh -c %.  Because the value of $(\fBJAMSHELL\fR)
-is a multi-element list, it cannot be imported from the enviroment.
+default value is: "/bin/sh sh -c %".  
 
 .SH DIAGNOSTICS
 .PP
