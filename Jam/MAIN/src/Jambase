@@ -430,7 +430,7 @@ else if $(VMS)
 }
 else if $(MAC)
 {
-	CWGUSI		default = "Macintosh HD:Perforce:src:mac:CWGUSI" ;
+	CWGUSI		default = "Macintosh HD:Perforce:mac:CWGUSI" ;
 	CWGUSIHDR	default = $(CWGUSI):include ;
 	CWGUSILIB	default = $(CWGUSI):Lib ;
 	CWMAC		default = "Macintosh HD:CW10 Gold:Metrowerks CodeWarrior:MacOS Support" ;

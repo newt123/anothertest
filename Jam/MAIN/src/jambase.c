@@ -252,7 +252,7 @@ char *jambase[] = {
 "}\n",
 "else if $(MAC)\n",
 "{\n",
-"CWGUSI		default = \"Macintosh HD:Perforce:src:mac:CWGUSI\" ;\n",
+"CWGUSI		default = \"Macintosh HD:Perforce:mac:CWGUSI\" ;\n",
 "CWGUSIHDR	default = $(CWGUSI):include ;\n",
 "CWGUSILIB	default = $(CWGUSI):Lib ;\n",
 "CWMAC		default = \"Macintosh HD:CW10 Gold:Metrowerks CodeWarrior:MacOS Support\" ;\n",
