@@ -165,6 +165,7 @@ case NCR :	RANLIB default = "" ;
 case PTX :	RANLIB default = "" ;
 case QNX :	INSTALL default = "" ;
 case SCO :	RANLIB default = "" ;
+case SINIX :	RANLIB default = "" ; RELOCATE = true ;
 case SOLARIS :	RANLIB default = "" ;
 		INSTALL default = "install" ;
 		AR default = "/usr/ccs/bin/ar ru" ;
@@ -448,6 +449,11 @@ rule C++
 {
 	DEPENDS $(<) : $(>) ;
 	C++FLAGS on $(<) += $(C++FLAGS) $(SUBDIRC++FLAGS) ;
+
+	if $(RELOCATE)
+	{
+	    CcMv $(<) : $(>) ;
+	}
 
 	if $(VMS) && $(HDRS[1])
 	{
@@ -1218,9 +1224,20 @@ if $(UNIX)
 	$(AS) $(ASFLAGS) -I$(HDRS) -o $(<) $(>)
     }
 
-    actions C++
+    if $(OS) = SINIX
     {
+	actions C++
+	{
+	[ $(>:S) != .C ] && $(CP) $(>) $(>:S=.C) && trap "rm -f $(>:S=.C)" 0
+	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>:S=.C)
+	}
+    } 
+    else 
+    {
+	actions C++
+	{
 	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
+	}
     }
 
     actions Cc
@@ -1228,7 +1245,7 @@ if $(UNIX)
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
     }
 
-    actions quietly CcMv 
+    actions CcMv
     {
 	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
     }
