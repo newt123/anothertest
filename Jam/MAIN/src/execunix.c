@@ -65,7 +65,8 @@ static struct
  */
 
 void
-onintr()
+onintr( disp )
+int disp;
 {
 	intr++;
 	printf( "...interrupted\n" );

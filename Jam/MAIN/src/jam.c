@@ -182,7 +182,7 @@ char	**argv;
 
 	    if( i < 0 || i >= DEBUG_MAX )
 	    {
-		printf( "Invalid debug level '%s'.\n" );
+		printf( "Invalid debug level '%s'.\n", s );
 		continue;
 	    }
 

@@ -214,7 +214,7 @@ char *exp;
 	register regexp *r;
 	register char *scan;
 	register char *longest;
-	register int len;
+	register unsigned len;
 	int flags;
 
 	if (exp == NULL)

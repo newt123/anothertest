@@ -10,6 +10,8 @@ if $(NT) 	{ code = execnt.c filent.c ; }
 else if $(VMS) 	{ code = execvms.c filevms.c ; } 
 else 		{ code = execunix.c fileunix.c ; }
 
+if $(OS) = SOLARIS { CCFLAGS += -Dsolaris ; }
+
 #
 # The guts of the Jamfile: how to build Jam
 #

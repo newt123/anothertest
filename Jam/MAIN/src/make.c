@@ -116,7 +116,7 @@ int	anyhow;
 	}
 
 	for( i = 0; i < n_targets; i++ )
-	    make1( bindtarget( targets[i] ), counts );
+	    make1( bindtarget( targets[i] ) );
 }
 
 /*
