@@ -63,11 +63,15 @@ int unlink( char *f ); 	/* In filevms.c */
 # include <string.h>
 # include <time.h>
 
+# ifdef _M_PPC
+# define OTHERSYMS "NT=true","OS=NT","OSVER=PPC"
+# else
 # ifdef _ALPHA_
 # define OTHERSYMS "NT=true","OS=NT","OSVER=ALPHA"
 # else 
 # define OTHERSYMS "NT=true","OS=NT","OSVER=X86"
 # endif /* _ALPHA_ */
+# endif /* _PPC_ */
 
 # define SPLITPATH ';'
 # define MAXCMD	996	/* longest command */
