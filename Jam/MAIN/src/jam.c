@@ -121,9 +121,6 @@ struct globs globs = {
 static char *othersyms[] = { OTHERSYMS, JAMVERSYM, 0 } ;
 extern char **environ;
 
-char *usage = 
-    "jam [-anv -j<jobs> -f<Jambase> -d<debuglevel> -t<target>...] target...";
-
 main( argc, argv )
 char	**argv;
 {
@@ -135,15 +132,16 @@ char	**argv;
 
 	argc--, argv++;
 
-	if( ( n = getoptions( argc, argv, "d:j:f:t:anv", optv ) ) < 0 )
+	if( ( n = getoptions( argc, argv, "d:j:f:s:t:anv", optv ) ) < 0 )
 	{
-	    printf( "\nusage: %s\n\n", usage );
+	    printf( "\nusage: jam [ options ] targets...\n\n" );
 
             printf( "-a      Build all targets, even if they are current.\n" );
             printf( "-dx     Set the debug level to x (0-9).\n" );
             printf( "-fx     Read x instead of Jambase.\n" );
             printf( "-jx     Run up to x shell commands concurrently.\n" );
             printf( "-n      Don't actually execute the updating actions.\n" );
+	    printf( "-sx=y   Set variable x=y, overriding environment.\n" );
             printf( "-tx     Rebuild x, even if it is up-to-date.\n" );
             printf( "-v      Print the version of jam and exit.\n\n" );
 
@@ -181,6 +179,16 @@ char	**argv;
 
 	var_defines( othersyms );
 	var_defines( environ );
+
+	/* Load up variables set on command line. */
+
+	for( n = 0; s = getoptval( optv, 's', n ); n++ )
+	{
+	    char *symv[2];
+	    symv[0] = s;
+	    symv[1] = 0;
+	    var_defines( symv );
+	}
 
 	/* Parse ruleset */
 

@@ -75,6 +75,8 @@ Release notes for Jamming 2.1.
 
 4.  Jam changes (see jam.1)
 
+	Variables may now be set on the command line with -svar=value.
+
 	Targets marked with NOUPDATE are now immune to the -a (anyhow) 
 	flag.  Previously, the MkDir rule would try to recreate directories
 	that already exist when jam was invoked with -a.

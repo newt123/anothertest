@@ -13,6 +13,7 @@ redux
 [ \fB-d \fIdebug\fR ] 
 [ \fB-f \fIJambase\fR ... ] 
 [ \fB-j \fIjobs\fR ] 
+[ \fB-s \fIvar\fB=\fIvalue\fR ... ] 
 [ \fB-t \fItarget\fR ... ]
 [ \fItarget\fR ... ]
 
@@ -66,6 +67,9 @@ The default is 1.
 .IP "-n"
 Don't actually execute the updating actions, but do everything else.
 This implies \fB-d\fI2\fR.
+.IP "-s\fI<var>\fB=\fI<value>\fR"
+Set the variable \fI<var>\fR to \fI<value\fR>, overriding both
+internal variables and variables imported from the environment.
 .IP "-t\fI<target>\fR"
 Rebuild \fI<target>\fR, even if it is up-to-date.
 .IP "-v"
@@ -289,9 +293,10 @@ On program start-up, \fBjam\fR imports the environment variable
 settings into \fBjam\fR variables.  Environment variables are split at
 blanks with each word becomming an element in the variable's list
 value.  Environment variables whose names end in \fBPATH\fR are split
-at colons ("\fB:\fR").  \fBJam\fR variables are not re-exported to
-the shell that executes the updating actions, but the updating actions
-can reference \fBjam\fR variables with $(VARIABLE).
+at colons ("\fB:\fR").  Environment variable values can be overridden 
+on the command line with the \fB-s\fR flag.  \fBJam\fR variables are 
+not re-exported to the shell that executes the updating actions, but 
+the updating actions can reference \fBjam\fR variables with $(VARIABLE).
 .SS "Variable Expansion"
 .PP
 Before executing a statement, \fBjam\fR performs variable expansion on
