@@ -347,6 +347,7 @@ else if $(NT)
 				$(MSVCNT)\\lib\\libc.lib
 				$(MSVCNT)\\lib\\oldnames.lib
 				$(MSVCNT)\\lib\\kernel32.lib ;
+	STDLIBFLAG	default =  ;
 	OPTIM		default =  ;
 	STDHDRS		default = $(MSVCNT)\\include ;
 	UNDEFFLAG	default = "/u _" ;
@@ -523,6 +524,14 @@ rule Cc
 
 	CCFLAGS on $(<) += $(CCFLAGS) $(SUBDIRCCFLAGS) ;
 
+	if $(NT)
+	{
+	if $(SUBDIRSTDLIBFLAG)
+	{
+		STDLIBFLAG on $(<) = $(SUBDIRSTDLIBFLAG) ;
+	}
+	}
+	
 	# If the compiler's -o flag doesn't work, relocate the .o
 
 	if $(RELOCATE)
@@ -555,6 +564,14 @@ rule C++
 	DEPENDS $(<) : $(>) ;
 	C++FLAGS on $(<) += $(C++FLAGS) $(SUBDIRC++FLAGS) ;
 
+	if $(NT)
+	{
+	if $(SUBDIRSTDLIBFLAG)
+	{
+		STDLIBFLAG on $(<) = $(SUBDIRSTDLIBFLAG) ;
+	}
+	}
+	
 	if $(RELOCATE)
 	{
 	    CcMv $(<) : $(>) ;
@@ -1001,6 +1018,20 @@ rule ObjectC++Flags
 	C++FLAGS on $(s) += $(>) ;
 }
 
+if $(NT)
+{
+rule ObjectStdLibFlag
+{
+	local s ;
+
+	# Add grist to file names
+
+	makeGristedName s : $(<:S=$(SUFOBJ)) ;
+	
+	STDLIBFLAG on $(s) = $(>) ;
+}
+}
+
 rule ObjectHdrs
 {
 	local s ;
@@ -1058,7 +1089,7 @@ rule Shell
 
 rule SubDir
 {
-	local r s ;
+	local r s l ;
 
 	#
 	# SubDir TOP d1 [ ... ]
@@ -1131,6 +1162,19 @@ rule SubDir
 	SUBDIRCCFLAGS = ;
 	SUBDIRC++FLAGS = ;
 	SUBDIRHDRS = ;
+	
+	if $(NT)
+	{
+	SUBDIRSTDLIBFLAG = ;
+	}
+}
+
+if $(NT)
+{
+rule SubDirStdLibFlag
+{
+	SUBDIRSTDLIBFLAG = $(<) ;
+}
 }
 
 rule SubDirCcFlags
@@ -1665,12 +1709,12 @@ else if $(NT) || $(OS2)
 
 	actions Cc
 	{
-	$(CC) /c $(CCFLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /I$(STDHDRS) $(>)
+	$(CC) /c $(OPTIM) $(CCFLAGS) $(STDLIBFLAG) /Fo$(<) /I$(HDRS) /I$(STDHDRS) $(>)
 	}
 
 	actions C++
 	{
-	$(C++) /c $(C++FLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /I$(STDHDRS) /Tp$(>)
+	$(C++) /c $(OPTIM) $(C++FLAGS) $(STDLIBFLAG) /Fo$(<) /I$(HDRS) /I$(STDHDRS) /Tp$(>)
 	}
 
 	actions Link bind NEEDLIBS
