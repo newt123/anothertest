@@ -9,7 +9,7 @@
 #
 # JAMBASE - jam ruleset providing make(1)-like functionality
 #
-# Supports UNIX and NT.
+# Supports UNIX, NT, and VMS.
 #
 # 12/27/93 (seiwald) - purturb library sources with SOURCE_GRIST
 # 04/18/94 (seiwald) - use 'default =' when setting OS specific vars
@@ -26,7 +26,8 @@
 # 01/08/95 (seiwald) - Shell now handled with awk, not sed
 # 01/09/95 (seiwald) - Install* now take dest directory as target
 # 01/10/95 (seiwald) - All entries sorted.
-# 01/10/95 (seiwald) - NT support moved in, with LauraW's help.
+# 01/10/95 (seiwald) - NT support moved in, with LauraW's help.  
+# 01/10/95 (seiwald) - VMS support moved in.
 # 02/06/95 (seiwald) - ObjectC++Flags and SubDirC++Flags added.
 # 02/07/95 (seiwald) - Iron out when HDRSEARCH uses "" or SEARCH_SOURCE.
 # 02/08/95 (seiwald) - SubDir works on VMS.
