@@ -156,7 +156,7 @@
 switch $(OS)
 {
 case AIX :	LINKLIBS default = -lbsd ;
-case DGUX :	RANLIB default = "" ;
+case DGUX :	RANLIB default = "" ; RELOCATE = true ;
 case IRIX :	RANLIB default = "" ;
 case HPUX :	RANLIB default = "" ;
 		INSTALL default = "" ;
@@ -909,7 +909,7 @@ rule SubDir
 		EXIT SubDir syntax error ;
 	    }
 
-	    makeSubDir $(<[1]) : $(<[2-) ;
+	    makeSubDir $(<[1]) : $(<[2-]) ;
 	}
 
 	#

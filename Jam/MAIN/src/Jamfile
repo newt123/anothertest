@@ -22,24 +22,10 @@ if $(OS) = NT { CCFLAGS += /DNT ; }
 if $(OS) = SOLARIS { CCFLAGS += -Dsolaris ; }
 
 #
-# The guts of the Jamfile: how to build Jam
-#
-
-Main 		jam : jam.c ;
-LinkLibraries 	jam : libjam.a ;
-
-Library         libjam.a : 
-		    command.c compile.c $(code) expand.c
-		    glob.c hash.c headers.c jambase.c jamgram.y
-		    lists.c make.c make1.c newstr.c option.c parse.c
-		    regexp.c rules.c scan.c search.c timestamp.c
-		    variable.c ;
-
-Main		mkjambase : mkjambase.c ;
-
-#
 # How to build the compiled in jambase.
 #
+
+Main		mkjambase : mkjambase.c ;
 
 rule GenFile 
 {
@@ -51,10 +37,23 @@ rule GenFile
 
 actions GenFile1
 {
-	$(>) $(<)
+	$(>[1]) $(<) $(>[2-])
 }
 
-GenFile jambase.c : mkjambase Jambase ;
+#
+# The guts of the Jamfile: how to build Jam
+#
+
+Main 		jam : jam.c jambase.c ;
+LinkLibraries 	jam : libjam.a ;
+GenFile 	jambase.c : mkjambase Jambase ;
+
+Library         libjam.a : 
+		    command.c compile.c $(code) expand.c
+		    glob.c hash.c headers.c jamgram.y
+		    lists.c make.c make1.c newstr.c option.c parse.c
+		    regexp.c rules.c scan.c search.c timestamp.c
+		    variable.c ;
 
 #
 # On UNIX, we install this stuff for easy use.
@@ -73,7 +72,7 @@ if $(UNIX)
 rule YYacc
 {
 	DEPENDS $(<) : $(>) yyacc ;
-	LOCATE on $(<) = $(LOCATE_SOURCE) ;
+	MakeLocate $(<) : $(LOCATE_SOURCE) ;
 	Clean clean : $(<) ;
 }
 
