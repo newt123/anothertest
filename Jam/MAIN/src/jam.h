@@ -90,6 +90,27 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # else
 
+# ifdef __QNX__
+
+# define unix
+
+# include <fcntl.h>
+# include <stdlib.h>
+# include <stdio.h>
+# include <ctype.h>
+# include <malloc.h>
+# include <signal.h>
+# include <string.h>
+# include <time.h>
+
+# define OTHERSYMS "UNIX=true","OS=QNX"
+# define SPLITPATH ':'
+# define MAXCMD	996	/* longest command */
+# define EXITOK 0
+# define EXITBAD 1
+
+# else /* QNX */
+
 # include <sys/types.h>
 # include <sys/file.h>
 # include <sys/stat.h>
@@ -177,6 +198,8 @@ int unlink( char *f ); 	/* In filevms.c */
 # define SPLITPATH ':'
 # define EXITOK 0
 # define EXITBAD 1
+
+# endif /* QNX */
 
 # endif /* OS/2 */
 
