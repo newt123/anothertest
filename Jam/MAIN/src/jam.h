@@ -16,6 +16,7 @@
  * 04/30/95 (seiwald) - FreeBSD added.  Live Free or Die.
  * 05/10/95 (seiwald) - SPLITPATH character set up here.
  * 08/20/95 (seiwald) - added LINUX.
+ * 08/21/95 (seiwald) - added NCR.
  * 10/23/95 (seiwald) - added SCO.
  */
 
@@ -130,6 +131,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # ifdef linux
 # define OTHERSYMS "UNIX=true","OS=LINUX"
 # endif
+# ifdef _ATT4
+# define OTHERSYMS "UNIX=true","OS=NCR"
+# endif
 # ifndef OTHERSYMS
 # define OTHERSYMS "UNIX=true"
 # endif
@@ -183,4 +187,5 @@ extern struct globs globs;
 # define DEBUG_VAREXP	( globs.debug >= 8 )	/* show variable expansions */
 # define DEBUG_LISTS	( globs.debug >= 9 )	/* show list manipulation */
 # define DEBUG_SCAN	( globs.debug >= 9 )	/* show scanner tokens */
+
 
