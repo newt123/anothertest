@@ -7,7 +7,7 @@
 
 LOCATE_TARGET ?= BIN.$(OS)$(OSVER) BIN.$(OS) ;
 LOCATE_SOURCE ?= $(LOCATE_TARGET) ;
-SEARCH_SOURCE = $(DOT) ;
+SEARCH_SOURCE = $(LOCATE_TARGET) $(DOT) ;
 
 #
 # We have some different files for UNIX, VMS, and NT.
@@ -70,7 +70,7 @@ if $(UNIX)
 
 rule YYacc
 {
-	DEPENDS $(<) : $(>) ;
+	DEPENDS $(<) : $(>) yyacc ;
 	LOCATE on $(<) = $(LOCATE_SOURCE) ;
 	Clean clean : $(<) ;
 }

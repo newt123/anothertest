@@ -163,6 +163,7 @@ case HPUX :	RANLIB default = "" ;
 case NCR :	RANLIB default = "" ;
 		INSTALL default = "" ;
 case PTX :	RANLIB default = "" ;
+case QNX :	INSTALL default = "" ;
 case SCO :	RANLIB default = "" ;
 case SOLARIS :	RANLIB default = "" ;
 		INSTALL default = "install" ;
