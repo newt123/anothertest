@@ -67,7 +67,7 @@ Main myprog : main.c util.c ;
 .XE
 .PP
 This compiles main.c and util.c and links main.o and util.o into myprog.
-As with all rules that compile source files, \fBjam\fR handles header file 
+As with all rules that compile source files, \fIMain\fR handles header file 
 dependencies automatically.
 .SS Library Rule
 .PP
@@ -97,25 +97,26 @@ Library libtree.a : treemake.c treetrav.c ;
 The \fILinkLibraries\fR rule does two things: it makes the libraries
 dependencies of the executable, so that they get built first; and it
 makes the libraries show up on the command line that links the
-executable.  The ordering of the lines above is not critical, because
+executable.  The ordering of the lines above is not important, because
 \fBjam\fR builds targets in the order that they are needed.
 .PP
 You can put multiple libraries on a single invocation of the
 \fILinkLibraries\fR rule, or you can provide them in multiple
 invocations.  In both cases, the libraries appear on the link command
 line in the order in which they were encountered.  You can also provide
-multiple executables to the \fILinkLibraries\fR rule, if all the
-executables need the same libraries.
+multiple executables to the \fILinkLibraries\fR rule, if they
+need the same libraries.
 .SS Variables
 .PP
 The following variables control the linking of executables and the
 archiving of libraries.
 .BB
 $(AR)              archive command (ar ru)
-$(EXEMODE)         permission set on executable after linking (711)
+$(EXEMODE)         default value for $(MODE) (711)
 $(LINK)            linker command (cc)
 $(LINKFLAGS)       linker flags ()
 $(LINKLIBS)        additional libraries that aren't dependencies ()
+$(MODE)            permission set on executable after linking ($(EXEMODE))
 $(RANLIB)          name of ranlib program, if any (ranlib)
 .BE
 .PP
@@ -123,7 +124,7 @@ The difference between and the arguments to \fILinkLibraries\fR
 and the value of $(LINKLIBS) is that the former are expected to be
 real, buildable libraries, while the latter are just handed without
 inspection to the $(LINK) command.  The ordering on the $(LINK)
-command line is first \fILinkLibraries\fR, then $(LINKLIBS).
+command line is first \fILinkLibraries\fR and then $(LINKLIBS).
 .XB
 Main xprog : xprog.c ;
 LinkLibraries xprog : libxutil.a ;
@@ -133,12 +134,12 @@ LINKLIBS on xprog = -lXext -lX11 ;
 Library libxutil.a : xtop.c xbottom.c xutil.c ;
 .XE
 .PP
-This example uses the \fBjam\fR syntax "variable \fIon\fR target",
-which sets the variable's value only for use when updating the named
-target.  In this way, only xprog will be linked with these special
-$(LINKFLAGS) and $(LINKLIBS), even if other executables were going to
-be built by the same \fBJamfile\fR.  The actual link command line looks
-like this:
+This example uses the \fBjam\fR syntax "variable \fIon\fR target".  The
+causes the variable to take on the value only only when updating the
+named target.  In this way, only xprog will be linked with these
+special $(LINKFLAGS) and $(LINKLIBS), even if other executables were
+going to be built by the same \fBJamfile\fR.  The actual link command
+line would look like this:
 .BB
 cc -Bstatic -o xprog xprog.o libuxtil.a -lXext -lX11
 .BE
@@ -149,13 +150,11 @@ Note that the default link command is cc.
 Compiling of source files occurs normally as a byproduct of the
 \fIMain\fR or \fILibrary\fR rules.  If you want to control the
 compiling process with finer granularity, you can use the rules
-described here.  These are the rules used by \fIMain\fR and
-\fILibrary\fR.
+described here.  \fIMain\fR and \fILibrary\fR use these rules.
 .SS Objects Rule
 .PP
-Compiling occurs normally as a byproduct of the \fIMain\fR or
-\fILibrary\fR rules calling the \fIObjects\fR rule on the source
-files.  You can also call \fIObjects\fR directly.
+The \fIMain\fR or \fILibrary\fR rules call the \fIObjects\fR rule on each of
+their source files.  You can also call \fIObjects\fR directly.
 .XB
 Objects a.c b.c c.c ;
 .XE
@@ -164,9 +163,10 @@ This compiles a.c into a.o, b.c into b.o, etc.
 .SS Object Rule
 .PP
 \fIObjects\fR gets its work done by calling the \fIObject\fR rule on
-each of the source files, assuming that the object name itself will be
-the source file name, with the suffix replaced appropriately.  To compile
-a single source file directly, use the \fIObject\fR rule.
+each of the source files, making the assumption that the object name
+itself will be the source file name, with the suffix replaced
+appropriately.  To compile a single source file directly, use the
+\fIObject\fR rule.
 .XB
 Object foo.o : foo.c ;
 .XE
@@ -311,7 +311,7 @@ $(YACC)            The Yacc program (yacc -d)
 .PP
 $(CC), $(C++), $(CCFLAGS), $(C++FLAGS), $(OPTIM), and $(HDRS) all affect 
 the compiling of C and C++ files.  $(OPTIM) is separate from $(CCFLAGS)
-and $(C++FLAGS) so they can be set separately.
+and $(C++FLAGS) so they can be set independently.
 .PP
 $(HDRS) lists the directories to search for header files, and it is
 used in two ways: first, it is passed to the C compiler (with the 
