@@ -634,7 +634,7 @@ rule MainFromObjects
 
 rule MkDir
 {
-	if ! $($(<)-mkdir) 
+	if $(<) != $(DOT) && ! $($(<)-mkdir) 
 	{
 	    # Cheesy gate to prevent multiple invocations on same dir
 	    # MkDir1 has the actions 
@@ -676,9 +676,9 @@ rule Object
 
 	if $(LOCATE_TARGET)
 	{
-	    LOCATE on $(<) = $(LOCATE_TARGET) ;
-	    DEPENDS $(<) : $(LOCATE_TARGET) ;
-	    MkDir $(LOCATE_TARGET) ;
+	    LOCATE on $(<) = $(LOCATE_TARGET[1]) ;
+	    DEPENDS $(<) : $(LOCATE_TARGET[1]) ;
+	    MkDir $(LOCATE_TARGET[1]) ;
 	}
 
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
@@ -689,7 +689,7 @@ rule Object
 	# yacc, lex, etc) are located in $(LOCATE_TARGET), possibly
 	# different from $(SEARCH_SOURCE).
 
-	HDRS on $(<) = $(SEARCH_SOURCE) $(HDRS) $(SUBDIRHDRS) ;
+	HDRS on $(<) = $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
 
 	# handle #includes for source: Jam scans for headers with
 	# the regexp pattern $(HDRSCAN) and then invokes $(HDRRULE)
