@@ -184,12 +184,17 @@ Marks \fI<targets>\fR as possibly being bogus.
 Marks \fI<targets>\fR as not being files.
 .IP "NOUPDATE \fI<targets>\fR ;"
 .br
-Prevents \fI<targets>\fR from being rebuilt if they already exist, and
-makes existing \fI<targets\fR> appear eternally old.
+Causes the timestamps of \fI<targets>\fR to be ignored: either the
+target exists or it doesn't.  If it exists, it is considered eternally
+old.
 .IP "TEMPORARY \fI<targets>\fR ;"
 .br
 Marks \fI<targets>\fR as temporary.
 .RE
+.PP
+The \fIALWAYS\fR, \fILAURAW\fR, \fINOCARE\fR, \fINOTFILE\fR,
+\fINOUPDATE\fR, and \fITEMPORARY\fR affect only the binding phase
+(q.v.).
 .SS "Flow-of-Control"
 .PP
 \fBJam\fR has several simple flow-of-control statements:
@@ -372,15 +377,16 @@ updating.  If \fBjam\fR detects a cycle in the graph, it issues a
 warning.
 .PP
 By default, a target is located at the actual path of the target,
-relative to the directory of \fBjam\fR's invocation.  If $(LOCATE) is
-set to a directory name, \fBjam\fR prepends that directory name to the
-target; else if $(SEARCH) is set to a directory list, \fBjam\fR
-searches along the directory list for the target file, and if the file
-is found prepends the directory name to the target.  If the target name
-has a rooted directory component then $(SEARCH) and $(LOCATE) do not
-apply: the target is located at the actual path of the target.  If a
-target is marked as not being a file (using the built-in rule NOTFILE),
-it is left unbound to a file name.
+relative to the directory of \fBjam\fR's invocation.  If the special
+variable $(LOCATE) is set to a directory name, \fBjam\fR prepends that
+directory name to the target; else if the special variable $(SEARCH) is
+set to a directory list, \fBjam\fR searches along the directory list
+for the target file, and if the file is found prepends the directory
+name to the target.  If the target name has a rooted directory
+component then $(SEARCH) and $(LOCATE) do not apply: the target is
+located at the actual path of the target.  If a target is marked as not
+being a file (using the built-in rule NOTFILE), it is left unbound to a
+file name.
 .PP
 After binding each target, \fBjam\fR determines whether the target
 needs updating, and marks the target if necessary for the updating
@@ -396,7 +402,7 @@ This basic behavior can be modified applying (usually one of) the
 following six built-in rules to the target:
 .RS
 .IP ALWAYS
-The target is always updated (assuming it is in the dependency graph).
+The target is always updated.
 .IP LAURA
 The target is only updated if it is missing or if its leaf sources
 are newer.  Leaf sources are those dependents of the target that have
@@ -439,7 +445,7 @@ fail, then all targets which depend on it are skipped.
 one target at a time.  If there are multiple actions on a single
 target, they are run sequentially.
 .PP
-(UNIX only).  The special variable $(\fBJAMSHELL\fR) gives \fBjam\fR a
+(UNIX only).  The special variable $(JAMSHELL) gives \fBjam\fR a
 command execution shell to be used instead of /bin/sh.  This variable's
 value must be a multi-element list, corresponding to the argument
 vector for the command shell.  An element "\fB%\fR" is replaced with the

@@ -24,12 +24,12 @@ For example:
 .SH DESCRIPTION
 .PP
 This manual page gives instructions and examples for writing a
-\fBJamfile\fR, a file that tells \fBjam\fR what to build in the current
-directory.  It consists of invocations of rules which are defined by
-the \fBjam\fR boilerplate, \fBJambase\fR.  \fBJambase\fR defines rules
-which provide roughly \fBmake\fR(1)-like functionality.
+\fBJamfile\fR, a file that tells the build tool \fBjam\fR what to build
+in the current directory.  It consists of invocations of rules which
+are defined by the \fBjam\fR boilerplate, \fBJambase\fR.  \fBJambase\fR
+defines rules which provide roughly \fBmake\fR(1)-like functionality.
 .PP
-This description goes with \fBjam\fR release 2.
+This description goes with \fBJam\fR Release 2.0.
 .PP
 Each example here is all or part of a \fBJamfile\fR.  Once you have
 created a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
@@ -805,59 +805,65 @@ This only gets run if \fBjam\fR is invoked with the \fIall\fR or \fIfirst\fR
 targets, or no target at all.
 .SH JAM BUILT-IN RULES AND VARIABLES
 .PP
-This section describes \fBjam\fR's built-in rules and variables.   Built-in
-rules are uppercase, as opposed to the mixed-case rules defined by 
-\fBJambase\fR.  These built-in rules, along with the other \fBjam\fR syntax 
-for setting variables, provide the foundation upon which the \fBJambase\fR
-is built.  A \fBJamfile\fR, or (more likely) a \fBJamrules\fR (q.v.),
-can make use of these built-in rules and variables as well.
+This section discusses \fBjam\fR's built-in rules and variables.   They
+are described in \fBjam\fR(1) more precisely.  Built-in rules are
+uppercase, as opposed to the mixed-case rules defined by
+\fBJambase\fR.  These built-in rules, along with the other \fBjam\fR
+syntax for manipulating variables, provide the foundation upon which
+the \fBJambase\fR is built.  A \fBJamfile\fR, or (more likely) a
+\fBJamrules\fR (q.v.), can make use of these built-in rules and
+variables as well.
 .SS DEPENDS, INCLUDES Rules
 .PP
-These two rules build the dependency graph, in slightly different ways.
-\fIDEPENDS\fR simply makes its sources dependents of its targets.
-\fIINCLUDES\fR makes its sources dependents of anything of which
-its targets are dependents.  This reflects the dependencies that arise
-when one source file includes another: the object built from the source
-file depends both on the original and included source file, but the
-two sources files don't depend on each other.
+These two rules build the dependency graph, in two slightly different
+ways.  \fIDEPENDS\fR simply makes its sources dependents of its
+targets.  \fIINCLUDES\fR makes its sources dependents of anything of
+which its targets are dependents.  This reflects the dependencies that
+arise when one source file includes another: the object built from the
+source file depends both on the original and included source file, but
+the two sources files don't depend on each other.
 .XB
-DEPENDS foo.o : foo.c ;
-INCLUDES foo.c : foo.h ;
+DEPENDS foo.o : foo.c ; INCLUDES foo.c : foo.h ;
 .XE
 .PP
-This examples makes "foo.o" depend on "foo.c" and "foo.h".
+Both "foo.c" and "foo.h" become dependents of "foo.o" in this example.
 .SS ALWAYS, LAURA, NOCARE, NOTFILE, NOUPDATE, TEMPORARY Rules
 .PP
-These six rules modify targets so that \fBjam\fR treats them different
-during its target binding and updating phase.  Normally, \fBjam\fR
-updates a target if it can't be found, if it is older than its dependents,
-or if its dependents are being updated.  Note that this only applies
-to targets that are dependents of the targets given to \fBjam\fR on
-the command line, or of the target \fIall\fR if there are no targets 
-on the command line.
+These six rules modify targets so that \fBjam\fR treats them
+differently during its target binding and updating phase.  Normally,
+\fBjam\fR updates a target if it is missing, if its filesystem
+modification time is older than any of its sources (recursively), or if
+any of its sources are being updated.  This basic behavior can be
+changed by invoking the following rules with the target file as the
+rule's target:
 .PP
 The \fIALWAYS\fR rule causes its targets to be always updated.  This is
 used for the \fIclean\fR and \fIuninstall\fR targets, as they have no
-dependents and would otherwise appear never to need building.
+dependents and would otherwise appear never to need building.  It is
+best applied to targets that are also \fINOTFILE\fR targets, but it
+can be used to force a file to be updated as well.
 .PP
-The \fINOCARE\fR rule suppresses \fBjam\fR's warning if its targets
+The \fINOCARE\fR rule causes \fBjam\fR to ignore its targets if they
 can't be found and have no updating actions, and thus can't be built.
-The \fIHdrRule\fR uses this to let \fBjam\fR know that header file names
-found while scanning source files may not exist.
+Normally, \fBjam\fR issues a warning about a target that can't be built
+and then refuses to build anything that depends on that target.  The
+\fIHdrRule\fR uses \fINOCARE\fR on the header file names found during
+header file scanning, to let \fBjam\fR know that the included files may
+not exist.  For example, if a #include is within an #ifdef, the
+included file may not actually be around.
 .PP
 The \fINOTFILE\fR rule marks its targets as being pseudo targets, that
-is, targets that aren't in the filesystem.  The \fIall\fR target is an
-example of such a target.  These targets are built only if their
-dependents are updated.
+is, targets that aren't really files.  The actions on such a target are
+only executed if the target's dependents are updated, or if the target
+is also marked with \fIALWAYS\fR.  The \fIall\fR and \fIclean\fR
+targets are examples of such targets.
 .PP
-The \fINOUPDATE\fR rule prevents a target from being updated if it
-already exists.  That is, \fBjam\fR will only create and never replace
-the target.  It also causes \fBjam\fR to ignore the modification time
-of the file and pretend that it is eternally old if it exists.  This
-prevents anything which depends on the target from being rebuilt if the
-target gets updated.  This rule is applied to directories by the
-\fIMkDir\fR rule, because \fIMkDir\fR only cares that the directory
-exists, not when it has last been updated.
+The \fINOUPDATE\fR rule causes \fBjam\fR to ignore the modification
+time of the target.  This has two effects:  first, once the target has
+been created it will never be updated; second, manually updating target
+will not cause other targets to be updated.  This rule is applied to
+directories by the \fIMkDir\fR rule, because \fIMkDir\fR only cares
+that the directory exists, not when it has last been updated.
 .PP
 The \fITEMPORARY\fR rule allows for targets to be deleted after they
 are generated.  If \fBjam\fR sees that a temporary target is missing,
@@ -875,7 +881,110 @@ These two rules help during the \fBJamfile\fR compiling phase.
 The \fIECHO\fR rule just echoes its targets to the standard output.
 The \fIEXIT\fR rule does the same and then does a brutal, fatal exit of
 \fBjam\fR.
-.SH JAMBASE REFERENCE
+.SS SEARCH, LOCATE Variables
+.PP
+These two variables control the binding of target names to real files:
+they indicate what path name is to be prepended to the target name to
+get to the real file.  $(SEARCH) provides a list of directories, along
+which \fBjam\fR scans looking for a target.  $(LOCATE) overrides 
+$(SEARCH), indicating the directory where the target must be.  Normally,
+$(SEARCH) is used for existing targets which $(LOCATE) is use for targets
+that \fBjam\fR must build.  If neither $(SEARCH) nor $(LOCATE) are set,
+or if the name of the target is a rooted file name (i.e. on UNIX beginning
+with "/"), then the file name is assumed to be the target name.
+.PP
+Both $(SEARCH) and $(LOCATE) should be set target-specific and not
+globally.  If they were set globally, \fBjam\fR would use them for all
+file binding - including looking for the \fIJamfile\fR, and this is not
+likely to produce sane results.  All of the rules defined in
+\fBJambase\fR (and described in this document) set $(SEARCH) and
+$(LOCATE) to sensible values for sources they are looking for and
+targets they create, respectively.  These values are usually
+$(SEARCH_SOURCE) and $(LOCATE_TARGET), described above in the section
+describing variables use when building whole directory trees.  The header
+file processing rule \fIHdrRule\fR sets $(SEARCH) for header files
+to be $(HDRS).
+.PP
+When writing your own rules, especially ones not built upon those in
+\fBJambase\fR, you may need to set $(SEARCH) or $(LOCATE) directly.
+Most often you'll set them to the prevailing value of $(SEARCH_SOURCE)
+or $(LOCATE_TARGET).  The best examples are those in \fBJambase\fR.
+.SS HDRSCAN, HDRRULE Variables
+.PP
+These two variable control header file scanning.  The first is an
+\fBegrep\fR(1) pattern, with ()'s surrounding the file name, used to
+find file inclusion statements in source files.  The second is the
+name of a rule to invoke with the results of the scan: the scanned
+file is the target, the found files are the sources.  This is the only
+place where \fBjam\fR invokes a rule through a variable setting.
+.PP
+Both $(HDRSCAN) and $(HDRRULE) must be set for header file scanning to
+take place, and they should be set target-specific and not globally.
+If they were set globally, all files, including executables and libraries,
+would be scanned for header file include statements.
+.PP
+The scanning for header file inclusions is not exact, but it is at
+least dynamic.  That is, there is no need to run something like
+\fBmakedepend\fR(GNU) to create a static dependency file.  Because
+\fBjam\fR uses a regular expressions to find include files, it can't
+know when an include is within #ifdefs or other conditional logic.  To
+make up for this, \fIHdrRule\fR applies the \fINOCARE\fR rule to each
+header file, just in case it is bogus.  Also, regular expressions only
+work where the included file name is literally in the source file.
+They can't handle languages that allow including files using variable
+names (as \fBjam\fR's own langauge does).
+.SS JAMSHELL Variable (Unix Only)
+.PP
+When \fBjam\fR executes a rule's action block, it forks and
+execs a shell, passing the action block as an argument to the shell.
+The invocation of the shell is controlled by $(JAMSHELL), whose default
+value is:
+.BB
+	JAMSHELL = /bin/sh -c % ;
+.BE
+.PP
+The \fB%\fR is replaced with the text of the action block.  
+.PP
+On UNIX \fBjam\fR can build targets in parallel, as long as the
+dependencies among files are properly spelled out and actions don't
+create fixed named files in the current directory.  (If either of those
+two provisions are violated, \fBjam\fR can trip over itself when
+building in parallel what just happens to build OK sequentially.)
+When building in parallel, \fBjam\fR simply forks off more than
+one shell at a time.
+.PP
+\fBJam\fR does not directly support building in parallel across
+multiple hosts, since that is heavily dependent on the local
+environment.  To build in parallel across multiple hosts, you need to
+write your own shell that provides access to the multiple hosts.
+You then reset $(JAMSHELL) to reference it.
+.PP
+Just as \fBjam\fR treats expands a \fB%\fR to the rule's action block,
+it expands a \fB!\fR to the multi-process slot number.  The slot number
+varies between 1 and the number of concurrent jobs permitted by the
+\fB-j\fR flag given on the command line.  Armed with this, it is possible
+to write a multiple host shell.
+.XB
+#!/bin/sh
+
+# This sample JAMSHELL uses the SunOS on(1) command to execute
+# a command string with an identical environment on another host.
+#
+# Set JAMSHELL = jamshell ! % 
+#
+# where jamshell is the name of this shell file.
+#
+# This version handles up to -j6; after that they get executed 
+# locally.
+
+case $1 in
+1|4)	on winken sh -c "$2";;
+2|5)	on blinken sh -c "$2";;
+3|6)	on nod sh -c "$2";;
+*)	eval "$2";;
+esac
+.XE
+.SH JAMBASE CROSS REFERENCE
 .PP
 This section enumerate the rules and variables defined or used by
 \fBJambase\fR.

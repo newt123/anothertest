@@ -185,6 +185,10 @@ Release notes for Jam 2.0.
 	The UNIX version of file_build() didn't handle "dir/.suffix"
 	right.  Now it does.
 
+	The VMS command buffer was assumed to be as large as 1024 bytes,
+	which isn't the case everywhere as it is related to some weird
+	quota.  It has been lowered to 256.
+
 	$(>) and $(<) wouldn't expand in action blocks if the targets
 	were marked with NOTIME.  Now they expand properly.
 

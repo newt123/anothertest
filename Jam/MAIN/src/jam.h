@@ -46,7 +46,7 @@
 
 # endif 
 
-# define MAXCMD	1023 /* longest command */
+# define MAXCMD	255 /* longest command - related to quotas */
 # define JAMBASE "Jambase"
 # define EXITOK 1
 # define EXITBAD 0
