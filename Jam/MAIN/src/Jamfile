@@ -25,6 +25,9 @@ Library         libjam.a :
 		    lists.c make.c make1.c newstr.c option.c parse.c
 		    regexp.c rules.c scan.c search.c timestamp.c
 		    variable.c ;
+
+Main		mkjambase : mkjambase.c ;
+
 #
 # On UNIX, we install this stuff for easy use.
 # On VMS, one must define a symbol:  jam :== $jam.exe -f jambase
@@ -51,31 +54,20 @@ actions YYacc
 	sh yyacc $(>) $(<)
 }
 
-rule GenFile {
+rule GenFile 
+{
 	Depends $(<) : $(>) ;
 }
 
-actions GenFile {
-	(
-	    echo '/* Generated from Jambase */' 
-	    echo 'char *jambase[] = {'
-
-	    sed '
-		/^[ 	]*#/d
-		/^$/d
-		s/\\/\\\\/g
-		s/"/\\"/g
-		s/^.*$/"&\\n",/
-		s/       /\\t/g' $(>)
-
-	    echo '0};'
-	) > $(<)
+actions GenFile 
+{
+	$(>[1]) $(>[2]) $(<)
 }
 
 if $(UNIX)
 {
 	YYacc jamgram.y jamgramtab.h : jamgram.yy ;
-	GenFile jambase.c : Jambase ;
+	GenFile jambase.c : mkjambase Jambase ;
 }
 
 rule TempCopy
