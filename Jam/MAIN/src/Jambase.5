@@ -5,45 +5,69 @@
 \fB/usr/local/lib/jam/Jambase\fR
 .br
 \fBJamfile\fR
+
 .SH DESCRIPTION
 .PP
 \fBJambase\fR contains a set of \fBjam\fR rule definitions that provide
 roughly \fBmake\fR(1)-like functionality.  \fBJam\fR reads
 \fBJambase\fR, which in turn includes the \fBJamfile\fR from the
-current directory.  This manual describes the support in \fBJambase\fR for
-writing a \fBJamfile\fR.
-.PP
-There are a number of built-in \fBjam\fR targets, including \fIall\fR,
-\fIexe\fR, \fIfiles\fR, \fIinstall\fR, \fIlib\fR, and \fIshell\fR.  The
-target \fIall\fR depends on \fIexe\fR, \fIfiles\fR, \fIinstall\fR,
-\fIlib\fR, and \fIshell\fR.
-.PP
-The rules defined and variables used for the \fBJamfile\fR are as
-follows:
+current directory.  This manual page lists the rules and variables
+defined in \fBJambase\fR.  For a more readable guide to writing a
+\fBJamfile\fR, see \fBJamfile\fR(5).
 .SS Rules
 .PP
-.IP "Main image : sources ;"
+\fBJam\fR normally tries to build the dependents of the target
+\fIall\fR.  \fBJambase\fR defines the following dependents of
+\fIall\fR:  \fIexe\fR, \fIfiles\fR, \fIinstall\fR, \fIlib\fR, and
+\fIshell\fR.  Many of the rules defined below make their targets
+dependents of one of these.
+.de RP
+.IP "\\$1"
 .IP
-Compiles \fIsources\fR and links them into \fIimage\fR, and makes
-\fIexe\fR depend on \fIimage\fR.
-.IP "LinkLibraries image : libraries ;"
-.IP
+..
+.RP "Bulk directory : sources ;"
+Copies \fIsources\fR into \fIdirectory\fR. Dependents of \fIfiles\fR.
+.RP "Cc object : source ;"
+Compile the file \fIsource\fR into \fIobject\fR, using the C compiler
+$(CC), its flags $(CCFLAGS) and $(OPTIM), and the header file directories
+$(HDRS).  Called by the \fIObject\fR rule.
+.RP "CcAddFlags source : flags ;"
+Add \fIflags\fR to the \fIsource\fR-specific value of $(CCFLAGS) when
+compiling \fIsource\fR.
+.RP "CcAddHdrs source : dirs ;"
+Add \fIdirs\fR to the \fIsource\fR-specific value of $(HDRS) when
+scanning and compiling \fIsource\fR.
+.RP "Clean clean : targets ;"
+Removes existing \fItargets\fR when \fIclean\fR is built.  \fIclean\fR
+is not a dependency of \fIall\fR, and must be built explicitly for
+\fItargets\fR to be removed.  
+.RP "File target : source ;"
+Copies \fIsource\fR into \fItarget\fR.  Dependent of \fIfiles\fR.
+.RP "HdrRule source : headers ;"
+Arranges the proper dependencies when the file \fIsource\fR 
+includes the files \fIheaders\fR through the "#include" C preprocessor
+directive.  The \fIObject\fR rule arranges for this rule to be called
+when \fBJam\fI does its header file scan of \fIsource\fR.
+.RP "InstallBin sources ; "
+Copy \fIsources\fR into $(BINDIR).  Dependents of \fIinstall\fR.
+.RP "InstallLib sources ;"
+Copy \fIsources\fR into $(LIBDIR).  Dependents of \fIinstall\fR.
+.RP "InstallMan sources ;"
+Copy \fIsources\fR into the appropriate subdirectory of
+$(MANDIR).  Dependents of \fIinstall\fR.
+.RP "Lex source.c : source.l ;"
+Process the \fBlex\fR(1) source file \fIsource.l\fR and rename the 
+lex.yy.c to \fIsource.c\fR.  Called by the \fIObject\fR rule.
+.RP "Library library : sources ;"
+Compiles \fIsources\fR and archives them into \fIlibrary\fR.  The
+intermediate objects are deleted.  Dependent of \fIlib\fR.
+.RP "LinkLibraries image : libraries ;"
 Makes \fIimage\fR depend on \fIlibraries\fR and includes them during
 the linking.
-.IP "Setuid image ;"
-.IP
-Sets the setuid bit on \fIimage\fR after linking.
-.IP "Undefines image : symbols ;"
-.IP
-Tries to convince the loader that symbols need to be "undefined" for
-the linking to work.
-.IP "Library library : sources ;"
-.IP
-Compiles \fIsources\fR and archives them into \fIlibrary\fR.  The
-intermediate objects are deleted.  Makes \fIlib\fR depend on
-\fIlibraries\fR.
-.IP "Object object : source ;"
-.IP
+.RP "Main image : sources ;"
+Compiles \fIsources\fR and links them into \fIimage\fR.
+Dependent of \fIexe\fR.
+.RP "Object object : source ;"
 Compiles a single source file \fIsource\fR into \fIobject\fR.  This
 rule is used by \fBMain\fR and \fBLibrary\fR.  Makes \fIobject\fR
 depend on all header files included by \fIsource\fR.  Such dependencies
@@ -56,8 +80,9 @@ C source file
 .IP .C
 C++ source file
 .IP .l
-\fIlex\fR(1) source file.  The resulting lex.yy.c is renamed to be the
-same base as the \fIsource\fR.
+\fIlex\fR(1) source file.  The resulting lex.yy.c is 
+renamed to the same base as \fIsource\fR.
+\fIobject\fR.
 .IP .y
 \fIyacc\fR(1) source file.  The resulting y.tab.c and y.tab.h are
 renamed to the same base as \fIsource\fR.
@@ -68,35 +93,22 @@ UserObject object : source ;
 .PP
 to be defined in the user's \fBJamfile\fR (or elsewhere).
 .RE
-.IP "Bulk directory : sources ;"
-.IP
-Copies \fIsources\fR into \fIdirectory\fR and makes \fIfiles\fR depend
-on all the targets.
-.IP "File target : source ;"
-.IP
-Copies \fIsource\fR into \fItarget\fR and makes \fIfiles\fR depend on
-.IR target.
-.IP "Shell image : source ;"
-.IP
-Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR
-and makes \fIshell\fR depend on \fIimage\fR.
-.IP "InstallBin sources ; "
-.IP
-Copy \fIsources\fR into /usr/local/bin.  Makes \fIinstall\fR depend on
-all targets.
-.IP "InstallLib sources ;"
-.IP
-Copy \fIsources\fR into /usr/local/lib.  Makes \fIinstall\fR depend on
-all targets.
-.IP "InstallMan sources ;"
-.IP
-Copy \fIsources\fR into the appropriate subdirectory of
-/usr/local/man.  Makes \fIinstall\fR depend on all targets.
-.IP "RmTemps targets : sources ;"
-.IP
+.RP "RmTemps targets : sources ;"
 Marks \fIsources\fR as temporary with the \fBTEMPORARY\fR rule, and
 deletes \fIsources\fR once \fItargets\fR are built.  Must be the last
 rule invoked on \fItargets\fR.  Used internally by \fBObject\fR.
+.RP "Setuid image ;"
+Sets the setuid bit on \fIimage\fR after linking.
+.RP "Shell image : source ;"
+Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR.
+Dependent of \fIshell\fR.
+.RP "Undefines image : symbols ;"
+Tries to convince the loader that symbols need to be "undefined" for
+the linking of \fIimage\fR.
+.RP "Yacc source.c : source.y ;"
+Process the \fByacc\fR(1) file \fIsource.y\fR and renamed the resulting
+y.tab.c and y.tab.h to \fIsource.c\fR.  Produces a y.tab.h and renames it
+to \fIsource\fR.h.  Called by the \fIObject\fR rule.
 .SS Variables
 .PP
 AR (default \fI"ar ru"\fR)
