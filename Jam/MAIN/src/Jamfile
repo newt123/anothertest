@@ -8,7 +8,7 @@
 # If $(OSVER) isn't set, second value is used.
 
 if $(VMS) {	LOCATE_TARGET ?= [.binvms] ; }
-else { 		LOCATE_TARGET ?= bin.$(OS:L)$(OSVER:L) bin.$(OS:L) ; }
+else { 		LOCATE_TARGET ?= bin.$(OSFULL[1]:L) ; }
 
 # Leave generated source in current directory; it would be nice to use
 # these lines below to build the source into the platform-specific
@@ -16,8 +16,8 @@ else { 		LOCATE_TARGET ?= bin.$(OS:L)$(OSVER:L) bin.$(OS:L) ; }
 # hard: with ""'s, it always gets the bootstrap version; with <>'s,
 # it won't find the bootstrap version.
 
+# SEARCH_SOURCE ?= $(LOCATE_TARGET) $(DOT) ;
 # LOCATE_SOURCE ?= $(LOCATE_TARGET) ;
-# SEARCH_SOURCE = $(LOCATE_TARGET) $(DOT) ;
 
 #
 # We have some different files for UNIX, VMS, and NT.
@@ -37,19 +37,6 @@ if $(OS) = MVS { CCFLAGS += -DMVS ; }
 #
 
 Main		mkjambase : mkjambase.c ;
-
-rule GenFile 
-{
-	MakeLocate $(<) : $(LOCATE_SOURCE) ;
-	Depends $(<) : $(>[1]:S=$(SUFEXE)) $(>[2]) ;
-	GenFile1 $(<) : $(>[1]:S=$(SUFEXE)) $(>[2]) ;
-	Clean clean : $(<) ;
-}
-
-actions GenFile1
-{
-	$(>[1]) $(<) $(>[2-])
-}
 
 #
 # The guts of the Jamfile: how to build Jam
@@ -80,21 +67,9 @@ if $(UNIX)
 
 #### --- cut
 
-rule YYacc
-{
-	DEPENDS $(<) : $(>) yyacc ;
-	MakeLocate $(<) : $(LOCATE_SOURCE) ;
-	Clean clean : $(<) ;
-}
-
-actions YYacc
-{
-	sh yyacc $(>) $(<)
-}
-
 if $(UNIX)
 {
-	YYacc jamgram.y jamgramtab.h : jamgram.yy ;
+	GenFile jamgram.y jamgramtab.h : yyacc jamgram.yy ;
 }
 
 rule TempCopy

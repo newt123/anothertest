@@ -58,6 +58,7 @@
 # Clean clean : sources ;		remove sources with 'jam clean'
 # File dest : source ;			copy file
 # Fortran obj.o : source.f ;		.f -> .o
+# GenFile source.c : program args ;	make custom file
 # Hardlink target : source ;		make link from source to target
 # HdrRule source : headers ;		handle #includes
 # InstallInto dir : sources ;		install any files
@@ -152,6 +153,8 @@
 #
 # "default =" - set only if unset
 
+OSFULL = $(OS)$(OSPLAT)$(OSVER) $(OS)$(OSPLAT) $(OS)$(OSVER) $(OS) ;
+
 #
 # OS specific variable settings
 #
@@ -213,6 +216,7 @@ if $(UNIX)
 	RANLIB		default = "" ;	
 	STDHDRS		default = /boot/develop/headers/posix ;
 	YACC		default = "" ;
+	YACCFLAGS	default = "" ;
 	YACCFILES	default = "" ;
 	}
 
@@ -258,7 +262,8 @@ if $(UNIX)
 	SUFOBJ		default = .o ;
 	SUFEXE		default = "" ;
 	UNDEFFLAG	default = "-u _" ;
-	YACC		default = yacc -d ;
+	YACC		default = yacc ;
+	YACCFLAGS	default = -d ;
 	YACCFILES	default = y.tab ;
 }
 else if $(NT)
@@ -525,6 +530,21 @@ rule Fortran
 	DEPENDS $(<) : $(>) ;
 }
 
+rule GenFile 
+{
+	local s ;
+	makeGristedName s : $(<) ;
+	Depends $(s) : $(>[1]:S=$(SUFEXE)) $(>[2-]) ;
+	GenFile1 $(s) : $(>[1]:S=$(SUFEXE)) $(>[2-]) ;
+	Clean clean : $(s) ;
+}
+
+rule GenFile1
+{
+	MakeLocate $(<) : $(LOCATE_SOURCE) ;
+	SEARCH on $(>) = $(SEARCH_SOURCE) ;
+}
+
 rule HardLink
 {
 	DEPENDS files : $(<) ;
@@ -683,9 +703,9 @@ rule LibraryFromObjects
 	# For compatibility, we only do this if the library doesn't
 	# already have a path.
 
-	if ! $(<:D)
+	if ! $(l:D)
 	{
-	    MakeLocate $(<) $(<)($(s:BS)) : $(LOCATE_TARGET) ;
+	    MakeLocate $(l) $(l)($(s:BS)) : $(LOCATE_TARGET) ;
 	}
 
 	if $(NOARSCAN) 
@@ -1452,6 +1472,11 @@ if $(UNIX)
 	$(CP) $(>) $(<)
     }
 
+    actions GenFile1
+    {
+	$(>[1]) $(<) $(>[2-])
+    }
+
     actions Fortran
     {
 	$(FORTRAN) $(FORTRANFLAGS) -o $(<) $(>)
@@ -1514,7 +1539,7 @@ if $(UNIX)
 
     actions Yacc1
     {
-	$(YACC) $(>) &&
+	$(YACC) $(YACCFLAGS) $(>) &&
 	{
 	    $(MV) $(YACCFILES).c $(<[1])
 	    $(MV) $(YACCFILES).h $(<[2])
@@ -1633,6 +1658,11 @@ else if $(NT) || $(OS2)
 	copy $(>) $(<)
     }
 
+    actions GenFile1
+    {
+	$(>[1]) $(<) $(>[2-])
+    }
+
     actions Install
     {
 	copy $(>) $(<)
@@ -1691,6 +1721,11 @@ else if $(VMS)
 	copy $(>) $(<)
     }
 
+    actions GenFile1
+    {
+	mcr $(>[1]) $(<) $(>[2-])
+    }
+
     actions Install
     {
 	copy $(>) $(<)
@@ -1724,7 +1759,7 @@ else if $(VMS)
 
     actions Yacc1
     {
-	$(YACC) $(>)
+	$(YACC) $(YACCFLAGS) $(>)
 	$(MV) $(YACCFILES).c $(<[1])
 	$(MV) $(YACCFILES).h $(<[2])
     }

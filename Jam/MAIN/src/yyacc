@@ -6,7 +6,7 @@
 # substituted with #defined tokens.
 #
 # Usage:
-#	yyacc file.yy [ file.y filetab.h ]
+#	yyacc file.y filetab.h file.yy 
 #
 # inputs:
 #	file.yy		yacc grammar with ` literals
@@ -20,11 +20,13 @@
 #	s/x/y/p doesn't work).
 # 10-12-93
 #	Take basename as second argument.
+# 12-31-96
+#	reversed order of args to be compatible with GenFile rule
 
-in=${1?}
-out=`basename $1 .yy`
-outy=${2-$out.y}
-outh=${3-${out}tab.h}
+outy=${1?}
+outh=${2?}
+in=${3?}
+out=`basename $in .yy`
 
 T=/tmp/yy$$
 trap 'rm -f $T.*' 0
