@@ -98,9 +98,6 @@ all tokens, including the colon (:) and semicolon (;)
 tokens.  This is because \fBjam\fR runs on many platforms and no
 characters, save whitespace, are uncommon in the file names on all of
 those platforms.
-.PP
-Specific information about the syntax of a \fBJamfile\fR can be found in
-\fBjam\fR(1).
 .SH BUILDING EXECUTABLES AND LIBRARIES
 .PP
 The following rules compile source files and build executables and
@@ -131,8 +128,8 @@ into libstring.a and the other two into libtree.a.  Once the
 objects are safely in the libraries, the objects are deleted.
 .SS LinkLibraries Rule
 .PP
-To tell \fBjam\fR to link executables against libraries that have been
-built, you use the \fILinkLibraries\fR rule.
+To tell \fBjam\fR to link executables against libraries, you use the 
+\fILinkLibraries\fR rule.
 .XB
 Main myprog : main.c util.c ;
 LinkLibraries myprog : libstring.a libtree.a ;
@@ -783,6 +780,7 @@ All rules listed in this manual page that generate targets, except the
 .BB
 Clean clean : $(<) ;
 .BE
+.PP
 The \fIInstall\fR rules invoke the following:
 .BB
 Clean uninstall : $(<) ;
@@ -1050,3 +1048,5 @@ esac
 .XE
 .SH SEE ALSO
 \fBjam\fR(1), \fBJambase\fR(5)
+.SH BUGS
+This document shouldn't be a manual page.
