@@ -20,13 +20,14 @@ redux
 .B Jam
 recursively builds target files from their source files, using the file
 .B Jambase
-to define rules and the file
+(usually in /usr/local/lib/jam) to define rules and the file
 .B Jamfile
-to list the targets and sources in terms of those rules.  
-These two files define the dependency graph and the updating actions
-for all targets:
-.B jam
-does not rely on suffix-driven implicit rules or directory contents.  A
+(in the current directory) to list the targets and sources in terms of
+those rules.  These two files define the dependency graph and the
+updating actions for all targets.
+.B Jam
+does not need to rely on suffix-driven implicit rules or directory
+contents.  A
 .BR Jambase
 is provided with
 .BR jam ;
@@ -94,14 +95,21 @@ flow-of-control structures.
 .B Jambase
 and
 .B Jamfile
-share this common language.
+share this language.
 .SS "Lexical Features"
 .B Jam
 treats its input files as whitespace-separated tokens, with two
 exceptions: double quotes (") can enclose whitespace to embed it into a
 token, and everything between the matching curly braces ({}) in the 
 definition of a rule action is treated as a single string.
-A backslash (\\) can escape a double quote.
+A backslash (\\) can escape a double quote.  It should be noted that
+whitespace must surround two common tokens, 
+.PP
+\fBJam\fR requires whitespace (blanks, tabs, or newlines) to surround
+all tokens, including the colon (:) and semicolon (;)
+tokens.  This is because \fBjam\fR runs on many platforms and no
+characters, save whitespace, are uncommon in the file names on all of
+those platforms.
 .SS Targets
 Targets and sources (collectively "targets") are files to be updated
 and the files used in updating those targets.  A target is simply a
@@ -126,11 +134,11 @@ or both.
 .PP
 The 
 .B jam
-statements for defining and invoking rules are as follows, where
-\fI<targets>\fR and \fI<sources>\fR are lists of file names, 
+statements for defining and invoking rules are as follows.
+\fI<targets>\fR and \fI<sources>\fR are lists of file names;
 \fI<statements>\fR are 
 .B jam
-statements, and 
+statements; and 
 \fI<string>\fR
 is a shell script:
 .IP 
@@ -144,10 +152,10 @@ The first form defines a rule's procedure; the second defines the rule's
 updating actions; the third invokes the rule.  Redefining a rule's
 procedure or actions replaces the previous definition.
 .PP
-Invoking a rule executes the procedure for the rule (if any) and associates 
-any update actions for the targets.  More than one update action may be
-associated with a target: they are executed in the order in which they
-are added.
+Invoking a rule executes the procedure for the rule (if any) and
+associates any update actions for the targets.  More than one update
+action may be associated with a target: the actions are executed in the
+order in which they are added.
 .PP
 In both the rule's procedure definition and the rule's actions, the
 special variables $(<) and $(>) refer to the \fI<targets>\fR
@@ -181,41 +189,41 @@ $(>) includes only targets marked for updating.
 has ten built-in rules, none of which have updating actions:
 .PP
 .RS
-.IP "ALWAYS \fI<targets>\fR"
+.IP "ALWAYS \fI<targets>\fR ;"
 .br
 Rebuilds \fI<targets>\fR, even if they are up-to-date.
-.IP "DEPENDS \fI<targets>\fR : \fI<sources>\fR"
+.IP "DEPENDS \fI<targets>\fR : \fI<sources>\fR ;"
 .br
 Makes \fI<sources>\fR dependents of \fI<targets>\fR.
-.IP "ECHO \fI<args>\fR"
+.IP "ECHO \fI<args>\fR ;"
 .br
 Blurts out the message \fI<args>\fR to stdout.
-.IP "EXIT \fI<args>\fR"
+.IP "EXIT \fI<args>\fR ;"
 .br
 Blurts out the message \fI<args>\fR to stdout and then
 exits with a failure status.
-.IP "INCLUDES \fI<targets>\fR : \fI<sources>\fR"
+.IP "INCLUDES \fI<targets>\fR : \fI<sources>\fR ;"
 .br
 Makes \fI<sources>\fR dependents of anything of which \fI<targets>\fR 
 are dependents.
-.IP "LAURA \fI<targets>\fR"
+.IP "LAURA \fI<targets>\fR ;"
 .br
 Makes each of \fI<targets>\fR depend only on its leaf sources, and not
 on any intermediate targets.  Its leaf sources are those dependents
 without any dependents themselves.
-.IP "NOCARE \fI<targets>\fR"
+.IP "NOCARE \fI<targets>\fR ;"
 .br
-Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
-.IP "NOTFILE \fI<targets>\fR"
+Marks \fI<targets>\fR as possibly being bogus.
+.IP "NOTFILE \fI<targets>\fR ;"
 .br
-Marks \fI<targets>\fR as not being files (see \fBBinding,\fR below).
-.IP "NOUPDATE \fI<targets>\fR"
+Marks \fI<targets>\fR as not being files.
+.IP "NOUPDATE \fI<targets>\fR ;"
 .br
 Prevents \fI<targets>\fR from being rebuilt if they already exist, and
 makes existing \fI<targets\fR> appear eternally old.
-.IP "TEMPORARY \fI<targets>\fR"
+.IP "TEMPORARY \fI<targets>\fR ;"
 .br
-Marks \fI<targets>\fR as temporary (see \fBBinding,\fR below).
+Marks \fI<targets>\fR as temporary.
 .RE
 .SS "Flow of Control"
 .PP
@@ -265,17 +273,17 @@ clause is optional.
 .RS
 \fI<a>\fR		true if \fI<a>\fR is a non-zero-length string
 .br
-\fI<a1>\fR = \fI<b1>\fR	strings equal
+\fI<a>\fR = \fI<b>\fR	strings equal
 .br
-\fI<a1>\fR != \fI<b1>\fR	strings not equal
+\fI<a>\fR != \fI<b>\fR	strings not equal
 .br
-\fI<a1>\fR < \fI<b1>\fR	string less than
+\fI<a>\fR < \fI<b>\fR	string less than
 .br
-\fI<a1>\fR <= \fI<b1>\fR	string less than or equal to
+\fI<a>\fR <= \fI<b>\fR	string less than or equal to
 .br
-\fI<a1>\fR > \fI<b1>\fR	string greater than
+\fI<a>\fR > \fI<b>\fR	string greater than
 .br
-\fI<a1>\fR >= \fI<b1>\fR	string greater than or equal to
+\fI<a>\fR >= \fI<b>\fR	string greater than or equal to
 .PP
 ! \fI<cond>\fR		condition not true
 .br
@@ -309,8 +317,6 @@ A variable is defined with:
 \fI<variable>\fR on \fI<targets>\fR += \fI<values>\fR ;
 .IP
 \fI<variable>\fR default = \fI<values>\fR ;
-.IP
-\fI<variable>\fR ?= \fI<values>\fR ;
 .PP
 The first two forms set \fI<variable>\fR globally;
 the third and forth forms arrange for \fI<variable>\fR to take on a value
@@ -318,14 +324,16 @@ only during the binding and updating \fI<targets>\fR.
 The \fB=\fR operator replaces any previous value of \fI<variable>\fR with 
 \fI<values>\fR; the \fB+=\fR operation appends \fI<values>\fR to any 
 previous value.
-The final two forms set \fI<variable>\fR globally, but only if it was 
-previously unset.  The two forms are synonymous.
+The final form sets \fI<variable>\fR globally, but only if it was 
+previously unset.
 .PP
 On program start-up, \fBjam\fR imports the environment variable
 settings into \fBjam\fR variables.  Environment variables are split at
 blanks with each word becomming an element in the variable's list
 value.  Environment variables whose names end in \fBPATH\fR are split
-at colons ("\fB:\fR").  \fBJam\fR variables are not re-exported.
+at colons ("\fB:\fR").  \fBJam\fR variables are not re-exported to
+the shell that executes the updating actions, but the updating actions
+can reference \fBjam\fR variables with $(VARIABLE).
 .SS "Variable Expansion"
 .PP
 Before executing a statement,
@@ -364,7 +372,7 @@ $(Y)		-> 1 2
 .br
 $(Z)		-> X Y
 .br
-$($(z))		-> a b c 1 2
+$($(Z))		-> a b c 1 2
 .RE
 .PP
 Because of this product expansion, if any variable reference in a token
@@ -438,34 +446,40 @@ do not apply: the target is located at the actual path of the
 target.  If a target is marked as not being a file (using the built-in
 rule NOTFILE), it is left unbound to a file name.
 .PP
-A target is marked for updating if it is missing, if its filesystem
-modification time is older than any of its sources, or if any of its
-sources are marked for updating.  If a target is missing and has no
-updating actions, \fBjam\fR emits a warning and skips other targets
-that depend on the missing target.  This basic behavior can be modified
-applying (usually one of) the following six built-in rules to the
-target:
+After binding each target, \fBjam\fR determines whether the target
+needs updating, and marks the target if necessary for the updating
+phase.  A target is marked for updating for any of three reasons:
 .RS
-.IP \n(bu
-If a target has been marked with ALWAYS, it is always updated 
-(assuming it is in the dependency graph).
-.IP \n(bu
-If a target has been marked with LAURA, it is only updated only if it
-is missing or if its leaf sources are newer.  Leaf sources are those
-dependents of the target that have no dependents themselves.
-.IP \n(bu
-If a target has been marked with NOCARE, it is ignored if it is missing.
-.IP \n(bu
-If a target has been marked with TEMPORARY and it is missing, then its
-parent's modification time is used when comparing against sources.
-.IP \n(bu
-If a target has been marked with NOTFILE, it is marked for updating
-only if any of its sources is marked for updating (modification times are not
-compared).
-.IP \n(bu
-If a target has been marked with NOUPDATE, it is only updated if it is
-missing.  Also, if it exists, it will appear eternally old; that is,
-older than anything that depends on it.
+.IP 1)
+It is missing.
+.IP 2)
+Its filesystem modification time is older than any of its sources.
+.IP 3)
+Any of its sources are marked for updating.  
+.RE
+.PP
+This basic behavior can be modified applying (usually one of) the 
+following six built-in rules to the target:
+.RS
+.IP ALWAYS
+The target is always updated (assuming it is in the dependency graph).
+.IP LAURA
+The target is only updated if it is missing or if its leaf sources
+are newer.  Leaf sources are those dependents of the target that have
+no dependents themselves.
+.IP NOCARE
+The target is ignored if it is missing and has no updating actions.  
+Normally, \fBjam\fR issues a warning and skips other targets that
+depend on missing targets without updating actions.
+.IP TEMPORARY
+If the target is missing, then its parent's modification time is used
+when comparing against sources.
+.IP NOTFILE
+The target is only updated if any of its sources are marked for updating.
+.IP NOUPDATE
+The target is only updated if it is missing.  Also, if it exists, it
+will appear eternally old; that is, older than anything that depends on
+it.
 .RE
 .PP
 If a target is a source file that includes header files,
@@ -586,8 +600,6 @@ This is rarely what is intended.
 .PP
 In a rule's actions, only $(<) and $(>) refer to the bound file names:
 all other variable references get the unbound names.
-.PP
-Searching for include files is slow.
 .PP
 With the \fB-j\fR flag, errors from failed commands can get
 staggeringly mixed up.  Also, because targets tend to get built in a
