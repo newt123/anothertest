@@ -54,6 +54,8 @@ static int scanmode = SCAN_NORMAL;
 static int anyerrors = 0;
 static char *symdump();
 
+# define BIGGEST_TOKEN 10240	/* no single token can be larger */
+
 /* 
  */
 
@@ -215,7 +217,7 @@ yyline()
 yylex()
 {
 	int c;
-	char buf[10240];
+	char buf[BIGGEST_TOKEN];
 	char *b = buf;
 
 	if( !incp )
@@ -372,7 +374,7 @@ static char *
 symdump( s )
 YYSTYPE *s;
 {
-	static char buf[ 512 ];
+	static char buf[ BIGGEST_TOKEN + 20 ];
 
 	switch( s->type )
 	{

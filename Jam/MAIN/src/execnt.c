@@ -44,6 +44,7 @@ static struct
 	int	pid;
 	void	(*func)();
 	void 	*closure;
+	char	*tempfile;
 } cmdtab[ MAXJOBS ] = {0};
 
 /*
@@ -78,6 +79,7 @@ LIST *shell;
 	int slot;
 	char *argv[ MAXARGC + 1 ];	/* +1 for NULL */
 	static char *comspec;
+	char *p;
 
 	if( !comspec && !( comspec = getenv( "COMSPEC" ) ) )
 	    comspec = "CMD.EXE";
@@ -93,10 +95,60 @@ LIST *shell;
 	    printf( "no slots for child!\n" );
 	    exit( EXITBAD );
 	}
+
+	/* Create temp bat file name. */
+
+	if( !cmdtab[ slot ].tempfile )
+	{
+	    char *tempdir;
+
+	    if( !( tempdir = getenv( "TEMP" ) ) &&
+		!( tempdir = getenv( "TMP" ) ) &&
+		!( tempdir = getenv( "temp" ) ) &&
+		!( tempdir = getenv( "tmp" ) ) )
+		    tempdir = "\\temp";
+
+	    cmdtab[ slot ].tempfile = malloc( strlen( tempdir ) + 14 );
+
+	    sprintf( cmdtab[ slot ].tempfile, "%s\\jamtmp%02d.bat", 
+				tempdir, slot );
+	}
+
+	/* Trim leading, ending white space */
+
+	while( isspace( *string ) )
+		++string;
+
+	p = strchr( string, '\n' );
+
+	while( p && isspace( *p ) )
+		++p;
+
+	/* If multi line, write to bat file.  Otherwise, exec directly. */
+
+	if( p && *p )
+	{
+	    FILE *f;
+
+	    /* Write command to bat file. */
+
+	    f = fopen( cmdtab[ slot ].tempfile, "w" );
+	    fputs( string, f );
+	    fclose( f );
+
+	    /* Make up argv. */
+
+	    argv[0] = comspec;
+	    argv[1] = "/Q/C";
+	    argv[2] = cmdtab[ slot ].tempfile;
+	    argv[3] = 0;
+	}
 	else
 	{
+	    /* Make up argv. */
+
 	    argv[0] = comspec;
-	    argv[1] = "/C";
+	    argv[1] = "/Q/C";
 	    argv[2] = string;
 	    argv[3] = 0;
 	}
@@ -157,6 +209,8 @@ execwait()
 		perror("wait");
 		exit( EXITBAD );
 	    }
+
+	    unlink( cmdtab[ i ].tempfile );
 
 	    /* Drive the completion */
 

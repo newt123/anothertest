@@ -225,6 +225,7 @@ if $(UNIX)
 	RCP		default = rcp ;
 	RSH		default = rsh ;
 	RM		default = rm -f ;
+	SED		default = sed ;
 	SHELLHEADER	default = "#!/bin/sh" ;
 	SHELLMODE	default = 755 ;
 	SLASH		default = / ;
@@ -250,6 +251,7 @@ else if $(NT)
 	RCP		default = rcp ;
 	RSH		default = rsh ;
     	RM		default = del /f/q ;
+	SED		default = sed ;
     	SLASH		default = \\ ;
     	SUFLIB		default = .lib ;
     	SUFOBJ		default = .obj ;
@@ -334,6 +336,7 @@ else if $(OS2)
 	MKDIR		default = mkdir ;
     	MV		default = move ;
     	RM		default = del /f ;
+	SED		default = sed ;
     	SLASH		default = \\ ;
     	SUFLIB		default = .lib ;
     	SUFOBJ		default = .obj ;
@@ -377,6 +380,7 @@ else if $(VMS)
 	MV		default = rename ;
 	OPTIM		default = ;
 	RM		default = delete ;
+	SED		default = sed ;
 	SHELLMODE	default = (w:er) ;
 	SLASH		default = . ;
 	STDHDRS		default = decc$library_include ;
