@@ -202,7 +202,7 @@ are dependents.
 .IP "NOCARE \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
-.IP "NOTIME \fI<targets>\fR"
+.IP "NOTFILE \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as not being files (see \fBBinding,\fR below).
 .IP "TEMPORARY \fI<targets>\fR"
@@ -429,7 +429,7 @@ and
 .RB $( LOCATE )
 do not apply: the target is located at the actual path of the
 target.  If a target is marked as not being a file (using the built-in
-rule NOTIME), it is left unbound to a file name.
+rule NOTFILE), it is left unbound to a file name.
 .PP
 A target is marked for updating if it cannot be found, if its
 filesystem modification time is older than any of its sources, or if
@@ -440,7 +440,7 @@ not been marked with the built-in rule NOCARE, then
 emits a warning.  If a target is missing and is marked as temporary
 (with the built-in rule TEMPORARY), then its parent's modification time
 is used when comparing against sources.  If a target is marked as
-not being a file (using the built-in rule, NOTIME), it is marked for
+not being a file (using the built-in rule, NOTFILE), it is marked for
 updating only if any of its sources is marked for updating.
 .PP
 If a target is a source file that includes header files,

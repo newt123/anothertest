@@ -17,6 +17,11 @@
  *	SETTINGS - variables to set when executing a TARGET's ACTIONS 
  *	TARGETS - a chain of TARGETs 
  *	TARGET - a file or "thing" that can be built 
+ *
+ * 04/11/94 (seiwald) - Combined deps & headers into deps[2] in TARGET.
+ * 04/12/94 (seiwald) - actionlist() now just appends a single action.
+ * 06/01/94 (seiwald) - new 'actions existing' does existing sources
+ * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  */
 
 typedef struct _rule RULE;
@@ -39,6 +44,7 @@ struct _rule {
 # define	RULE_IGNORE	0x04	/* ignore return status of executes */
 # define	RULE_QUIETLY	0x08	/* don't mention it unless verbose */
 # define	RULE_PIECEMEAL	0x10	/* split exec so each $(>) is small */
+# define	RULE_EXISTING	0x20	/* $(>) is pre-exisitng sources only */
 
 } ;
 
@@ -56,7 +62,8 @@ struct _action {
 	RULE	*rule;
 	TARGETS	*targets;
 	TARGETS	*sources;		/* aka $(>) */
-	int	progress;		/* see TARGET progress */
+	char	progress;		/* see TARGET progress */
+	char	status;			/* see TARGET status */
 } ;
 
 /* SETTINGS - variables to set when executing a TARGET's ACTIONS */
@@ -81,25 +88,32 @@ struct _target {
 	char	*name;
 	char	*boundname;		/* if search() relocates target */
 	ACTIONS	*actions;		/* rules to execute, if any */
-	TARGETS	*deps;			/* dependencies */
 	SETTINGS *settings;		/* variables to define */
-	time_t	time;			/* update time */
 
-	int	flags;			/* status info */
+	char	flags;			/* status info */
 
 # define 	T_FLAG_TEMP 	0x01	/* TEMPORARY applied */
 # define 	T_FLAG_NOCARE 	0x02	/* NOCARE applied */
-# define 	T_FLAG_NOTIME 	0x04	/* NOTIME applied */
+# define 	T_FLAG_NOTFILE 	0x04	/* NOTFILE applied */
 # define	T_FLAG_TOUCHED	0x08	/* -t target applied */
 
-	int	binding;		/* how target relates to real file */
+	char	binding;		/* how target relates to real file */
 
 # define 	T_BIND_UNBOUND	0	/* a disembodied name */
 # define 	T_BIND_TEMP	1	/* a present temporary */
 # define 	T_BIND_EXISTS	2	/* name names a real file */
 # define 	T_BIND_MISSING	3	/* couldn't find real file */
 
-	int	fate;			/* make0()'s diagnosis */
+	TARGETS	*deps[2];		/* dependencies */
+
+# define	T_DEPS_DEPENDS	0	/* due to DEPENDS */
+# define	T_DEPS_INCLUDES	1	/* due to INCLUDES */
+
+	time_t	time;			/* update time */
+	time_t	htime;			/* header's time */
+
+	char	fate;			/* make0()'s diagnosis */
+	char	hfate;			/* collected fate for headers */
 
 # define 	T_FATE_INIT	0	/* nothing done to target */
 # define 	T_FATE_MAKING	1	/* make0(target) on stack */
@@ -112,24 +126,26 @@ struct _target {
 # define 	T_FATE_UPDATE	7	/* deps updated, needs updating */
 # define 	T_FATE_DONTKNOW	8	/* no rules to make missing target */
 
-	int	progress;		/* tracks make1() progress */
+	char	progress;		/* tracks make1() progress */
 
 # define	T_MAKE_INIT	0	/* make1(target) not yet called */
-# define	T_MAKE_STABLE	1	/* make1(target) had nothing to do */
-# define	T_MAKE_OK	2	/* make1(target) hasn't failed (yet) */
-# define	T_MAKE_FAIL	3	/* make1(target) failed */
-# define	T_MAKE_INTR	4	/* make1(target) interrupted by ^C */
+# define	T_MAKE_ONSTACK	1	/* make1(target) on stack */
+# define	T_MAKE_RUNNING	2	/* make1(target) in execcmd() */
+# define	T_MAKE_DONE	3	/* make1(target) done */
 
-	TARGETS	*headers;		/* list of header file codependencies */
-	time_t	htime;			/* collected update time for headers */
-	int	hfate;			/* collected fate for headers */
+	char	status;			/* execcmd() result */
+
+	int	asynccnt;		/* child deps outstanding */
+	TARGETS	*parents;		/* used by make1() for completion */
+	char	*cmds;			/* type-punned command list */
 } ;
 
 RULE	*bindrule();
 TARGET	*bindtarget();
 void	touchtarget();
 TARGETS	*targetlist();
-void	actionlist();
+TARGETS	*targetentry();
+ACTIONS	*actionlist();
 SETTINGS *addsettings();
 void 	pushsettings();
 void 	popsettings();

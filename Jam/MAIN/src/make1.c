@@ -31,6 +31,7 @@
  * 04/21/94 (seiwald) - Handle empty "updated" actions.
  * 05/04/94 (seiwald) - async multiprocess (-j) support
  * 06/01/94 (seiwald) - new 'actions existing' does existing sources
+ * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  */
 
 # include "jam.h"
@@ -462,7 +463,7 @@ int	flags;
 	 * Ugly.
 	 */
 
-	if( t->binding == T_BIND_UNBOUND && !( t->flags & T_FLAG_NOTIME ) )
+	if( t->binding == T_BIND_UNBOUND && !( t->flags & T_FLAG_NOTFILE ) )
 	{
 	    /* Sources to 'actions existing' are never in the dependency */
 	    /* graph (if they were, they'd get built and 'existing' would */
@@ -484,7 +485,7 @@ int	flags;
 	if( ( flags & RULE_NEWSRCS ) && t->fate <= T_FATE_STABLE )
 	    continue;
 
-	/* boundname is null for T_FLAG_NOTIME targets - use name */
+	/* boundname is null for T_FLAG_NOTFILE targets - use name */
 
 	l = list_new( l, copystr( t->boundname ? t->boundname : t->name ) );
     }

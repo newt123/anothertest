@@ -11,6 +11,7 @@
 # include "rules.h"
 # include "newstr.h"
 # include "make.h"
+# include "search.h"
 
 /*
  * compile.c - compile parsed jam statements
@@ -32,17 +33,25 @@
  *
  *	evaluate_if() - evaluate if to determine which leg to compile
  *
- *	builtin_depends() - DEPENDS rule
+ *	builtin_depends() - DEPENDS/INCLUDES rule
  *	builtin_echo() - ECHO rule
- *	builtin_includes() - INCLUDES rule
- *	builtin_flags() - NOCARE, NOTIME, TEMPORARY rule
+ *	builtin_flags() - NOCARE, NOTFILE, TEMPORARY rule
+ *
+ * 02/03/94 (seiwald) -	Changed trace output to read "setting" instead of 
+ *			the awkward sounding "settings".
+ * 04/12/94 (seiwald) - Combined build_depends() with build_includes().
+ * 04/12/94 (seiwald) - actionlist() now just appends a single action.
+ * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
+ * 05/13/94 (seiwald) - include files are now bound as targets, and thus
+ *			can make use of $(SEARCH)
+ * 08/23/94 (seiwald) - Support for '+=' (append to variable)
+ * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  */
 
 static int evaluate_if();
 
 static void builtin_depends();
 static void builtin_echo();
-static void builtin_includes();
 static void builtin_flags();
 
 
@@ -52,25 +61,26 @@ static void builtin_flags();
  */
 
 # define P0 (PARSE *)0
-# define L0 (LIST *)0
 # define C0 (char *)0
 
 void
 compile_builtins()
 {
-	bindrule( "DEPENDS" )->procedure = 
-	    parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, 0 );
-	bindrule( "ECHO" )->procedure = 
-	    parse_make( builtin_echo, P0, P0, C0, C0, L0, L0, 0 );
-	bindrule( "INCLUDES" )->procedure = 
-	    parse_make( builtin_includes, P0, P0, C0, C0, L0, L0, 0 );
+    bindrule( "DEPENDS" )->procedure = 
+	parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, T_DEPS_DEPENDS );
+    bindrule( "ECHO" )->procedure = 
+	parse_make( builtin_echo, P0, P0, C0, C0, L0, L0, 0 );
+    bindrule( "INCLUDES" )->procedure = 
+	parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, T_DEPS_INCLUDES );
 
-	bindrule( "NOCARE" )->procedure = 
-	    parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOCARE );
-	bindrule( "NOTIME" )->procedure = 
-	    parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOTIME );
-	bindrule( "TEMPORARY" )->procedure = 
-	    parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_TEMP );
+    bindrule( "NOCARE" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOCARE );
+    bindrule( "NOTIME" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOTFILE );
+    bindrule( "NOTFILE" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOTFILE );
+    bindrule( "TEMPORARY" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_TEMP );
 }
 
 /*
@@ -97,9 +107,9 @@ LIST		*sources;
 
 	for( l = nv; l; l = list_next( l ) )
 	{
-	    LIST *val = list_new( (LIST *)0, copystr( l->string ) );
+	    LIST *val = list_new( L0, copystr( l->string ) );
 
-	    var_set( parse->string, val );
+	    var_set( parse->string, val, VAR_SET );
 
 	    (*parse->left->func)( parse->left, targets, sources );
 	}
@@ -221,6 +231,7 @@ LIST		*targets;
 LIST		*sources;
 {
 	LIST	*nt = var_list( parse->llist, targets, sources );
+	TARGET	*t;
 
 	if( DEBUG_COMPILE )
 	{
@@ -230,7 +241,20 @@ LIST		*sources;
 	}
 
 	if( nt )
-	    yyfparse( nt->string );
+	{
+	    TARGET *t = bindtarget( nt->string );
+
+	    /* Bind the include file under the influence of */
+	    /* "on-target" variables.  Though they are targets, */
+	    /* include files are not built with make(). */
+
+	    pushsettings( t->settings );
+	    t->boundname = search( t->name, &t->time );
+	    popsettings( t->settings );
+
+	    yyfparse( t->boundname );
+	}
+
 
 	list_free( nt );
 }
@@ -262,6 +286,10 @@ LIST		*sources;
 	    printf( "\n" );
 	}
 
+	if( !nt )
+	    printf( "warning: no targets on rule %s %s\n",
+		    rule->name, parse->llist ? parse->llist->string : "" );
+
 	if( !rule->actions && !rule->procedure )
 	    printf( "warning: unknown rule %s\n", rule->name );
 
@@ -270,6 +298,7 @@ LIST		*sources;
 
 	if( rule->actions )
 	{
+	    TARGETS	*t;
 	    ACTION	*action;
 
 	    /* The action is associated with this instance of this rule */
@@ -283,7 +312,8 @@ LIST		*sources;
 
 	    /* Append this action to the actions of each target */
 
-	    actionlist( action->targets, action );
+	    for( t = action->targets; t; t = t->next )
+		t->target->actions = actionlist( t->target->actions, action );
 	}
 
 	/* Now recursively compile any parse tree associated with this rule */
@@ -323,6 +353,7 @@ LIST		*sources;
  *
  *	parse->llist	variable names
  *	parse->rlist	variable values
+ *	parse->num	ASSIGN_SET/APPEND/DEFAULT
  */
 
 void
@@ -335,12 +366,21 @@ LIST		*sources;
 	LIST	*ns = var_list( parse->rlist, targets, sources );
 	LIST	*l;
 	int	count = 0;
+	int	setflag;
+	char	*trace = "";
+
+	switch( parse->num )
+	{
+	case ASSIGN_SET:	setflag = VAR_SET; trace = "="; break;
+	case ASSIGN_APPEND:	setflag = VAR_APPEND; trace = "+="; break;
+	case ASSIGN_DEFAULT:	setflag = VAR_DEFAULT; trace = "?="; break;
+	}
 
 	if( DEBUG_COMPILE )
 	{
 	    printf( ">>> set " );
 	    list_print( nt );
-	    printf( " = " );
+	    printf( " %s ", trace );
 	    list_print( ns );
 	    printf( "\n" );
 	}
@@ -348,8 +388,10 @@ LIST		*sources;
 	/* Call var_set to set variable */
 	/* var_set keeps ns, so need to copy it */
 
-	for( l = nt; l; l = list_next( l ) )
-	    var_set( l->string, count++ ? list_copy( (LIST*)0, ns ) : ns );
+	for( l = nt; l; l = list_next( l ), count++ )
+	    var_set( l->string, 
+		count ? list_copy( (LIST*)0, ns ) : ns,
+		setflag );
 
 	if( !count )
 	    list_free( ns );
@@ -386,49 +428,6 @@ LIST		*sources;
 }
 
 /*
- * compile_setdefault() - compile the "variable default =" statement
- *
- *	parse->llist	variable names
- *	parse->rlist	variable values
- */
-
-void
-compile_setdefault( parse, targets, sources )
-PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
-{
-	LIST	*nt = var_list( parse->llist, targets, sources );
-	LIST	*ns = var_list( parse->rlist, targets, sources );
-	LIST	*l;
-	int	count = 0;
-
-	if( DEBUG_COMPILE )
-	{
-	    printf( ">>> set " );
-	    list_print( nt );
-	    printf( " default = " );
-	    list_print( ns );
-	    printf( "\n" );
-	}
-
-	/* Skip if variable already set */
-	/* Call var_set to set variable */
-	/* var_set keeps ns, so need to copy it */
-
-	for( l = nt; l; l = list_next( l ) )
-	    if( !var_get( l->string ) )
-	{
-	    var_set( l->string, count++ ? list_copy( (LIST*)0, ns ) : ns );
-	}
-
-	if( !count )
-	    list_free( ns );
-
-	list_free( nt );
-}
-
-/*
  * compile_setexec() - support for `actions` - save execution string 
  *
  *	parse->string	rule name
@@ -457,11 +456,12 @@ LIST		*sources;
 }
 
 /*
- * compile_settings() - compile the "on :=" (set variable on exec) statement
+ * compile_settings() - compile the "on =" (set variable on exec) statement
  *
  *	parse->llist		target names
  *	parse->left->llist	variable names
  *	parse->left->rlist	variable values
+ *	parse->num		ASSIGN_SET/APPEND	
  */
 
 void
@@ -473,6 +473,7 @@ LIST		*sources;
 	LIST	*nt = var_list( parse->left->llist, targets, sources );
 	LIST	*ns = var_list( parse->left->rlist, targets, sources );
 	LIST	*ts;
+	int	append = parse->num == ASSIGN_APPEND;
 	int	count = 0;
 
 	/* Reset targets */
@@ -481,17 +482,18 @@ LIST		*sources;
 
 	if( DEBUG_COMPILE )
 	{
-	    printf( ">>> settings " );
+	    printf( ">>> setting " );
 	    list_print( nt );
 	    printf( "on " );
 	    list_print( targets );
-	    printf( " = " );
+	    printf( " %s ", append ? "+=" : "=" );
 	    list_print( ns );
 	    printf( "\n" );
 	}
 
 	/* Call addsettings to save variable setting */
 	/* addsettings keeps ns, so need to copy it */
+	/* Pass append flag to addsettings() */
 
 	for( ts = targets; ts; ts = list_next( ts ) )
 	{
@@ -499,7 +501,7 @@ LIST		*sources;
 	    LIST	*l;
 
 	    for( l = nt; l; l = list_next( l ), count++ )
-		t->settings = addsettings( t->settings, l->string, 
+		t->settings = addsettings( t->settings, append, l->string, 
 				count ? list_copy( (LIST*)0, ns ) : ns );
 	}
 
@@ -544,9 +546,7 @@ LIST		*sources;
 
 	for( parse = parse->left; parse; parse = parse->right )
 	{
-	    if( nt && 
-		!strcmp( parse->left->string, nt->string ) ||
-		!strcmp( parse->left->string, "*" ) )
+	    if( !glob( parse->left->string, nt ? nt->string : "" ) )
 	    {
 		/* Get & exec parse tree for this case */
 		parse = parse->left->left;
@@ -561,7 +561,7 @@ LIST		*sources;
 
 
 /*
- * builtin_depends() - DEPENDS rule
+ * builtin_depends() - DEPENDS/INCLUDES rule
  *
  * The DEPENDS builtin rule appends each of the listed sources on the 
  * dependency list of each of the listed targets.  It binds both the 
@@ -575,11 +575,12 @@ LIST		*targets;
 LIST		*sources;
 {
 	LIST *l;
+	int  which = parse->num;
 
 	for( l = targets; l; l = list_next( l ) )
 	{
 	    TARGET *t = bindtarget( l->string );
-	    t->deps = targetlist( t->deps, sources );
+	    t->deps[ which ] = targetlist( t->deps[ which ], sources );
 	}
 }
 
@@ -601,30 +602,7 @@ LIST		*sources;
 }
 
 /*
- * builtin_includes() - INCLUDES rule
- *
- * The INCLUDES builtin rule appends each of the listed sources on the 
- * headers list of each of the listed targets.  It binds both the 
- * targets and sources as TARGETs.
- */
-
-static void
-builtin_includes( parse, targets, sources )
-PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
-{
-	LIST *l;
-
-	for( l = targets; l; l = list_next( l ) )
-	{
-	    TARGET *t = bindtarget( l->string );
-	    t->headers = targetlist( t->headers, sources );
-	}
-}
-
-/*
- * builtin_flags() - NOCARE, NOTIME, TEMPORARY rule
+ * builtin_flags() - NOCARE, NOTFILE, TEMPORARY rule
  *
  * Builtin_flags() marks the target with the appropriate flag, for use
  * by make0().  It binds each target as a TARGET.
