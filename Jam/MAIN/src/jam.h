@@ -22,6 +22,7 @@
  * 03/13/96 (seiwald) - Jambase now compiled in; remove JAMBASE variable.
  * 04/29/96 (seiwald) - AIX now has 31 and 42 OSVERs.
  * 11/21/96 (peterk)  - added BeOS with MW CW mwcc
+ * 12/21/96 (seiwald) - OSPLAT now defined for NT.
  */
 
 # ifdef VMS
@@ -65,12 +66,12 @@ int unlink( char *f ); 	/* In filevms.c */
 # include <time.h>
 
 # ifdef _M_PPC
-# define OTHERSYMS "NT=true","OS=NT","OSVER=PPC"
+# define OTHERSYMS "NT=true","OS=NT","OSPLAT=PPC"
 # else
 # ifdef _ALPHA_
-# define OTHERSYMS "NT=true","OS=NT","OSVER=ALPHA"
+# define OTHERSYMS "NT=true","OS=NT","OSPLAT=ALPHA"
 # else 
-# define OTHERSYMS "NT=true","OS=NT","OSVER=X86"
+# define OTHERSYMS "NT=true","OS=NT","OSPLAT=X86"
 # endif /* _ALPHA_ */
 # endif /* _PPC_ */
 

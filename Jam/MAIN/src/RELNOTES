@@ -126,6 +126,9 @@ Changes since 2.1
     New variable modifiers :U and :L upshift and downshift (respectively)
     the value of a variable.
 
+    New predefined variables $(OSVER) and $(OSPLAT) are used to distinguish
+    (when jam can) among operating system versions and hardware platforms.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
