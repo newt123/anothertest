@@ -1,8 +1,8 @@
 .TH JAM 1 "15 January 1995"
 .SH NAME
-.B jam
+\fBjam\fR
 \- 
-.BR make (1)
+\fBmake\fR(1)
 redux
 
 .SH SYNOPSIS
@@ -17,43 +17,26 @@ redux
 
 .SH DESCRIPTION
 .PP
-.B Jam
-recursively builds target files from their source files, using the file
-.B Jambase
-(usually in /usr/local/lib/jam) to define rules and the file
-.B Jamfile
-(in the current directory) to list the targets and sources in terms of
-those rules.  These two files define the dependency graph and the
-updating actions for all targets.
-.B Jam
-does not need to rely on suffix-driven implicit rules or directory
-contents.  A
-.BR Jambase
-is provided with
-.BR jam ;
-the user supplies the
-.BR Jamfile .
+\fBJam\fR recursively builds target files from their source files,
+using two files to define the dependency graph and the updating actions
+for all targets.  The file \fBJambase\fR (usually located in
+/usr/local/lib/jam) define rules, and the file \fBJamfile\fR (located in
+the current directory) lists the targets and sources in terms of those
+rules.  \fBJam\fR does not need to rely on suffix-driven implicit rules
+or directory contents.  A \fBJambase\fR is provided with \fBjam\fR; the
+user supplies the \fBJamfile\fR.
 .PP
-See
-.BR Jamfile (5)
-for information on writing Jamfiles.
-This manual page describes the program that interprets
-.B Jambase 
-and
-.BR Jamfile .
+See \fBJamfile\fR(5) for information on writing Jamfiles.  This manual
+page describes the program that interprets \fBJambase \fR and
+\fBJamfile\fR.
 
 .SH OPTIONS
 .PP
-If
-.I target
-is provided on the command line,
-.B jam
-attempts to build that target; otherwise
-.B jam
-attempts to build the target "\fIall\fR".
+If \fItarget\fR is provided on the command line, \fBjam\fR attempts to
+build that target; otherwise \fBjam\fR attempts to build the target
+"\fIall\fR".
 .PP
-.B Jam
-supports the following options:
+\fBJam\fR supports the following options:
 .IP "-a"
 Build all targets, even if they are up-to-date.
 .IP "-d\fI<n>\fR"
@@ -75,8 +58,7 @@ Set the debug level to \fI<n>\fR.  Interesting values are:
 6-9 debugging
 .RE
 .IP "-f\fI<file>\fR"
-Read \fI<file>\fR instead of 
-.BR Jambase .
+Read \fI<file>\fR instead of \fBJambase\fR.
 .IP "-j\fI<jobs>\fR"
 Run up to \fI<jobs>\fR shell commands concurrently (UNIX only).
 The default is 1.
@@ -88,59 +70,42 @@ Rebuild \fI<target>\fR, even if it is up-to-date.
 
 .SH "THE JAM LANGUAGE"
 .PP
-The
-.B jam
-language supports defining and using rules, setting variables, and 
-flow-of-control structures.
-.B Jambase
-and
-.B Jamfile
-share this language.
+The \fBjam\fR language supports defining and using rules, setting
+variables, and flow-of-control structures.  \fBJambase\fR and
+\fBJamfile\fR share this language.
 .SS "Lexical Features"
-.B Jam
-treats its input files as whitespace-separated tokens, with two
-exceptions: double quotes (") can enclose whitespace to embed it into a
-token, and everything between the matching curly braces ({}) in the 
-definition of a rule action is treated as a single string.
-A backslash (\\) can escape a double quote.  It should be noted that
-whitespace must surround two common tokens, 
+\fBJam\fR treats its input files as whitespace-separated tokens, with
+two exceptions: double quotes (") can enclose whitespace to embed it
+into a token, and everything between the matching curly braces ({}) in
+the definition of a rule action is treated as a single string.  A
+backslash (\\) can escape a double quote.  It should be noted that
+whitespace must surround two common tokens,
 .PP
 \fBJam\fR requires whitespace (blanks, tabs, or newlines) to surround
-all tokens, including the colon (:) and semicolon (;)
-tokens.  This is because \fBjam\fR runs on many platforms and no
-characters, save whitespace, are uncommon in the file names on all of
-those platforms.
+all tokens, including the colon (:) and semicolon (;) tokens.  This is
+because \fBjam\fR runs on many platforms and no characters, save
+whitespace, are uncommon in the file names on all of those platforms.
 .SS Targets
 Targets and sources (collectively "targets") are files to be updated
 and the files used in updating those targets.  A target is simply a
-file name, either rooted or relative to the directory of
-.BR jam 's
+file name, either rooted or relative to the directory of \fBjam\fR's
 invocation.  The special syntax, \fIfile(member)\fR, refers to an
-.BR ar (1)
-library member.
-The special syntax, \fI<grist>file\fR,
-perturbs a file name to distinguish it from other files
-with the same name.  The \fI<grist>\fR
-is stripped from the name during binding (see \fBBinding\fR, below).
+\fBar\fR(1) library member.  The special syntax, \fI<grist>file\fR,
+perturbs a file name to distinguish it from other files with the same
+name.  The \fI<grist>\fR is stripped from the name during binding (see
+\fBBinding\fR, below).
 .SS Rules
-.BR Jam 's
-basic entity is called a rule, which is used to relate targets to their
-sources.  A rule is defined in two parts: the
-.B jam
-statements to execute when the rule is invoked (essentially a procedure
-call), and the actions (shell commands) to execute in order to update
-the targets of the rule.  A rule may have a procedure definition, actions,
-or both.
+\fBJam\fR's basic entity is called a rule, which is used to relate
+targets to their sources.  A rule is defined in two parts: the
+\fBjam\fR statements to execute when the rule is invoked (essentially a
+procedure call), and the actions (shell commands) to execute in order
+to update the targets of the rule.  A rule may have a procedure
+definition, actions, or both.
 .PP
-The 
-.B jam
-statements for defining and invoking rules are as follows.
-\fI<targets>\fR and \fI<sources>\fR are lists of file names;
-\fI<statements>\fR are 
-.B jam
-statements; and 
-\fI<string>\fR
-is a shell script:
+The \fBjam\fR statements for defining and invoking rules are as
+follows.  \fI<targets>\fR and \fI<sources>\fR are lists of file names;
+\fI<statements>\fR are \fBjam\fR statements; and \fI<string>\fR is a
+shell script:
 .IP 
 rule \fI<rulename>\fR { \fI<statements>\fR }
 .IP
@@ -158,13 +123,12 @@ action may be associated with a target: the actions are executed in the
 order in which they are added.
 .PP
 In both the rule's procedure definition and the rule's actions, the
-special variables $(<) and $(>) refer to the \fI<targets>\fR
-and \fI<sources>\fR given at rule invocation.  
-However, in the rule's actions, $(<) and $(>) refer to the
-\fI<targets>\fR and \fI<sources>\fR
-after they have been bound by the binding phase (see \fBBinding\fR, below).
-.B Jam
-issues a warning if $(<) or $(>) have elements not in the dependency graph.
+special variables $(<) and $(>) refer to the \fI<targets>\fR and
+\fI<sources>\fR given at rule invocation.  However, in the rule's
+actions, $(<) and $(>) refer to the \fI<targets>\fR and \fI<sources>\fR
+after they have been bound by the binding phase (see \fBBinding\fR,
+below).  \fBJam\fR issues a warning if $(<) or $(>) have elements not
+in the dependency graph.
 .PP
 The following action \fImodifiers\fR are understood:
 .RS
@@ -185,8 +149,7 @@ $(>) includes only targets marked for updating.
 .RE
 .SS "Built-in Rules"
 .PP
-.B Jam
-has ten built-in rules, none of which have updating actions:
+\fBJam\fR has ten built-in rules, none of which have updating actions:
 .PP
 .RS
 .IP "ALWAYS \fI<targets>\fR ;"
@@ -227,8 +190,7 @@ Marks \fI<targets>\fR as temporary.
 .RE
 .SS "Flow of Control"
 .PP
-.B Jam
-has several simple flow-of-control statements:
+\fBJam\fR has several simple flow-of-control statements:
 .IP
 include \fI<a>\fR ;
 .IP
@@ -238,22 +200,18 @@ switch \fI<a>\fR { case \fI<v1>\fR : \fI<statements>\fR ; case \fI<v2>\fR : \fI<
 .IP
 if \fI<cond>\fR { \fI<statements>\fR } [ else { \fI<statements>\fR } ]
 .PP
-The 
-.B include 
-statement includes the named file; the file is bound like regular
-targets (see \fBBinding\fR, below), but unlike regular targets it cannot
-be built.
+The \fBinclude\fR statement includes the named file; the file is bound
+like regular targets (see \fBBinding\fR, below), but unlike regular
+targets it cannot be built.
 .PP
-The 
-.B for 
-loop executes \fI<statements>\fR for each value in \fI<args>\fR, setting the
-variable \fI<a>\fR to the value; \fI<a>\fR is not variable-expanded.
+The \fBfor\fR loop executes \fI<statements>\fR for each value in
+\fI<args>\fR, setting the variable \fI<a>\fR to the value; \fI<a>\fR is
+not variable-expanded.
 .PP
-The 
-.B switch 
-statement executes zero or one of the enclosed \fI<statements>\fR,
-depending on which value \fI<a>\fR matches.  The \fI<v>\fR values are not 
-variable-expanded.  The \fI<v>\fR values may include the following wildcards:
+The \fBswitch\fR statement executes zero or one of the enclosed
+\fI<statements>\fR, depending on which value \fI<a>\fR matches.  The
+\fI<v>\fR values are not variable-expanded.  The \fI<v>\fR values may
+include the following wildcards:
 .PP
 .RS
 ?		match any single character
@@ -263,12 +221,8 @@ variable-expanded.  The \fI<v>\fR values may include the following wildcards:
 [\fI<chars>\fR]	match any single character in \fI<chars>\fR
 .RE
 .PP
-The 
-.B if 
-statement does the obvious; the 
-.B else 
-clause is optional.  
-\fI<cond>\fR is built of:
+The \fBif\fR statement does the obvious; the \fBelse\fR clause is
+optional.  \fI<cond>\fR is built of:
 .PP
 .RS
 \fI<a>\fR		true if \fI<a>\fR is a non-zero-length string
@@ -300,11 +254,10 @@ If, through variable expansion, the argument is zero tokens, a single
 token of a zero-length string is used instead.
 .SS Variables
 .PP
-.B Jam
-variables are lists of strings, with zero or more elements.  An undefined
-variable is indistinguishable from a variable whose value is an empty
-list.  Variables are either global or target-specific.  
-All variables are referenced as $(VARIABLE).
+\fBJam\fR variables are lists of strings, with zero or more elements.
+An undefined variable is indistinguishable from a variable whose value
+is an empty list.  Variables are either global or target-specific.  All
+variables are referenced as $(VARIABLE).
 .PP
 A variable is defined with:
 .IP
@@ -318,13 +271,12 @@ A variable is defined with:
 .IP
 \fI<variable>\fR default = \fI<values>\fR ;
 .PP
-The first two forms set \fI<variable>\fR globally;
-the third and forth forms arrange for \fI<variable>\fR to take on a value
-only during the binding and updating \fI<targets>\fR.
-The \fB=\fR operator replaces any previous value of \fI<variable>\fR with 
-\fI<values>\fR; the \fB+=\fR operation appends \fI<values>\fR to any 
-previous value.
-The final form sets \fI<variable>\fR globally, but only if it was 
+The first two forms set \fI<variable>\fR globally; the third and forth
+forms arrange for \fI<variable>\fR to take on a value only during the
+binding and updating \fI<targets>\fR.  The \fB=\fR operator replaces
+any previous value of \fI<variable>\fR with \fI<values>\fR; the
+\fB+=\fR operation appends \fI<values>\fR to any previous value.  The
+final form sets \fI<variable>\fR globally, but only if it was
 previously unset.
 .PP
 On program start-up, \fBjam\fR imports the environment variable
@@ -336,13 +288,11 @@ the shell that executes the updating actions, but the updating actions
 can reference \fBjam\fR variables with $(VARIABLE).
 .SS "Variable Expansion"
 .PP
-Before executing a statement,
-.B jam
-performs variable expansion on each token that is not a keyword or rule
-name. Such tokens with embedded variable references are replaced with
-zero or more tokens.  Variable references are of the form $(\fIv\fR) or
-$(\fIvm\fR), where \fIv\fR is the variable name, and \fIm\fR are optional 
-modifiers.
+Before executing a statement, \fBjam\fR performs variable expansion on
+each token that is not a keyword or rule name. Such tokens with
+embedded variable references are replaced with zero or more tokens.
+Variable references are of the form $(\fIv\fR) or $(\fIvm\fR), where
+\fIv\fR is the variable name, and \fIm\fR are optional modifiers.
 .PP
 Variable expansion in a rule's actions is similar to variable expansion
 in statements, except that the action string is tokenized at whitespace
@@ -401,48 +351,32 @@ Replace the archive member name with \fI<mem>\fR.
 .IP ":R=\fI<root>\fR"
 Prepend \fI<root>\fR to the whole file name, if not already rooted.
 .IP ":\fI<components>\fR"
-Remove components not listed; components
-is one or more of
-.BR GDBSM .
+Remove components not listed; components is one or more of
+\fBGDBSM\fR.
 
 .SH OPERATION
-.B Jam
-has three phases of operation: parsing, binding, and updating.  
+\fBJam\fR has three phases of operation: parsing, binding, and
+updating.
 .SS Parsing
 .PP
-.B Jam
-parses the 
-.B Jambase 
-file, which by default includes
-.BR Jamfile .
-The results of parsing are: the dependency graph of targets; update
-actions associated with the targets; and variables set to specific
-values.
+\fBJam\fR parses the \fBJambase\fR file, which by default includes
+\fBJamfile\fR.  The results of parsing are: the dependency graph of
+targets; update actions associated with the targets; and variables set
+to specific values.
 .PP
 .SS Binding
-After parsing,
-.B jam
-recursively descends the dependency graph, attempting to locate each
-target file and determine if it is in need of updating.  If \fBjam\fR
-detects a cycle in the graph, it issues a warning.
+After parsing, \fBjam\fR recursively descends the dependency graph,
+attempting to locate each target file and determine if it is in need of
+updating.  If \fBjam\fR detects a cycle in the graph, it issues a
+warning.
 .PP
 By default, a target is located at the actual path of the target,
-relative to the directory of
-.BR jam 's
-invocation.  If
-.RB $( LOCATE )
-is set to a directory name,
-.B jam
-locates the target in that directory; else if
-.RB $( SEARCH )
-is set to a directory list,
-.B jam
+relative to the directory of \fBjam\fR's invocation.  If $(LOCATE) is
+set to a directory name, \fBjam\fR locates the target in that
+directory; else if $(SEARCH) is set to a directory list, \fBjam\fR
 first searches along the directory list for the target file.  If the
-target name has a rooted directory component then
-.RB $( SEARCH )
-and
-.RB $( LOCATE )
-do not apply: the target is located at the actual path of the
+target name has a rooted directory component then $(SEARCH) and
+$(LOCATE) do not apply: the target is located at the actual path of the
 target.  If a target is marked as not being a file (using the built-in
 rule NOTFILE), it is left unbound to a file name.
 .PP
@@ -482,32 +416,20 @@ will appear eternally old; that is, older than anything that depends on
 it.
 .RE
 .PP
-If a target is a source file that includes header files,
-.B jam
-invokes the 
-.RB $( HDRRULE )
-rule on the target, giving it as sources the (unbound) names of
-the header files.  A target is scanned for header file
-dependencies if
-.RB $( HDRSCAN )
-is set to a
-.BR regexp (3)
-pattern with ()'s surrounding the include file name (see
-.B HDRPATTERN
-in
-.B Jambase 
-for an example).
+If a target is a source file that includes header files, \fBjam\fR
+invokes the $(HDRRULE) rule on the target, giving it as sources the
+(unbound) names of the header files.  A target is scanned for header
+file dependencies if $(HDRSCAN) is set to a \fBregexp\fR(3) pattern
+with ()'s surrounding the include file name (see \fBHDRPATTERN\fR in
+\fBJambase \fR for an example).
 .PP
-Between binding and updating,
-.B jam
-announces the number of targets to be updated.
+Between binding and updating, \fBjam\fR announces the number of targets
+to be updated.
 .SS Updating
-After binding,
-.B jam
-again recursively descends the dependency graph, this time executing the
-update actions for each target marked for update during the
-binding phase.  If a target's updating actions fail, then all targets
-which depend on it are skipped.
+After binding, \fBjam\fR again recursively descends the dependency
+graph, this time executing the update actions for each target marked
+for update during the binding phase.  If a target's updating actions
+fail, then all targets which depend on it are skipped.
 .PP
 (UNIX only).  The \fB-j\fR flag instructs \fBjam\fR to build more than
 one target at a time.  If there are multiple actions on a single
@@ -527,7 +449,7 @@ string is tacked on as the last argument.  The default value is:
 .SH DIAGNOSTICS
 .PP
 In addition to generic error messages, 
-.B jam
+\fBjam\fR
 may emit one of the following:
 .PP
 warning: unknown rule X
@@ -571,7 +493,7 @@ being referenced with $(<) or $(>).
 .PP
 X removed
 .IP
-.B Jam
+\fBJam\fR
 removed a partially built target after being interrupted.
 
 .SH FILES
@@ -581,22 +503,15 @@ Jamfile
 
 .SH BUGS, LIMITATIONS
 .PP
-Because the
-.B include
-statement works by pushing a new file in the input stream of the
-scanner rather than recursively invoking the parser on the new file,
-multiple include statements in a rule's procedure causes the files
-to be included in reverse order.
+Because the \fBinclude\fR statement works by pushing a new file in the
+input stream of the scanner rather than recursively invoking the parser
+on the new file, multiple include statements in a rule's procedure
+causes the files to be included in reverse order.
 .PP
-If the
-.B include
-statement appears inside an 
-.B if
-block, the parser's attempt to find the
-.B else
-will cause the text of the included file to appear after the first
-token following the statement block. 
-This is rarely what is intended.
+If the \fBinclude\fR statement appears inside an \fBif\fR block, the
+parser's attempt to find the \fBelse\fR will cause the text of the
+included file to appear after the first token following the statement
+block.  This is rarely what is intended.
 .PP
 In a rule's actions, only $(<) and $(>) refer to the bound file names:
 all other variable references get the unbound names.
@@ -610,4 +525,4 @@ into the current directory, like \fByacc\fR(1) does.
 A poorly set $(JAMSHELL) is likely to result in silent failure.
 
 .SH SEE ALSO
-.BR Jamfile (5)
+\fBJamfile\fR(5)
