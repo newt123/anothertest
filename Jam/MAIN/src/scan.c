@@ -8,7 +8,7 @@
 # include "lists.h"
 # include "parse.h"
 # include "scan.h"
-# include <jamgram.h>
+# include "jamgram.h"
 # include "jambase.h"
 # include "newstr.h"
 

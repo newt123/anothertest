@@ -1,13 +1,22 @@
 #
 # Jamfile to build Jam (a make(1)-like program)
 #
+# There are no user-serviceable parts in this file.
+#
 
 # Put executables in platform-specific  subdirectory.
 # If $(OSVER) isn't set, second value is used.
 
 LOCATE_TARGET ?= BIN.$(OS)$(OSVER) BIN.$(OS) ;
-LOCATE_SOURCE ?= $(LOCATE_TARGET) ;
-SEARCH_SOURCE = $(LOCATE_TARGET) $(DOT) ;
+
+# Leave generated source in current directory; it would be nice to use
+# these lines below to build the source into the platform-specific
+# directory, but getting scan.c to include the right jambase.h is
+# hard: with ""'s, it always gets the bootstrap version; with <>'s,
+# it won't find the bootstrap version.
+
+# LOCATE_SOURCE ?= $(LOCATE_TARGET) ;
+# SEARCH_SOURCE = $(LOCATE_TARGET) $(DOT) ;
 
 #
 # We have some different files for UNIX, VMS, and NT.
