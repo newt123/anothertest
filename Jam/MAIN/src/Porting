@@ -1,4 +1,4 @@
-Notes on porting Jam
+Notes on porting Jam - revised 1/11/95
 
 1) Working out system dependencies in the Jam code.
 
@@ -36,9 +36,8 @@ Notes on porting Jam
 3) Working out system dependencies in the Jambase
 
     With the value of $(OS) available, the Jambase can be extended to
-    support special variables or rules for new platforms.  For ports to
-    non UNIX platforms, it might pay to make a new Jambase.xxx
-    altogether, a la Jambase.VMS.
+    support special variables or rules for new platforms.   See the
+    current support for VMS and NT.
 
 4) Yacc troubles
 

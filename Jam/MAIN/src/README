@@ -1,5 +1,8 @@
 Jam - make(1) redux
 
+November, 1993 - release 1
+January, 1995 - release 2
+
 FEATURES
 
     Jam is a make-like program that supplants make's implicit rules
@@ -29,6 +32,7 @@ PORTING
     Build jam with make(1) on:
 
 	    BSDI	    BSD/386 1.0
+	    COHERENT	    COHERENT/386
 	    DEC 3000/500    OSF/1
 	    DG AViiON       DGUX 5.4
 	    HP 9000/700     HPUX 9.0
@@ -57,15 +61,15 @@ OTHER FILES
     Aside from source files, there is:
 
 	Build.com	VMS command script
-	Examples	sample Jamfiles
+	CHANGES		Changes from Release 1 to Release 2
 	Makefile	a bootstrap makefile
 	Porting		notes on porting jam
 	Jambase.5	Jambase man page
+	Jamfile.5	Easy reading on writing a Jamfile
 	jam.1		jam man page
 	yyacc		a yacc pre-preprocessor
 
 Comments to the author!
 
 Christopher Seiwald
-Seiwald@vix.com
-November, 1993
+Seiwald@Vix.Com
