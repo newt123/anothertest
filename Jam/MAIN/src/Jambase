@@ -1034,7 +1034,7 @@ rule makeGristedName
 
 rule makeCommon
 {
-	if $($(<)[1]) && $($(<[1])) = $($(>[1))
+	if $($(<)[1]) && $($(<)[1]) = $($(>)[1])
 	{
 	    $(<) = $($(<)[2-]) ;
 	    $(>) = $($(>)[2-]) ;
@@ -1046,7 +1046,7 @@ rule makeRelPath
 {
 	# first strip off common parts
 
-	l = $(<[2-) ;
+	l = $(<[2-]) ;
 	r = $(>) ;
 
 	makeCommon l : r ;

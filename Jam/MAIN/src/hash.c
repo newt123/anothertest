@@ -82,8 +82,7 @@ struct hash
 } ;
 
 static hashrehash();
-
-int hashstat( struct hash *hp );
+int hashstat();
 
 /*
  * hashitem() - find a record in the table, and optionally enter a new one
@@ -108,7 +107,7 @@ HASHDATA **data;
 	keyval = *b;
 
 	while( *b )
-		keyval = keyval * 2903657531u + *b++;
+		keyval = keyval * (unsigned)2903657531 + *b++;
 
 	keyval &= 0x7FFFFFFF;
 

@@ -691,7 +691,7 @@ int which;
 char *s;
 {
 	static int level = 0;
-	char indent[33] = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+	static char indent[33] = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
 	char *i = &indent[32 - (((1+level) * 2) % 32)];
 
 	if( which >= 0 )
