@@ -1228,7 +1228,7 @@ if $(UNIX)
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
     }
 
-    actions CcMv
+    actions quietly CcMv 
     {
 	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
     }
