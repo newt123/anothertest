@@ -30,6 +30,8 @@
  * and file_archscan() indicate that a timestamp is being provided with the
  * file.   If file_dirscan() or file_archscan() do not provide the file's
  * timestamp, interested parties may later call file_time().
+ *
+ * 12/21/94 (wingerd) Use backslashes for pathnames - the NT way.
  */
 
 /*
@@ -57,7 +59,7 @@ FILENAME	*f;
 
 	/* Look for dir/ */
 
-	if( p = strrchr( file, '/' ) )
+	if( p = strrchr( file, '\\' ) )
 	{
 	    f->f_dir.ptr = file;
 	    f->f_dir.len = p - file;
@@ -111,11 +113,12 @@ char		*file;
 
 	if( f->f_root.len 
 	    && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == '/' ) )
+	    && !( f->f_dir.len && f->f_dir.ptr[0] == '\\' )
+	    && !( f->f_dir.len && f->f_dir.ptr[1] == ':' ) )
 	{
 	    memcpy( file, f->f_root.ptr, f->f_root.len );
 	    file += f->f_root.len;
-	    *file++ = '/';
+	    *file++ = '\\';
 	}
 	    
 	if( f->f_dir.len )
@@ -125,7 +128,7 @@ char		*file;
 	}
 
 	if( f->f_dir.len && f->f_base.len )
-	    *file++ = '/';
+	    *file++ = '\\';
 
 	if( f->f_base.len )
 	{
@@ -267,7 +270,7 @@ void (*func)();
 
 	    strncpy( lar_name, ar_hdr.ar_name, sizeof(ar_hdr.ar_name) );
 	    c = lar_name + sizeof( lar_name );
-	    while( *--c == ' ' || *c == '/' )
+	    while( *--c == ' ' || *c == '\\' )
 		    ;
 	    *++c = '\0';
 

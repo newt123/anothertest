@@ -10,6 +10,8 @@
  * 04/08/94 (seiwald) - Coherent/386 support added.
  * 04/21/94 (seiwald) - DGUX is __DGUX__, not just __DGUX.
  * 05/04/94 (seiwald) - new globs.jobs (-j jobs)
+ * 11/01/94 (wingerd) - let us define path of Jambase at compile time.
+ * 12/30/94 (wingerd) - changed command buffer size for NT (MS-DOS shell).
  */
 
 # ifdef VMS
@@ -63,7 +65,7 @@
 
 # define OTHERSYMS "NT=true","OS=NT"
 # define JAMBASE "Jambase.NT"
-# define MAXCMD	10240	/* longest command */
+# define MAXCMD	996	/* longest command */
 # define EXITOK 0
 
 # else
@@ -124,7 +126,9 @@
 # define OTHERSYMS "UNIX=true"
 # endif
 
+# ifndef JAMBASE
 # define JAMBASE "/usr/local/lib/jam/Jambase"
+# endif
 # define MAXCMD	10240	/* longest command */
 # define EXITOK 0
 
