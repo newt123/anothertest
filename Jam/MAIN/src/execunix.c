@@ -25,7 +25,7 @@
 
 # include <process.h>
 
-# if !defined( __BORLANDC__ )
+# if !defined( __BORLANDC__ ) && !defined( __OS2__ )
 # define wait my_wait
 static int my_wait(int *status);
 # endif

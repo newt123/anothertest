@@ -149,7 +149,8 @@ LOL		*args;
 
 	    var_set( parse->string, val, VAR_SET );
 
-	    (*parse->left->func)( parse->left, args );
+	    if( parse->left )
+		(*parse->left->func)( parse->left, args );
 	}
 
 	list_free( nv );
@@ -168,12 +169,15 @@ compile_if( parse, args )
 PARSE		*parse;
 LOL		*args;
 {
-	PARSE	*then = parse->right;
+	PARSE *then;
 
 	if( evaluate_if( parse->left, args ) )
-	    (*then->left->func)( then->left, args );
-	else if( then->right )
-	    (*then->right->func)( then->right, args );
+	    then = parse->right->left;
+	else
+	    then = parse->right->right;
+
+	if( then )
+	    (*then->func)( then, args );
 }
 
 /*
