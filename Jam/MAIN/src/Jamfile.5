@@ -24,16 +24,15 @@ For example:
 .SH DESCRIPTION
 .PP
 This manual page gives instructions and examples for writing a
-\fBJamfile\fR.  A \fBJamfile\fR is a file that tells \fBjam\fR what to
-build in the current directory.  It consists of invocations of rules
-which are defined by the \fBjam\fR boilerplate \fBJambase\fR.  The
-rules \fBJambase\fR defines provide roughly \fBmake\fR(1)-like
-functionality.
+\fBJamfile\fR, a file that tells \fBjam\fR what to build in the current
+directory.  It consists of invocations of rules which are defined by
+the \fBjam\fR boilerplate, \fBJambase\fR.  \fBJambase\fR defines rules
+which provide roughly \fBmake\fR(1)-like functionality.
 .PP
 This description goes with \fBjam\fR release 2.
 .PP
-Each example is all or part of a \fBJamfile\fR.  Once you have created
-a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
+Each example here is all or part of a \fBJamfile\fR.  Once you have
+created a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
 simplest way is:
 .BB
 jam
@@ -58,22 +57,23 @@ More information about the syntax of a \fBJamfile\fR can be found in
 .SH EXECUTABLES AND LIBRARIES
 .SS Main Rule
 .PP
-The \fIMain\fR rule compiles one or more files and links the resulting
+The \fIMain\fR rule compiles one or more source files and links the resulting
 objects into an executable.
 .XB
 Main myprog : main.c util.c ;
 .XE
 .PP
 This compiles main.c and util.c and links main.o and util.o into myprog.
-As with all rules that compile source files, \fBjam\fR hanles header file 
+As with all rules that compile source files, \fBjam\fR handles header file 
 dependencies automatically.
 .SS Library Rule
 .PP
-The \fILibrary\fR rule compiles one or more sources, archives the
-resulting objects into a library, and then deletes the objects.
+The \fILibrary\fR rule compiles one or more source files, archives the
+resulting object files into a library, and then deletes the object
+files.
 .XB
-Library libstring.a : strcmp.c strcpy.c strlen.c ; 
-Library libtree.a : treemake.c treetrav.c ;
+Library libstring.a : strcmp.c strcpy.c strlen.c ; Library libtree.a :
+treemake.c treetrav.c ;
 .XE
 .PP
 This compiles five source files, archives three of the object files
@@ -93,8 +93,14 @@ Library libtree.a : treemake.c treetrav.c ;
 .PP
 The \fILinkLibraries\fR rule does two things: it makes the libraries
 dependents of the executable, so that they get built first; and it
-makes the libriares show up on the command line that links the
-executable.  The ordering of the lines above is not critical.
+makes the libraries show up on the command line that links the
+executable.  The ordering of the lines above is not critical, because
+\fBjam\fR builds targets in the order that they are needed.
+.PP
+You can provide multiple libraries to a single invocation of the
+\fILinkLibraries\fR rule, or you can provide them in multiple
+invocations.  In both cases, the libraries appear on the link command
+line in the order in which they were encountered.
 .SS Variables
 .PP
 The following variables control the linking of executables and the
