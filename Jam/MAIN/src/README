@@ -95,9 +95,7 @@ INSTALLING
     Build jam with @build.com on:
 
 	    VAX		    VMS 5.4
-	    DEC 3000/500    OPENVMS	*
-
-	    * requires editing build.com
+	    DEC 3000/500    OPENVMS	
 
     The Makefile (UNIX, NT) and build.com (VMS) are for bootstrapping.
 

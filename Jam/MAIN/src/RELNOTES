@@ -9,6 +9,7 @@ Clean for File rule in Jambase.
 allow for OS to be Windows_NT
 NOSCANLIB and other BCC changes for NT (lauraw).
 NEXT support from karthy@dannug.dk (Karsten Thygesen
+DECC support. zinser@axp614.gsi.de Martin P.J. Zinser
 
 Release notes for Jam 2.0.
 
