@@ -182,9 +182,9 @@ char	**argv;
 
 	if( ( s = getoptval( optv, 'v', 0 ) ) )
 	{
-	    printf( "Jam - make(1) redux.  " );
+	    printf( "Jam/MR  " );
 	    printf( "Version %s.%s.  ", VERSION, PATCHLEVEL );
-	    printf( "Copyright 1993, 1996 Christopher Seiwald.\n" );
+	    printf( "Copyright 1993, 1997 Christopher Seiwald.\n" );
 
 	    return EXITOK;
 	}
