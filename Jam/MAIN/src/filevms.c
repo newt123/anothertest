@@ -114,7 +114,7 @@ FILENAME	*f;
 
 	/* Look for .suffix */
 
-	if( ( p = strchr( file, '.' ) ) && p < end )
+	if( ( p = strrchr( file, '.' ) ) && p < end )
 	{
 	    f->f_suffix.ptr = p;
 	    f->f_suffix.len = end - p;

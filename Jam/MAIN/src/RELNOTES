@@ -16,6 +16,9 @@ Changes since 2.1
     The syntax "if $(A) in $(B)" is now supported.  It is true of all
     elements of $(A) can be found in $(B), _or_ if $(A) is empty.
 
+    $(FOO:S) now refers to the _last_ suffix if a filename has more than
+    one dot (.) in it.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
