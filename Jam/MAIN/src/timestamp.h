@@ -9,4 +9,5 @@
  */
 
 void timestamp();
+void donestamps();
 

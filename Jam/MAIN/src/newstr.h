@@ -11,4 +11,5 @@
 char *newstr();
 char *copystr();
 void freestr();
+void donestr();
 

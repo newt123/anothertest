@@ -16,6 +16,7 @@ void var_set();
 LIST *var_swap();
 LIST *var_list();
 int var_string();
+void var_done();
 
 /*
  * Defines for var_set().

@@ -17,6 +17,16 @@
 # include "make.h"
 # include "patchlevel.h"
 
+/* These get various function declarations. */
+
+# include "newstr.h"
+# include "rules.h"
+# include "lists.h"
+# include "parse.h"
+# include "scan.h"
+# include "timestamp.h"
+# include "variable.h"
+
 /*
  * jam.c - make redux
  *

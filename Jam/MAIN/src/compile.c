@@ -14,6 +14,7 @@
 # include "newstr.h"
 # include "make.h"
 # include "search.h"
+# include "scan.h"
 
 /*
  * compile.c - compile parsed jam statements
@@ -60,6 +61,8 @@ static void builtin_depends();
 static void builtin_echo();
 static void builtin_exit();
 static void builtin_flags();
+
+int glob();
 
 
 

@@ -83,6 +83,8 @@ struct hash
 
 static hashrehash();
 
+int hashstat( struct hash *hp );
+
 /*
  * hashitem() - find a record in the table, and optionally enter a new one
  */

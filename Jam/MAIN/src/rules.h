@@ -159,3 +159,4 @@ ACTIONS	*actionlist();
 SETTINGS *addsettings();
 void 	pushsettings();
 void 	popsettings();
+void	donerules();

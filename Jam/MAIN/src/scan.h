@@ -24,7 +24,11 @@ typedef struct _YYSTYPE {
 
 extern YYSTYPE yylval;
 
+int yyerror();
+int yyfparse();
+int yylex();
 void yymode();	/* adjust lexicon of scanner */
+int yyparse();
 
 # define SCAN_NORMAL	0	/* normal parsing */
 # define SCAN_STRING	1	/* look only for matching } */
