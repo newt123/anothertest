@@ -68,11 +68,32 @@ actions TempCopy
 	cp $(>) $(<)
 }
 
+rule Groff
+{
+	DEPENDS $(<) : $(>) ;
+}
+
+actions Groff
+{
+	groff -Tps -man $(>) > $(<)
+}
+
 rule Shar
 {
 	DEPENDS $(<) : $(>) ;
-	TempCopy Paper.ps : ../doc/jam.ps ;
-	RmTemps $(<) : Paper.ps ;
+}
+
+rule Tar
+{
+	DEPENDS $(<) : $(>) ;
+}
+
+actions Tar
+{
+	mv Jamfile Jamfile.sav
+	sed '/--- cut/,$d' Jamfile.sav > Jamfile
+	tar cvf $(<) $(>)
+	mv Jamfile.sav Jamfile
 }
 
 actions Shar
@@ -83,14 +104,24 @@ actions Shar
 	mv Jamfile.sav Jamfile
 }
 
-Shar SHAR :
-	    README Build.com CHANGES Jambase Jamfile Jamfile.5 Makefile
-	    Paper.ps Porting command.c command.h compile.c compile.h
-	    execcmd.h execnt.c execunix.c execvms.c expand.c expand.h
-	    filent.c filesys.h fileunix.c filevms.c glob.c hash.c
-	    hash.h headers.c headers.h jam.1 jam.c jam.h jamgram.c
-	    jamgram.h jamgram.y jamgramtab.h lists.c lists.h make.c
-	    make.h make1.c newstr.c newstr.h option.c option.h parse.c
-	    parse.h patchlevel.h regexp.c regexp.h rules.c rules.h
-	    scan.c scan.h search.c search.h timestamp.c timestamp.h
-	    variable.c variable.h ;
+ALLSOURCE = 
+	    README Build.com CHANGES Jambase Jamfile Jamfile.5
+	    Jamfile.ps Makefile Paper.ps Porting command.c command.h
+	    compile.c compile.h execcmd.h execnt.c execunix.c execvms.c
+	    expand.c expand.h filent.c filesys.h fileunix.c filevms.c
+	    glob.c hash.c hash.h headers.c headers.h jam.1 jam.c jam.h
+	    jam.ps jamgram.c jamgram.h jamgram.y jamgramtab.h lists.c
+	    lists.h make.c make.h make1.c newstr.c newstr.h option.c
+	    option.h parse.c parse.h patchlevel.h regexp.c regexp.h
+	    rules.c rules.h scan.c scan.h search.c search.h timestamp.c
+	    timestamp.h variable.c variable.h ;
+
+TempCopy Paper.ps : ../doc/jam.ps ;
+Groff jam.ps : jam.1 ;
+Groff Jamfile.ps : Jamfile.5 ;
+
+Shar SHAR : $(ALLSOURCE) ;
+Tar TAR : $(ALLSOURCE) ;
+
+RmTemps SHAR : Paper.ps ;
+RmTemps TAR : Paper.ps ;

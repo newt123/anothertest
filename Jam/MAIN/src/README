@@ -15,6 +15,9 @@ jam - make(1) redux
 
 FEATURES
 
+   ->	Jam is a make(1) replacement that makes building simple things
+	simple and building complicated things manageable.
+
    ->	Jam's language is expressive, making Jamfiles (c.f. Makefiles) 
 	compact.  Here's a sample:
 
@@ -22,8 +25,8 @@ FEATURES
 			 misc.c parser.y alias.c pw.c headers.c
 			 scanner.l getpath.c str.c ;
 
-	This builds "smail" from a dozen source files, handling header 
-	file dependencies automatically.
+	This builds "smail" from a dozen source files.  Jam handles 
+	header file dependencies automatically and on-the-fly.
 
    ->	Jam is very portable: it runs on UNIX, VMS, and NT.  Most
 	Jamfiles themselves are portable, like the sample above.
@@ -34,7 +37,8 @@ FEATURES
 
    ->	Jam can build large projects spread across many directories
 	in one pass, without recursing, tracking the relationships
-	among all files.  See the accompanying paper.
+	among all files.  See the accompanying paper.  On UNIX, jam 
+	can do this with multiple, concurrent processes.
 
    ->   Jam isn't under the blinkin GNU copyright, so you can 
 	incorporate it into commercial products.
@@ -43,8 +47,10 @@ FEATURES
 INFORMATION GUIDE
 
     jam.1	Jam man page - a terse description.
+    jam.ps
 
     Jamfile.5	Easy reading on creating a Jamfile and using jam.
+    Jamfile.ps
 
     Paper.ps    The 1994 UNIX Application Development Symposium paper 
 		on jam (reflects Release 1 - see CHANGES).
@@ -89,7 +95,8 @@ INSTALLING
 	    * requires editing build.com
 
     The Makefile (UNIX, NT) and build.com (VMS) are for bootstrapping.
-    Once jam is built, it can rebuild itself.
+
+    Once jam is built, read the Jamfile man page and give it a try.
 
 
 Comments to the author!
