@@ -47,7 +47,7 @@
 # define psete( s,l,s1,f ) parse_make( compile_setexec,P0,P0,s,s1,l,L0,f )
 # define pincl( l )       parse_make( compile_include,P0,P0,S0,S0,l,L0,0 )
 # define pswitch( l,p )   parse_make( compile_switch,p,P0,S0,S0,l,L0,0 )
-# define plocal( l,p )	  parse_make( compile_local,p,P0,S0,S0,l,L0,0 );
+# define plocal( l,r,p )  parse_make( compile_local,p,P0,S0,S0,l,r,0 );
 # define pcases( l,r )    parse_make( F0,l,r,S0,S0,L0,L0,0 )
 # define pcase( s,p )     parse_make( F0,p,P0,s,S0,L0,L0,0 )
 # define pif( l,r )	  parse_make( compile_if,l,r,S0,S0,L0,L0,0 )
@@ -75,7 +75,9 @@ block	: /* empty */
 	| rule block
 		{ $$.parse = prules( $1.parse, $2.parse ); }
 	| `local` args `;` block
-		{ $$.parse = plocal( $2.list, $4.parse ); }
+		{ $$.parse = plocal( $2.list, L0, $4.parse ); }
+	| `local` args `=` args `;` block
+		{ $$.parse = plocal( $2.list, $4.list, $6.parse ); }
 	;
 
 rule	: `{` block `}`

@@ -23,7 +23,7 @@
  *	compile_foreach() - compile the "for x in y" statement
  *	compile_if() - compile 'if' rule
  *	compile_include() - support for 'include' - call include() on file
- *	compile_local() - declare local variables
+ *	compile_local() - declare (and set) local variables
  *	compile_rule() - compile a single user defined rule
  *	compile_rules() - compile a chain of rules
  *	compile_set() - compile the "set variable" statement
@@ -331,9 +331,10 @@ LOL		*args;
 }
 
 /*
- * compile_local() - declare local variables
+ * compile_local() - declare (and set) local variables
  *
  *	parse->llist	list of variables
+ *	parse->rlist	list of values
  *	parse->left	rules to execute
  */
 
@@ -344,18 +345,25 @@ LOL		*args;
 {
 	LIST *l;
 	SETTINGS *s = 0;
+	LIST	*nt = var_list( parse->llist, args );
+	LIST	*ns = var_list( parse->rlist, args );
 
 	if( DEBUG_COMPILE )
 	{
 	    debug_compile( 0, "local" );
-	    list_print( parse->llist );
+	    list_print( nt );
+	    printf( " = " );
+	    list_print( ns );
 	    printf( "\n" );
 	}
 
-	/* Initial value is empty */
+	/* Initial value is ns */
 
-	for( l = parse->llist; l; l = list_next( l ) )
-	    s = addsettings( s, 0, l->string, (LIST *)0 );
+	for( l = nt; l; l = list_next( l ) )
+	    s = addsettings( s, 0, l->string, list_copy( (LIST*)0, ns ) );
+
+	list_free( ns );
+	list_free( nt );
 
 	/* Note that callees of the current context get this "local" */
 	/* variable, making it not so much local as layered. */
