@@ -122,7 +122,9 @@ struct globs globs = {
 static char *othersyms[] = { OTHERSYMS, JAMVERSYM, 0 } ;
 
 # ifndef __WATCOM__
+# ifndef __OS2__
 extern char **environ;
+# endif
 # endif
 
 main( argc, argv )

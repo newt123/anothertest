@@ -39,6 +39,11 @@ static void (*istat)( int disp );
 static void (*istat)();
 # endif
 
+/* OS2 Watcom */
+
+# ifndef _WAIT_CHILD
+# define _WAIT_CHILD  WAIT_CHILD
+# endif
 static struct
 {
 	int	pid;
