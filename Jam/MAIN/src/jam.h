@@ -207,7 +207,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "UNIX=true","OS=SINIX"
 # endif
 # ifdef sun
-# ifdef __svr4__
+# if defined(__svr4__) || defined(__SVR4)
 # define OTHERSYMS "UNIX=true","OS=SOLARIS"
 # else
 # define OTHERSYMS "UNIX=true","OS=SUNOS"
