@@ -19,6 +19,7 @@ GParticle::GParticle( double x, double y )
   springs( 0 ),
   next( 0 ),
   name( 0 ),
+  inworld( false ),
   init( true )
 {
 }
@@ -27,14 +28,38 @@ GParticle::~GParticle(void)
 {
 }
 
+void GParticle::AddSpring( GParticle* p )
+{
+	GSpring* s = new GSpring();
+	s->K = SPRING_K;
+	s->part = p;
+	s->next = springs;
+	springs = s;
+}
+
+void GParticle::HideSprings()
+{
+	for ( GSpring* s = springs ; s ; s = s->next )
+	{
+		s->part->inworld = false;
+	}
+	init = false;
+}
+
 void GParticle::Init( GWorld* w )
 {
+	for ( GSpring* s = springs ; s ; s = s->next )
+	{
+		s->part->pos = NearBy();
+		w->Add( s->part );
+	}
+	init = false;
+	return;
 	init = false;
 	int n = initn;
 	if ( !n ) return;
 
 	GParticle* p;
-	GSpring* s;
 
 	double dx, dy, dt;
 
@@ -52,23 +77,26 @@ void GParticle::Init( GWorld* w )
 		else
 			p->name = "none";
 
-		p->next = w->parts;
-		w->parts = p;
-
-		s = new GSpring();
-		s->K = SPRING_K;
-		s->part = p;
-
-		s->next = springs;
-		springs = s;
+		w->Add( p );
+		AddSpring( p );
 
 		p->initn = n - 1;
 		p->Q = Q * 0.9;
 	}
 }
 
+GVector GParticle::NearBy()
+{
+	double dx, dy;
+	int i = rand() % 128;
+	dx = r * 2 * cos( i * 2.0 * M_PI / 128 ) ;
+	dy = r * 2 * sin( i * 2.0 * M_PI / 128 ) ;
+	return pos + GVector( dx, dy );
+}
+
 void GParticle::ComputeForce( GWorld* w )
 {
+	if ( !inworld ) return;
 	GParticle* p;
 	GSpring* s;
 	GVector dv( 0.0, 0.0 );
@@ -78,6 +106,7 @@ void GParticle::ComputeForce( GWorld* w )
 	// Electrostatic forces
 	for ( p = w->parts ; p ; p = p->next )
 	{
+		if ( !p->inworld ) continue;
 		if ( p->pos.x == pos.x && p->pos.y == pos.y ) continue;
 
 		dv = pos - p->pos ;		//vector pointing from p to this
@@ -90,9 +119,11 @@ void GParticle::ComputeForce( GWorld* w )
 		F = F + fv;
 	}
 	// Spring forces
+
 	for ( s = springs ; s ; s = s->next )
 	{
 		p = s->part;
+		if ( !p->inworld ) continue;
 
 		dv = pos - p->pos ;		//vector pointing from p to this
 
@@ -110,8 +141,15 @@ void GParticle::ComputeForce( GWorld* w )
 	}
 
 	//Gravitational force toward the center
-	dd = ~pos + r;
-	fv = ( pos / dd ) * ( -1 * CONST_G * w->mass * m / ( dd * dd ) );
+	dd = ~pos + r * 10.0;
+
+	//fv = ( pos / dd ) * ( -1 * CONST_G * w->mass * m / ( dd * dd ) );
+	//Instead of using real gravity, we'll use a version that's
+	//actually useful, which is more like a spring connecting everything
+	//in the world to the center.
+
+	fv = ( pos / dd ) * ( -1 * CONST_G * w->mass * m * dd );
+	if ( w->heavyg ) fv = fv * 1000.0;
 	F = F + fv;
 }
 
@@ -123,6 +161,7 @@ void GParticle::Step( GWorld* w )
 
 	double fric = ( init && initn ) ? CONST_f : CONST_f * 5.0;
 	if ( w->greased ) fric = CONST_f;
+	if ( w->nofric ) fric = 0.0;
 	v = v * ( 1.0 - fric );
 
 	if ( ~v < STATIC_v ) 
@@ -139,11 +178,13 @@ void GParticle::Step( GWorld* w )
 
 void GParticle::Render()
 {
+	if ( !inworld ) return;
+
 	//Inefficient circle drawing.  Fix this later.
 	GLint i;
 	GLfloat cosine, sine;
 
-	if ( init && initn )
+	if ( init && springs )
 		glColor3f( 1.0, 0.4, 0.4 );
 	else
 		glColor3f( 0.4, 0.4, 1.0 );
@@ -165,6 +206,7 @@ void GParticle::Render()
 	for ( s = springs ; s ; s = s->next )
 	{
 		p = s->part;
+		if ( !p->inworld ) continue;
 
 		dv = p->pos - this->pos;
 		sv = pos + ( dv / ~dv ) * r;

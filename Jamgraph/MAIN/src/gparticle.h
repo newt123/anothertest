@@ -18,6 +18,7 @@ public:
 	~GParticle(void);
 
 	void Init( GWorld* );
+	void AddSpring( GParticle* p );
 	
 	double Q;	//charge
 	double m;	//mass
@@ -30,11 +31,15 @@ public:
 	bool init;
 	int initn;
 
+	bool inworld;
 	char* name;
 
 	void ComputeForce( GWorld* w );
 	void Step( GWorld* w );
 	void Render();
+
+	GVector NearBy();
+	void HideSprings();
 
 	GParticle* next;
 	GSpring* springs; //connected springs

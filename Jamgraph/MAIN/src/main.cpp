@@ -7,10 +7,54 @@
 #include "gvector.h"
 #include "gparticle.h"
 #include "gworld.h"
+#include "partdict.h"
 
 GWorld* w;
 GParticle* p;
+PartDict* pd;
 double mx, my;
+
+void load()
+{
+	pd = new PartDict();
+	char *line, *t1, *t2;
+	GParticle *p1, *p2;
+	bool root = false;
+
+	//Going to use a big honking bunch of memory here that never gets
+	//freed.  At some point I might fix this.
+	for (	line = new char[1024];
+			fgets( line, 1024, stdin );
+			line = new char[1024]
+		)
+	{
+		if ( memcmp( line, "Depends \"", 9 ) ) continue;
+		line += 9;
+//		if ( memcmp( line, "Includes \"", 10 ) ) continue;
+//		line += 10;
+
+		t1 = line;
+        while ( *line != '"' ) line++;
+		*line = '\0';
+
+		line += 5;
+		t2 = line;
+		while ( *line != '"' ) line++;
+		*line = '\0';
+
+		p1 = pd->GetNode( t1 );
+		p2 = pd->GetNode( t2 );
+		p2->pos = p1->NearBy();
+
+		if ( !root )
+		{
+			w->Add( p1 );
+			root = true;
+		}
+
+		p1->AddSpring( p2 );
+	}
+}
 
 void getpos( int x, int y )
 {
@@ -48,6 +92,36 @@ void key( unsigned char key, int x, int y )
 		break;
 	case ' ':
 		w->autoscale = true;
+		break;
+	case 'f':
+	case 'F':
+		w->nofric = !w->nofric;
+		break;
+	case 'g':
+	case 'G':
+		w->heavyg = !w->heavyg;
+		break;
+	case 't':
+	case 'T':
+		p = w->ParticleAt( mx, my );
+		if ( p ) w->RemoveAllBut( p );
+		p = 0;
+		break;
+	case 'r':
+	case 'R':
+		w->RemoveAllBut( w->root );
+		break;
+	case 'h':
+	case 'H':
+		p = w->ParticleAt( mx, my );
+		if ( p ) w->Remove( p );
+		p = 0;
+		break;
+	case 'j':
+	case 'J':
+		p = w->ParticleAt( mx, my );
+		if ( p ) p->HideSprings();
+		p = 0;
 		break;
 	}
 }
@@ -105,7 +179,7 @@ void display()
 int main ( int argc, char** argv )
 {
 	w = new GWorld();
-	w->Init();
+	load();
 
 	p = 0;
 
