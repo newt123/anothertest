@@ -267,10 +267,9 @@ else if $(NT)
 	C++		default = $(CC) ;
 	C++FLAGS	default = $(CCLFAGS) ;
 	CRELIB		default = true ;
-	LINK		default = $(CC) ;
-	LINKFLAGS	default = $(CCFLAGS) ;
+	LINK		default = link ;
+	LINKFLAGS	default = ;
 	LINKLIBS	default = $(MSVCNT)\\lib\\advapi32.lib
-				#$(MSVCNT)\\lib\\libcmt.lib
 				$(MSVCNT)\\lib\\libc.lib
 				$(MSVCNT)\\lib\\oldnames.lib
 				$(MSVCNT)\\lib\\kernel32.lib ;
