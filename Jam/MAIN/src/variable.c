@@ -33,7 +33,8 @@
  *
  * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
  * 08/23/94 (seiwald) - Support for '+=' (append to variable)
- * 01/22/94 (seiwald) - split environment variables at blanks or :'s
+ * 01/22/95 (seiwald) - split environment variables at blanks or :'s
+ * 05/10/95 (seiwald) - split path variables at SPLITPATH (not :)
  */
 
 static struct hash *varhash = 0;
@@ -79,7 +80,7 @@ char **e;
 		/* Split *PATH at :'s, not spaces */
 
 		if( val - 4 >= *e && !strncmp( val - 4, "PATH", 4 ) )
-		    split = ':';
+		    split = SPLITPATH;
 
 		/* Do the split */
 

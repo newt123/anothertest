@@ -11,6 +11,7 @@ NOSCANLIB and other BCC changes for NT (lauraw).
 NEXT support from karthy@dannug.dk (Karsten Thygesen
 DECC support. zinser@axp614.gsi.de Martin P.J. Zinser
 AIX now uses fork instead of vfork
+SPLITPATH now set up for UNIX (:), NT (;), VMS (,)
 
 Release notes for Jam 2.0.
 

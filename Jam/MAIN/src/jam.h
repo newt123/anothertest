@@ -14,6 +14,7 @@
  * 12/30/94 (wingerd) - changed command buffer size for NT (MS-DOS shell).
  * 02/22/95 (seiwald) - Jambase now in /usr/local/lib.
  * 04/30/95 (seiwald) - FreeBSD added.  Live Free or Die.
+ * 05/10/95 (seiwald) - SPLITPATH character set up here.
  */
 
 # ifdef VMS
@@ -39,6 +40,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define MAXCMD	255 /* longest command - related to quotas */
 # define JAMBASE "Jambase"
+# define SPLITPATH ','
 # define EXITOK 1
 # define EXITBAD 0
 
@@ -58,6 +60,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "NT=true","OS=NT"
 # define JAMBASE "Jambase"
+# define SPLITPATH ';'
 # define MAXCMD	996	/* longest command */
 # define EXITOK 0
 # define EXITBAD 1
@@ -127,6 +130,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define JAMBASE "/usr/local/lib/Jambase"
 # endif
 # define MAXCMD	10240	/* longest command */
+# define SPLITPATH ':'
 # define EXITOK 0
 # define EXITBAD 1
 
