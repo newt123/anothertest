@@ -37,6 +37,7 @@
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  * 01/22/94 (seiwald) - pass per-target JAMSHELL down to execcmd().
  * 02/28/95 (seiwald) - Handle empty "existing" actions.
+ * 03/10/95 (seiwald) - Fancy counts.
  */
 
 # include "jam.h"
@@ -65,17 +66,26 @@ static int make1exec();
 
 # define max( a,b ) ((a)>(b)?(a):(b))
 
+/* Ugly static - it's too hard to carry it through the callbacks. */
+
+static struct {
+	int	failed;
+	int	skipped;
+	int	total;
+} counts[1] ;
+
 /*
  * make1() - execute commands to update a TARGET and all its dependents
  */
 
-static int count = 0;
 static int intr = 0;
 
 void
 make1( t )
 TARGET *t;
 {
+	memset( (char *)counts, 0, sizeof( *counts ) );
+
 	/* Recursively make the target and its dependents */
 
 	make1a( t, (TARGET *)0 );
@@ -84,6 +94,19 @@ TARGET *t;
 
 	while( execwait() )
 	    ;
+
+	if( DEBUG_MAKE )
+	{
+	    int failed = counts->failed - counts->skipped;
+	    int made = counts->total - counts->failed;
+
+	    if( failed )
+		printf( "...failed updating %d target(s)...\n", failed );
+	    if( counts->skipped )
+		printf( "...skipped %d target(s)...\n", counts->skipped );
+	    if( made )
+		printf( "...updated %d target(s)...\n", made );
+	}
 }
 
 /*
@@ -167,12 +190,17 @@ TARGET	*t;
 	    t->status = c->target->status;
 	}
 
-	/* If it's missing and there are no actions to create it, boom. */
-	/* if reasonable, execute all actions to make target */
+	/* If actions on deps have failed, bail. */
+	/* Otherwise, execute all actions to make target */
 
 	if( t->status == EXEC_CMD_FAIL )
 	{
-	    printf( "%s skipped for lack of %s\n", t->name, failed );
+	    if( t->actions )
+	    {
+		printf( "...skipped %s for lack of %s...\n", t->name, failed );
+		++counts->skipped;
+		++counts->total;
+	    }
 	}
 	else if( t->status == EXEC_CMD_INTR )
 	{
@@ -194,7 +222,7 @@ TARGET	*t;
 
 	case T_FATE_ISTMP:
 	    if( DEBUG_MAKEQ )
-		printf( "using %s\n", t->name );
+		printf( "...using %s...\n", t->name );
 	    break;
 
 	case T_FATE_TOUCHED:
@@ -203,8 +231,8 @@ TARGET	*t;
 	case T_FATE_UPDATE:
 	    /* Set "on target" vars, execute actions, unset vars */
 
-	    if( t->actions && !( ++count % 100 ) && DEBUG_MAKE )
-		printf( "...on %dth target...\n", count );
+	    if( t->actions && !( ++counts->total % 100 ) && DEBUG_MAKE )
+		printf( "...on %dth target...\n", counts->total );
 
 	    pushsettings( t->settings );
 	    t->cmds = (char *)make1cmds( t->actions );
@@ -215,7 +243,7 @@ TARGET	*t;
 
 	/* Call make1c() to begin the execution of the chain of commands */
 	/* needed to build target.  If we're not going to build target */
-	/* (because of dependency failures or because no command need to */
+	/* (because of dependency failures or because no commands need to */
 	/* be run) the chain will be empty and make1c() will directly */
 	/* signal the completion of target. */
 
@@ -281,6 +309,11 @@ TARGET	*t;
 		if( t->status > actions->action->status )
 		    actions->action->status = t->status;
 
+	    /* Tally failure */
+
+	    if( t->status != EXEC_CMD_OK && t->actions )
+		counts->failed++;
+		
 	    /* Tell parents dependent has been built */
 
 	    for( c = t->parents; c; c = c->next )
@@ -306,10 +339,16 @@ int	status;
 	if( status == EXEC_CMD_FAIL && ( cmd->rule->flags & RULE_IGNORE ) )
 	    status = EXEC_CMD_OK;
 
-	t->status = status;
-	t->cmds = (char *)cmd_next( cmd );
-
-	if( status == EXEC_CMD_INTR )
+	if( status == EXEC_CMD_FAIL )
+	{
+	    if( DEBUG_MAKE )
+	    {
+		printf( "...failed %s ", cmd->rule->name );
+		list_print( cmd->targets );
+		printf( "...\n" );
+	    }
+	}
+	else if( status == EXEC_CMD_INTR )
 	{
 	    /* If the command was interrupted and the target is not */
 	    /* "precious", remove the targets */
@@ -317,8 +356,13 @@ int	status;
 	    if( !( cmd->rule->flags & RULE_TOGETHER ) )
 		make1remove( cmd->targets );
 
-	    intr++;
+	    /* Set intr so _everything_ fails */
+
+	    ++intr;
 	}
+
+	t->status = status;
+	t->cmds = (char *)cmd_next( cmd );
 
 	cmd_free( cmd );
 
