@@ -127,7 +127,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # include <ctype.h>
 # if !defined(__bsdi__)&&!defined(__FreeBSD__)
 # if !defined(NeXT)&&!defined(__MACHTEN__)
+# if !defined(MVS)
 # include <malloc.h>
+# endif
 # endif
 # endif
 # include <memory.h>
@@ -169,6 +171,10 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif
 # ifdef __MACHTEN__
 # define OTHERSYMS "UNIX=true","OS=MACHTEN"
+# endif
+# ifdef MVS
+# define unix
+# define OTHERSYMS "UNIX=true","OS=MVS"
 # endif
 # ifdef _ATT4
 # define OTHERSYMS "UNIX=true","OS=NCR"

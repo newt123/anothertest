@@ -20,6 +20,7 @@ else 		{ code = execunix.c fileunix.c pathunix.c ; }
 
 if $(OS) = NT { CCFLAGS += /DNT ; }
 if $(OS) = SOLARIS { CCFLAGS += -Dsolaris ; }
+if $(OS) = MVS { CCFLAGS += -DMVS ; }
 
 #
 # How to build the compiled in jambase.
