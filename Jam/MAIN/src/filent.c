@@ -4,10 +4,17 @@
  * This file is part of Jam - see jam.c for Copyright information.
  */
 
+# ifdef NT
+
+# ifdef __BORLANDC__
+# include <dir.h>
+# include <dos.h>
+# undef FILENAME	/* cpp namespace collision */
+# define _finddata_t ffblk
+# endif
+
 # include "jam.h"
 # include "filesys.h"
-
-# ifdef NT
 
 # include <io.h>
 # include <sys/stat.h>
@@ -70,6 +77,25 @@ void	(*func)();
 	if( DEBUG_BINDSCAN )
 	    printf( "scan directory %s\n", dir );
 
+# ifdef __BORLANDC__
+	if ( ret = findfirst( filespec, finfo, FA_NORMAL | FA_DIREC ) )
+	    return;
+
+	while( !ret )
+	{
+	    time_t time_write = finfo->ff_fdate;
+
+	    time_write = (time_write << 16) | finfo->ff_ftime;
+	    f.f_base.ptr = finfo->ff_name;
+	    f.f_base.len = strlen( finfo->ff_name );
+
+	    file_build( &f, filename );
+
+	    (*func)( filename, 1 /* stat()'ed */, time_write );
+
+	    ret = findnext( finfo );
+	}
+# else
 	handle = _findfirst( filespec, finfo );
 
 	if( ret = ( handle < 0L ) )
@@ -88,6 +114,8 @@ void	(*func)();
 	}
 
 	_findclose( handle );
+# endif
+
 }
 
 /*
@@ -146,7 +174,7 @@ void (*func)();
 	long offset;
 	int fd;
 
-	if( ( fd = open( archive, O_RDONLY, 0 ) ) < 0 )
+	if( ( fd = open( archive, O_RDONLY | O_BINARY, 0 ) ) < 0 )
 	    return;
 
 	if( read( fd, buf, SARMAG ) != SARMAG ||

@@ -297,7 +297,7 @@ else if $(NT)
 	AR		default = tlib ;
 	ARFLAGS		default = /C /P64 ;
 	CC		default = bcc32 ;
-	CCFLAGS		default = -v -w-  ;
+	CCFLAGS		default = -v -w- -DNT ;
 	C++		default = bcc32 ;
 	C++FLAGS	default = -v -w- ;
 	LINK		default = $(CC) ;

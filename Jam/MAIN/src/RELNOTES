@@ -58,7 +58,8 @@ Changes since 2.1
     Targets are universally lowercased on NT and VMS.  Great minds think
     alike.  (NT courtesy of Matthew Newhook.)
 
-    Concurrent process support is somewhat enabled for NT.
+    Concurrent process support is fully enabled for NT, courtesy of
+    Gurusamy Sarathy <gsar@engin.umich.edu>.
 
     'actions updated' now includes sources in $(>) that are newer than
     their parents in the dependency graph.  Previously, only sources

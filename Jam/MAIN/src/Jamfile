@@ -24,8 +24,8 @@ else { 		LOCATE_TARGET ?= bin.$(OSFULL[1]:L) ; }
 # We have some different files for UNIX, VMS, and NT.
 #
 
-if $(NT) 	{ code = execnt.c filent.c pathunix.c ; } 
-else if $(OS2)	{ code = execnt.c fileos2.c pathunix.c ; } 
+if $(NT) 	{ code = execunix.c filent.c pathunix.c ; } 
+else if $(OS2)	{ code = execunix.c fileos2.c pathunix.c ; } 
 else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; } 
 else if $(MAC)	{ code = execmac.c filemac.c pathmac.c ; }
 else 		{ code = execunix.c fileunix.c pathunix.c ; }

@@ -9,7 +9,7 @@
 # include "lists.h"
 # include <errno.h>
 
-# ifdef unix
+# if defined( unix ) || defined( NT ) || defined( __OS2__ )
 
 # if defined( _AIX) || \
 	(defined (COHERENT) && defined (_I386)) || \
@@ -21,13 +21,25 @@
 # define vfork() fork()
 # endif
 
+# if defined( NT ) || defined( __OS2__ )
+
+# include <process.h>
+
+# if !defined( __BORLANDC__ )
+# define wait my_wait
+static int my_wait(int *status);
+# endif
+
+# endif
+
 /*
- * execunix.c - execute a shell script on UNIX
+ * execunix.c - execute a shell script on UNIX/WinNT/OS2
  *
- * If $(JAMSHELL) is defined, uses that to formulate execvp().
+ * If $(JAMSHELL) is defined, uses that to formulate execvp()/spawnvp().
  * The default is:
  *
- *	/bin/sh -c %
+ *	/bin/sh -c %		[ on UNIX ]
+ *	cmd.exe /c %		[ on OS2/WinNT ]
  *
  * Each word must be an individual element in a jam variable value.
  *
@@ -36,7 +48,7 @@
  * If $(JAMSHELL) doesn't include a %, it is tacked on as the last
  * argument.
  *
- * Don't just set JAMSHELL to /bin/sh - it won't work!
+ * Don't just set JAMSHELL to /bin/sh or cmd.exe - it won't work!
  *
  * External routines:
  *	execcmd() - launch an async command execution
@@ -48,19 +60,28 @@
  * 04/08/94 (seiwald) - Coherent/386 support added.
  * 05/04/94 (seiwald) - async multiprocess interface
  * 01/22/95 (seiwald) - $(JAMSHELL) support
+ * 06/02/97 (gsar)    - full async multiprocess support for Win32
  */
 
 static int intr = 0;
 
 static int cmdsrunning = 0;
 
+# ifdef NT
+static void (*istat)( int );
+void onintr( int );
+# else
 static void (*istat)();
+#endif
 
 static struct
 {
-	int	pid;
+	int	pid;		/* on win32, a real process handle */
 	void	(*func)();
 	void 	*closure;
+# if defined( NT ) || defined( __OS2__ )
+	char	*tempfile;
+# endif
 } cmdtab[ MAXJOBS ] = {0};
 
 /*
@@ -90,6 +111,21 @@ LIST *shell;
 	int slot;
 	char *argv[ MAXARGC + 1 ];	/* +1 for NULL */
 
+# if defined( NT ) || defined( __OS2__ )
+	static char *comspec;
+	char *p;
+
+	/* XXX this is questionable practice, since COMSPEC has
+	 * a high degree of variability, resulting in Jamfiles
+	 * that frequently won't work.  COMSPEC also denotes a shell
+	 * fit for interative use, not necessarily/merely a shell
+	 * capable of launching commands.  Besides, people can
+	 * just set JAMSHELL instead.
+	 */
+	if( !comspec && !( comspec = getenv( "COMSPEC" ) ) )
+	    comspec = "cmd.exe";
+# endif
+
 	/* Find a slot in the running commands table for this one. */
 
 	for( slot = 0; slot < MAXJOBS; slot++ )
@@ -102,9 +138,50 @@ LIST *shell;
 	    exit( EXITBAD );
 	}
 
+# if defined( NT ) || defined( __OS2__ )
+	if( !cmdtab[ slot ].tempfile )
+	{
+	    char *tempdir;
+
+	    if( !( tempdir = getenv( "TEMP" ) ) &&
+		!( tempdir = getenv( "TMP" ) ) )
+		    tempdir = "\\temp";
+
+	    cmdtab[ slot ].tempfile = malloc( strlen( tempdir ) + 14 );
+
+	    sprintf( cmdtab[ slot ].tempfile, "%s\\jamtmp%02d.bat", 
+				tempdir, slot );
+	}
+
+	/* Trim leading, ending white space */
+
+	while( isspace( *string ) )
+		++string;
+
+	p = strchr( string, '\n' );
+
+	while( p && isspace( *p ) )
+		++p;
+
+	/* If multi line, write to bat file.  Otherwise, exec directly. */
+
+	if( p && *p )
+	{
+	    FILE *f;
+
+	    /* Write command to bat file. */
+
+	    f = fopen( cmdtab[ slot ].tempfile, "w" );
+	    fputs( string, f );
+	    fclose( f );
+
+	    string = cmdtab[ slot ].tempfile;
+	}
+# endif
+
 	/* Forumulate argv */
 	/* If shell was defined, be prepared for % and ! subs. */
-	/* Otherwise, use stock /bin/sh. */
+	/* Otherwise, use stock /bin/sh (on unix) or comspec (on NT). */
 
 	if( shell )
 	{
@@ -133,8 +210,13 @@ LIST *shell;
 	}
 	else
 	{
+# if defined( NT ) || defined( __OS2__ )
+	    argv[0] = comspec;
+	    argv[1] = "/c";		/* anything more is non-portable */
+# else
 	    argv[0] = "/bin/sh";
 	    argv[1] = "-c";
+# endif
 	    argv[2] = string;
 	    argv[3] = 0;
 	}
@@ -146,6 +228,13 @@ LIST *shell;
 
 	/* Start the command */
 
+# if defined( NT ) || defined( __OS2__ )
+	if( ( pid = spawnvp( P_NOWAIT, argv[0], argv ) ) < 0 )
+	{
+	    perror( "spawn" );
+	    exit( EXITBAD );
+	}
+# else
 	if ((pid = vfork()) == 0) 
    	{
 		execvp( argv[0], argv );
@@ -157,7 +246,7 @@ LIST *shell;
 	    perror( "vfork" );
 	    exit( EXITBAD );
 	}
-
+# endif
 	/* Save the operation for execwait() to find. */
 
 	cmdtab[ slot ].pid = pid;
@@ -231,4 +320,68 @@ execwait()
 	return 1;
 }
 
-# endif /* unix */
+# if defined( NT ) && !defined( __BORLANDC__ )
+
+# define WIN32_LEAN_AND_MEAN
+
+# include <windows.h>		/* do the ugly deed */
+
+static int
+my_wait( status )
+int *status;
+{
+	int i, num_active = 0;
+	DWORD exitcode, waitcode;
+	static HANDLE *active_handles = 0;
+
+	if (!active_handles)
+	    active_handles = (HANDLE *)malloc(globs.jobs * sizeof(HANDLE) );
+
+	/* first see if any non-waited-for processes are dead,
+	 * and return if so.
+	 */
+	for ( i = 0; i < globs.jobs; i++ ) {
+	    if ( cmdtab[i].pid ) {
+		if ( GetExitCodeProcess((HANDLE)cmdtab[i].pid, &exitcode) ) {
+		    if ( exitcode == STILL_ACTIVE )
+			active_handles[num_active++] = (HANDLE)cmdtab[i].pid;
+		    else {
+			*status = (int)((exitcode & 0xff) << 8);
+			return cmdtab[i].pid;
+		    }
+		}
+		else
+		    goto FAILED;
+	    }
+	}
+
+	/* if a child exists, wait for it to die */
+	if ( !num_active ) {
+	    errno = ECHILD;
+	    return -1;
+	}
+	waitcode = WaitForMultipleObjects( num_active,
+					   active_handles,
+					   FALSE,
+					   INFINITE );
+	if ( waitcode != WAIT_FAILED ) {
+	    if ( waitcode >= WAIT_ABANDONED_0
+		&& waitcode < WAIT_ABANDONED_0 + num_active )
+		i = waitcode - WAIT_ABANDONED_0;
+	    else
+		i = waitcode - WAIT_OBJECT_0;
+	    if ( GetExitCodeProcess(active_handles[i], &exitcode) ) {
+		*status = (int)((exitcode & 0xff) << 8);
+		return (int)active_handles[i];
+	    }
+	}
+
+FAILED:
+	errno = GetLastError();
+	return -1;
+    
+}
+
+# endif /* NT && !__BORLANDC__ */
+
+# endif /* unix || NT || __OS2__ */

@@ -133,7 +133,9 @@ static char *othersyms[] = { OTHERSYMS, JAMVERSYM, 0 } ;
 
 # ifndef __WATCOM__
 # ifndef __OS2__
+# ifndef NT
 extern char **environ;
+# endif
 # endif
 # endif
 
