@@ -13,6 +13,8 @@ DECC support. zinser@axp614.gsi.de Martin P.J. Zinser
 AIX now uses fork instead of vfork
 SPLITPATH now set up for UNIX (:), NT (;), VMS (,)
 SubDir now computes TOP.
+filent.c no longer skips first dir entry.
+Support for Mstools.
 
 Release notes for Jam 2.0.
 
