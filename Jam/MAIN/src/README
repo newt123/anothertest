@@ -75,31 +75,34 @@ INSTALLING
 
     Build jam with make(1) on:
 
-	    BSDI	    BSD/386 1.0
-	    COHERENT	    COHERENT/386
-	    DEC 3000/500    OSF/1
-	    DG AViiON       DGUX 5.4
-	    HP 9000/700     HPUX 9.0
-	    IBM RS/6000     AIX		*
-	    IBM PC	    FreeBSD
-	    IBM PC	    Linux
-            NeXT            NEXTSTEP 3.2
-	    SGI R4000       IRIX 5.0
-	    Sequent 2000    PTX V2.1.0
-	    Sun 3           SunOS4.0
-	    Sun 4           Solaris 2	*+
-	    Sun 4           SunOS4.1
-	    VAX             Ultrix 4.2
+	    Platform		$(OS) setting
+	    --------------------------------------
+	    AIX			AIX		*	
+	    BSD/386 1.0		BSDI
+	    COHERENT/386	COHERENT
+	    DGUX 5.4		DGUX
+	    FreeBSD		FREEBSD
+	    HPUX 9.0		HPUX
+	    IRIX 5.0		IRIX
+	    Linux		LINUX
+	    NEXTSTEP 3.2	NEXT
+	    OSF/1		OSF
+	    PTX V2.1.0		PTX
+	    Solaris 2		SOLARIS		*+
+	    SunOS4.1		SUNOS
+	    Ultrix 4.2		ULTRIX
 
-	    IBM PC	    NT		*
+	    NT			NT		*
 	
 	    * requires editing Makefile
 	    + only works with SUNSwpro CC (dirent confusion) 
 
     Build jam with @build.com on:
 
-	    VAX		    VMS 5.4
-	    DEC 3000/500    OPENVMS	
+	    Platform		$(OS) setting
+	    --------------------------------------
+	    VMS 5.4		VMS
+	    OPENVMS		OPENVMS
 
     Special instructions for NT and VMS:
 

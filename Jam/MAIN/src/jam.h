@@ -94,23 +94,38 @@ int unlink( char *f ); 	/* In filevms.c */
 # ifdef __bsdi__
 # define OTHERSYMS "UNIX=true","OS=BSDI"
 # endif
+# if defined (COHERENT) && defined (_I386)
+# define OTHERSYMS "UNIX=true","OS=COHERENT"
+# endif
+# ifdef __FreeBSD__
+# define OTHERSYMS "UNIX=true","OS=FREEBSD"
+# endif
 # ifdef __DGUX__
 # define OTHERSYMS "UNIX=true","OS=DGUX"
 # endif
 # ifdef __hpux
 # define OTHERSYMS "UNIX=true","OS=HPUX"
 # endif
+# ifdef __sgi
+# define OTHERSYMS "UNIX=true","OS=IRIX"
+# endif
+# ifdef linux
+# define OTHERSYMS "UNIX=true","OS=LINUX"
+# endif
+# ifdef _ATT4
+# define OTHERSYMS "UNIX=true","OS=NCR"
+# endif
+# ifdef NeXT
+# define OTHERSYMS "UNIX=true","OS=NEXT"
+# endif
 # ifdef __osf__
 # define OTHERSYMS "UNIX=true","OS=OSF"
-# endif
-# ifdef M_XENIX
-# define OTHERSYMS "UNIX=true","OS=SCO"
 # endif
 # ifdef _SEQUENT_
 # define OTHERSYMS "UNIX=true","OS=PTX"
 # endif
-# ifdef __sgi
-# define OTHERSYMS "UNIX=true","OS=IRIX"
+# ifdef M_XENIX
+# define OTHERSYMS "UNIX=true","OS=SCO"
 # endif
 # ifdef sun
 # define OTHERSYMS "UNIX=true","OS=SUNOS"
@@ -122,20 +137,8 @@ int unlink( char *f ); 	/* In filevms.c */
 # ifdef ultrix
 # define OTHERSYMS "UNIX=true","OS=ULTRIX"
 # endif
-# if defined (COHERENT) && defined (_I386)
-# define OTHERSYMS "UNIX=true","OS=COHERENT/386"
-# endif
-# ifdef __FreeBSD__
-# define OTHERSYMS "UNIX=true","OS=FreeBSD"
-# endif
-# ifdef linux
-# define OTHERSYMS "UNIX=true","OS=LINUX"
-# endif
-# ifdef _ATT4
-# define OTHERSYMS "UNIX=true","OS=NCR"
-# endif
 # ifndef OTHERSYMS
-# define OTHERSYMS "UNIX=true"
+# define OTHERSYMS "UNIX=true","OS=UNKNOWN"
 # endif
 
 # ifndef JAMBASE
