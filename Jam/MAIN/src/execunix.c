@@ -11,7 +11,10 @@
 
 # ifdef unix
 
-# if defined( _AIX) || defined(__sgi) || (defined (COHERENT) && defined (_I386))
+# if defined( _AIX) || \
+	(defined (COHERENT) && defined (_I386)) || \
+	defined(__sgi) || \
+	defined(M_XENIX)
 # define vfork() fork()
 # endif
 

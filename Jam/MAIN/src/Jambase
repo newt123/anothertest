@@ -150,6 +150,7 @@ case IRIX :	RANLIB default = "" ;
 case HPUX :	RANLIB default = "" ;
 		INSTALL default = "" ;
 case PTX :	RANLIB default = "" ;
+case SCO :	RANLIB default = "" ;
 case SOLARIS :	RANLIB default = "" ;
 }
 

@@ -16,6 +16,7 @@
  * 04/30/95 (seiwald) - FreeBSD added.  Live Free or Die.
  * 05/10/95 (seiwald) - SPLITPATH character set up here.
  * 08/20/95 (seiwald) - added LINUX.
+ * 10/23/95 (seiwald) - added SCO.
  */
 
 # ifdef VMS
@@ -100,6 +101,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif
 # ifdef __osf__
 # define OTHERSYMS "UNIX=true","OS=OSF"
+# endif
+# ifdef M_XENIX
+# define OTHERSYMS "UNIX=true","OS=SCO"
 # endif
 # ifdef _SEQUENT_
 # define OTHERSYMS "UNIX=true","OS=PTX"

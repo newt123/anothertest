@@ -28,6 +28,7 @@ Support for string table archives under msc.
 C++ support in msc.
 warning for NT if root variables not set.
 Jamgram.h included after scan.h so YYSTYPE is defined on Linux.
+SCO ("M_XENIX") now supported.
 
 Release notes for Jam 2.0.
 
