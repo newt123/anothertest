@@ -756,8 +756,8 @@ int which;
 char *s;
 {
 	static int level = 0;
-	static char indent[33] = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
-	char *i = &indent[32 - (((1+level) * 2) % 32)];
+	static char indent[36] = ">>>>|>>>>|>>>>|>>>>|>>>>|>>>>|>>>>|";
+	char *i = &indent[35 - (((1+level) * 2) % 35)];
 
 	if( which >= 0 )
 	    printf( "%s ", i );

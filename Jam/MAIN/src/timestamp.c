@@ -146,11 +146,6 @@ time_t	*time;
 	}
 
 	*time = b->progress == BIND_FOUND ? b->time : 0;
-
-	if( DEBUG_BIND && b->progress == BIND_FOUND )
-	{
-	    printf( "time ( %s ) : %s", target, ctime( time ) );
-	}
 }
 
 static void

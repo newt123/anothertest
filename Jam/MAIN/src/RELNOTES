@@ -50,6 +50,21 @@ Changes since 2.1
     is no longer available.  Use InstallBin, InstallFile, InstallLib,
     InstallMan, or InstallShell instead.
 
+    The debugging levels were moved a little: -d3 now includes binding
+    and timestamp information for all targets, so that that single level
+    reports the work of make0().  -d4 now just dumps memory statistics.
+    The whole story is:
+
+	-d1 - trace actions
+	-d2 - dump actions
+	-d3 - trace dependency analysis
+	-d4 - show memory stats
+	-d5 - trace jamfile compilation
+	-d6 - show directory/header file/archive scans
+	-d7 - show variable settings
+	-d8 - show variable fetches
+	-d9 - show variable manipulation, scanner tokens
+
 Release notes for Jam 2.1.
 
 1.  Release info:

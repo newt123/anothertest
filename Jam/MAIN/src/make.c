@@ -77,6 +77,14 @@ static char *target_fate[] =
 	"nomake"
 } ;
 
+static char *target_bind[] = 
+{
+	"unbound",
+	"missing",
+	"parents",
+	"exists",
+} ;
+
 # define spaces(x) ( "                " + 16 - ( x > 16 ? 16 : x ) )
 
 /*
@@ -199,6 +207,34 @@ int	anyhow;
 	/* Step 2d: reset "on target" variables */
 
 	popsettings( t->settings );
+
+	/* 
+	 * Pause for a little progress reporting 
+	 */
+
+	if( DEBUG_BIND )
+	{
+	    if( strcmp( t->name, t->boundname ) )
+	    {
+		printf( "bind\t--\t%s%s: %s\n",
+			spaces( depth ), t->name, t->boundname );
+	    }
+
+	    switch( t->binding )
+	    {
+	    case T_BIND_UNBOUND:
+	    case T_BIND_MISSING:
+	    case T_BIND_PARENTS:
+		printf( "time\t--\t%s%s: %s\n",
+			spaces( depth ), t->name, target_bind[ t->binding ] );
+		break;
+
+	    case T_BIND_EXISTS:
+		printf( "time\t--\t%s%s: %s",
+			spaces( depth ), t->name, ctime( &t->time ) );
+		break;
+	    }
+	}
 
 	/* 
 	 * Step 3: recursively make0() dependents 
@@ -361,7 +397,7 @@ int	anyhow;
 	    flag = "*";
 
 	if( DEBUG_MAKEPROG )
-	    printf( "make%s\t%s\t%s%s\n", 
+	    printf( "made%s\t%s\t%s%s\n", 
 		flag, target_fate[ t->fate ], 
 		spaces( depth ), t->name );
 }

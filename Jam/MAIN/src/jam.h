@@ -231,11 +231,13 @@ extern struct globs globs;
 # define DEBUG_MAKEQ	( globs.debug[ 2 ] )	/* show even quiet actions */
 # define DEBUG_EXEC	( globs.debug[ 2 ] )	/* show text of actons */
 # define DEBUG_MAKEPROG	( globs.debug[ 3 ] )	/* show progress of make0 */
+# define DEBUG_BIND	( globs.debug[ 3 ] )	/* show when files bound */
 # define DEBUG_EXECCMD	( globs.debug[ 3 ] )	/* show execcmds()'s work */
 
-# define DEBUG_BIND	( globs.debug[ 4 ] )	/* show when files bound */
+# define DEBUG_MEM	( globs.debug[ 4 ] )	/* show memory use */
+
 # define DEBUG_COMPILE	( globs.debug[ 5 ] )	/* show rule invocations */
-# define DEBUG_MEM	( globs.debug[ 5 ] )	/* show memory use */
+
 # define DEBUG_HEADER	( globs.debug[ 6 ] )	/* show result of header scan */
 # define DEBUG_BINDSCAN	( globs.debug[ 6 ] )	/* show result of dir scan */
 # define DEBUG_SEARCH	( globs.debug[ 6 ] )	/* show attempts at binding */
