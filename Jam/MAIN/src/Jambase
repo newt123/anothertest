@@ -29,6 +29,7 @@
 # 01/10/95 (seiwald) - NT support moved in, with LauraW's help.
 # 02/06/95 (seiwald) - ObjectC++Flags and SubDirC++Flags added.
 # 02/07/95 (seiwald) - Iron out when HDRSEARCH uses "" or SEARCH_SOURCE.
+# 02/08/95 (seiwald) - SubDir works on VMS.
 
 # Special targets defined in this file:
 #
@@ -542,11 +543,13 @@ rule Object
 	# If the source file is in a distant directory, look there.
 	# Else, look in "" (the current directory).
 
-	HDRLOCAL = "" ;
-
 	if $(SEARCH_SOURCE)
 	{
 	    HDRLOCAL = $(SEARCH_SOURCE) ;
+	}
+	else
+	{
+	    HDRLOCAL = "" ;
 	}
 
 	HDRRULE on $(>) = HdrRule ;
@@ -690,7 +693,7 @@ rule SubDir
 	# directory elements using the OS specific path separator.
 
 	g = $(<[2]) ;
-	s = $(SLASH)$(<[2]) ;
+	s = $(<[2]) ;
 
 	for i in $(<[3-])
 	{
@@ -698,12 +701,17 @@ rule SubDir
 	    s = $(s)$(SLASH)$(i) ;
 	}
 
+	if $(VMS)
+	{
+	    s = [$(s)] ;
+	}
+
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
 	# These can be reset if needed.	 For example, if the source
 	# directory should not hold object files, LOCATE_TARGET can
 	# subsequently be redefined.
 
-	SUBDIR = $($(<[1]))$(s) ;
+	SUBDIR = $(s:R=$($(<[1]))) ;
 	SEARCH_SOURCE = $(SUBDIR) ;
 	LOCATE_TARGET = $(SUBDIR) ;
 	SOURCE_GRIST = $(g) ;
@@ -742,14 +750,19 @@ rule SubInclude
 	    EXIT Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	s = "" ;
+	s = $(<[2]) ;
 
-	for i in $(<[2-])
+	for i in $(<[3-])
 	{
 	    s = $(s)$(SLASH)$(i) ;
 	}
 
-	include $($(<[1]))$(s)$(SLASH)$(JAMFILE) ;
+	if $(VMS)
+	{
+	    s = [$(s)] ;
+	}
+
+	include $(JAMFILE:D=$(s):R=$($(<[1]))) ;
 }
 
 rule Undefines

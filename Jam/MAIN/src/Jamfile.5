@@ -342,6 +342,35 @@ It should be noted that the user can set these variables independently
 of \fISubDir\fR, or after it.  The most profitable example is setting
 $(LOCATE_TARGET) to be a directory outside the source tree: in this
 case, \fBjam\fR can build without even modifying the source tree.
+.SS VMS Notes
+.PP
+On VMS, the logical name table is not imported as is the environment
+on UNIX.  To use the \fISubDir\fR and related rules, you must 
+set the value of the variable that names the root directory.
+.XB
+TOP = USR_DISK:[JONES.SRC] ;
+
+SubInclude TOP util ;
+.XE
+.PP
+The variable must have a value that looks like a directory or device.
+If you choose, you can use a concealed logical.
+.XB
+TOP = TOP: ;
+
+SubInclude TOP util ;
+.XE
+The \fB:\fR at the end of TOP makes the value of $(TOP) look like a
+device name, which \fBjam\fR respects as a directory name and uses it
+when trying to access files.  TOP must then be defined from DCL:
+.BB
+define/job/translation=concealed TOP DK100:[USERS.JONES.SRC.]
+.BE
+.PP
+Note three things: the concealed translation allows the logical to be
+used as a device name; the device name in the logical (here DK100)
+cannot itself be concealed logical (VMS rules, man); and the directory
+component of the definition must end in period (more VMS rules).
 .SH COMPILING
 .PP
 Compiling of source files occurs normally as a byproduct of the

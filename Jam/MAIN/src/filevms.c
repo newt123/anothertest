@@ -8,6 +8,8 @@
 
 /*
  * filevms.c - manipulate file names and scan directories on VMS
+ *
+ * 02/09/95 (seiwald) - bungled R=[xxx] - was using directory length!
  */
 
 # include <rms.h>
@@ -201,7 +203,7 @@ char		*file;
 		{
 		    file[-1] = '.';
 		    memcpy( file, f->f_dir.ptr + 1, f->f_dir.len - 1 );
-		    file += f->f_root.len - 1;
+		    file += f->f_dir.len - 1;
 		}
 		else
 		{
