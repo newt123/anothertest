@@ -25,7 +25,8 @@
  *
  * The first word is the pathname of the executable, the subsequent
  * words are the argv[].  % expands to the command string and ! 
- * expands to the slot number for multiprocess (-j) invocations.
+ * expands to the slot number (starting at 1) for multiprocess 
+ * (-j) invocations.
  *
  * The words are not part of a single string, but rather individual 
  * elements in a jam variable value.
@@ -105,7 +106,7 @@ LIST *shell;
 	    char jobno[4];
 	    int ok = 0;
 
-	    sprintf( jobno, "%d", slot );
+	    sprintf( jobno, "%d", slot + 1 );
 
 	    for( i = 0; shell && i < MAXARGC; i++, shell = list_next( shell ) )
 	    {

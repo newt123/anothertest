@@ -80,6 +80,7 @@ Read \fI<file>\fR instead of
 .BR Jambase .
 .IP "-j\fI<jobs>\fR"
 Run up to \fI<jobs>\fR shell commands concurrently (UNIX only).
+The default is 1.
 .IP "-n"
 Don't actually execute the updating actions, but do everything else.
 .IP "-t\fI<target>\fR"
@@ -198,6 +199,10 @@ exits with a failure status.
 .br
 Makes \fI<sources>\fR dependents of anything of which \fI<targets>\fR 
 are dependents.
+.IP "LAURA \fI<targets>\fR : \fI<sources>\fR"
+.br
+Makes \fI<sources>\fR's leaf sources dependents of \fI<targets>\fR.
+The leaf sources are those without any dependents themselves.
 .IP "NOCARE \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
@@ -478,12 +483,13 @@ target, they are run sequentially.
 the path and arguments to a command execution shell to be used instead
 of /bin/sh.  This variable's value must be a multi-element list: the
 first element is the pathname of the executable.  Subsequent elements
-make up the argument vector (including argv[0]).  An element "\fB%\fR"
-is replaced with the command string to execute.  An element "\fB!\fR"
-is replaced with the multiprocess slot number, beginning at 0.  If
-\fB-j\fR is not given, the slot number is always 0.  One element of the
-list must be "\fB%\fR" (so that the command string is passed).  The
-default value is: "/bin/sh sh -c %".  
+make up the argument vector (beginning with argv[0]).  An element
+"\fB%\fR" is replaced with the command string to execute.  An element
+"\fB!\fR" is replaced with the multiprocess slot number.  The slot
+number is inclusively between 1 and the maximum number of concurrent
+jobs permitted by the \fB-j\fR command line flag (default 1).  One
+element of the list must be "\fB%\fR" (so that the command string is
+passed).  The default value is: "/bin/sh sh -c %".
 
 .SH DIAGNOSTICS
 .PP
