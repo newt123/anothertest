@@ -29,6 +29,7 @@
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 12/20/94 (seiwald) - make0() headers after determining fate of target, so 
  *			that headers aren't seen as dependents on themselves.
+ * 01/19/95 (seiwald) - don't consider target buildable if child isn't
  */
 
 # include "jam.h"
@@ -207,7 +208,11 @@ int	anyhow;
 	/* If children newer than target or */
 	/* If target doesn't exist, rebuild.  */
 
-	if( fate > T_FATE_STABLE )
+	if( fate == T_FATE_DONTKNOW )
+	{
+	    /* can't build child, can't build parent */
+	}
+	else if( fate > T_FATE_STABLE )
 	{
 	    fate = T_FATE_UPDATE;
 	}
@@ -284,7 +289,7 @@ int	anyhow;
 	if( !( ++counts->targets % 1000 ) && DEBUG_MAKE )
 	    printf( "...patience...\n" );
 
-	if( fate > T_FATE_ISTMP && t->actions )
+	if( fate > T_FATE_ISTMP && fate < T_FATE_DONTKNOW && t->actions )
 	    counts->updating++;
 	else if( fate == T_FATE_ISTMP )
 	    counts->temp++;
