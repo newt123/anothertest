@@ -34,6 +34,8 @@
  *
  * Internal routines:
  *
+ *	debug_compile() - printf with indent to show rule expansion.
+ *
  *	evaluate_if() - evaluate if to determine which leg to compile
  *
  *	builtin_depends() - DEPENDS/INCLUDES rule
@@ -54,6 +56,8 @@
  * 02/02/95 (seiwald) - Always rule; LEAVES rule.
  * 02/14/95 (seiwald) - NoUpdate rule.
  */
+
+static void debug_compile();
 
 static int evaluate_if();
 
@@ -233,7 +237,10 @@ LIST		*sources;
 	    status = strcmp( st, ss );
 
 	    if( DEBUG_IF )
-		printf( "if '%s' (%d) '%s'\n", st, status, ss );
+	    {
+		debug_compile( 0, "if" );
+		printf( "'%s' (%d) '%s'\n", st, status, ss );
+	    }
 
 	    list_free( nt );
 	    list_free( ns );
@@ -270,7 +277,7 @@ LIST		*sources;
 
 	if( DEBUG_COMPILE )
 	{
-	    printf( "include " );
+	    debug_compile( 0, "include" );
 	    list_print( nt );
 	    printf( "\n" );
 	}
@@ -314,7 +321,7 @@ LIST		*sources;
 
 	if( DEBUG_COMPILE )
 	{
-	    printf( ">>> %s ", parse->string );
+	    debug_compile( 1, parse->string );
 	    list_print( nt );
 	    printf( " : " );
 	    list_print( ns );
@@ -360,7 +367,7 @@ LIST		*sources;
 	list_free( ns );
 
 	if( DEBUG_COMPILE )
-	    printf( "<<< done\n" );
+	    debug_compile( -1, 0 );
 }
 
 /*
@@ -412,7 +419,7 @@ LIST		*sources;
 
 	if( DEBUG_COMPILE )
 	{
-	    printf( ">>> set " );
+	    debug_compile( 0, "set" );
 	    list_print( nt );
 	    printf( " %s ", trace );
 	    list_print( ns );
@@ -516,7 +523,7 @@ LIST		*sources;
 
 	if( DEBUG_COMPILE )
 	{
-	    printf( ">>> setting " );
+	    debug_compile( 0, "set" );
 	    list_print( nt );
 	    printf( "on " );
 	    list_print( targets );
@@ -569,7 +576,7 @@ LIST		*sources;
 
 	if( DEBUG_COMPILE )
 	{
-	    printf( ">>> switch " );
+	    debug_compile( 0, "switch" );
 	    list_print( nt );
 	    printf( "\n" );
 	}
@@ -668,4 +675,26 @@ LIST		*sources;
 
 	for( l = targets; l; l = list_next( l ) )
 	    bindtarget( l->string )->flags |= parse->num;
+}
+
+/*
+ * debug_compile() - printf with indent to show rule expansion.
+ */
+
+static void
+debug_compile( which, s )
+int which;
+char *s;
+{
+	static int level = 0;
+	char indent[33] = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
+	char *i = &indent[32 - (((1+level) * 2) % 32)];
+
+	if( which >= 0 )
+	    printf( "%s ", i );
+
+	if( s )
+	    printf( "%s ", s );
+
+	level += which;
 }

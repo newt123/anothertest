@@ -42,12 +42,10 @@ build that target; otherwise \fBjam\fR attempts to build the target
 .IP "-a"
 Build all targets, even if they are up-to-date.
 .IP "-d\fI<n>\fR"
-Set the debug level to \fI<n>\fR.  Interesting values are:
+Enable debugging levels from 1 to \fI<n>\fR.  Interesting values are:
 .PP
 .RS
-0 Emit only errors
-.br
-1 Emit update action tracing (default)
+1 Emit update action tracing (on by default)
 .br
 2 Emit update commands
 .br
@@ -59,6 +57,10 @@ Set the debug level to \fI<n>\fR.  Interesting values are:
 .br
 6-9 debugging
 .RE
+.IP "-d+\fI<n>\fR"
+Enable debugging level \fI<n>\fR.
+.IP "-d0"
+Turn off all debugging levels.  Only errors are not suppressed.
 .IP "-f\fI<file>\fR"
 Read \fI<file>\fR instead of \fBJambase\fR.
 .IP "-j\fI<jobs>\fR"

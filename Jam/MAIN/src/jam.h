@@ -160,32 +160,33 @@ int unlink( char *f ); 	/* In filevms.c */
 
 /* Jam private definitions below. */
 
+# define DEBUG_MAX	10
+
 struct globs {
-	int	debug;
 	int	noexec;
 	int	jobs;
+	char	debug[DEBUG_MAX];
 } ;
 
 extern struct globs globs;
 
-# define DEBUG_MAKE	( globs.debug >= 1 )	/* show actions when executed */
-# define DEBUG_MAKEQ	( globs.debug >= 2 )	/* show even quiet actions */
-# define DEBUG_EXEC	( globs.debug >= 2 )	/* show text of actons */
-# define DEBUG_MAKEPROG	( globs.debug >= 3 )	/* show progress of make0 */
-# define DEBUG_EXECCMD	( globs.debug >= 3 )	/* show execcmds()'s work */
+# define DEBUG_MAKE	( globs.debug[ 1 ] )	/* show actions when executed */
+# define DEBUG_MAKEQ	( globs.debug[ 2 ] )	/* show even quiet actions */
+# define DEBUG_EXEC	( globs.debug[ 2 ] )	/* show text of actons */
+# define DEBUG_MAKEPROG	( globs.debug[ 3 ] )	/* show progress of make0 */
+# define DEBUG_EXECCMD	( globs.debug[ 3 ] )	/* show execcmds()'s work */
 
-# define DEBUG_BIND	( globs.debug >= 4 )	/* show when files bound */
-# define DEBUG_COMPILE	( globs.debug >= 5 )	/* show rule invocations */
-# define DEBUG_MEM	( globs.debug >= 5 )	/* show memory use */
-# define DEBUG_HEADER	( globs.debug >= 6 )	/* show result of header scan */
-# define DEBUG_BINDSCAN	( globs.debug >= 6 )	/* show result of dir scan */
-# define DEBUG_SEARCH	( globs.debug >= 6 )	/* show attempts at binding */
+# define DEBUG_BIND	( globs.debug[ 4 ] )	/* show when files bound */
+# define DEBUG_COMPILE	( globs.debug[ 5 ] )	/* show rule invocations */
+# define DEBUG_MEM	( globs.debug[ 5 ] )	/* show memory use */
+# define DEBUG_HEADER	( globs.debug[ 6 ] )	/* show result of header scan */
+# define DEBUG_BINDSCAN	( globs.debug[ 6 ] )	/* show result of dir scan */
+# define DEBUG_SEARCH	( globs.debug[ 6 ] )	/* show attempts at binding */
 
-# define DEBUG_IF	( globs.debug >= 7 )	/* show 'if' calculations */
-# define DEBUG_VARSET	( globs.debug >= 7 )	/* show variable settings */
-# define DEBUG_VARGET	( globs.debug >= 8 )	/* show variable fetches */
-# define DEBUG_VAREXP	( globs.debug >= 8 )	/* show variable expansions */
-# define DEBUG_LISTS	( globs.debug >= 9 )	/* show list manipulation */
-# define DEBUG_SCAN	( globs.debug >= 9 )	/* show scanner tokens */
-
+# define DEBUG_IF	( globs.debug[ 7 ] )	/* show 'if' calculations */
+# define DEBUG_VARSET	( globs.debug[ 7 ] )	/* show variable settings */
+# define DEBUG_VARGET	( globs.debug[ 8 ] )	/* show variable fetches */
+# define DEBUG_VAREXP	( globs.debug[ 8 ] )	/* show variable expansions */
+# define DEBUG_LISTS	( globs.debug[ 9 ] )	/* show list manipulation */
+# define DEBUG_SCAN	( globs.debug[ 9 ] )	/* show scanner tokens */
 

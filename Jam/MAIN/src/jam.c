@@ -111,9 +111,9 @@
  */
 
 struct globs globs = {
-	1,			/* debug */
 	0,			/* noexec */
-	1			/* jobs */
+	1,			/* jobs */
+	{ 0, 1 } 		/* debug ... */
 } ;
 
 /* Symbols to be defined as true for use in Jambase */
@@ -164,16 +164,35 @@ char	**argv;
 	/* Pick up interesting options */
 
 	if( ( s = getoptval( optv, 'n', 0 ) ) )
-	    globs.noexec++, globs.debug = 2;
-
-	if( ( s = getoptval( optv, 'd', 0 ) ) )
-	    globs.debug = atoi( s );
+	    globs.noexec++, globs.debug[2] = 1;
 
 	if( ( s = getoptval( optv, 'a', 0 ) ) )
 	    anyhow++;
 
 	if( ( s = getoptval( optv, 'j', 0 ) ) )
 	    globs.jobs = atoi( s );
+
+	/* Turn on/off debugging */
+
+	for( n = 0; s = getoptval( optv, 'd', n ); n++ )
+	{
+	    int i = atoi( s );
+	    int j;
+
+	    if( i < 0 || i >= DEBUG_MAX )
+	    {
+		printf( "Invalid debug level '%s'.\n" );
+		continue;
+	    }
+
+	    /* +n turns on level n */
+	    /* Just a number turns on levels 1..n, off n+1..max */
+
+	    if( *s == '+' )
+		globs.debug[i] = 1;
+	    else for( j = 0; j < DEBUG_MAX; j++ )
+		globs.debug[j] = j <= i;
+	}
 
 	/* load up environment variables */
 

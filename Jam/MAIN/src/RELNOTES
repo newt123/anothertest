@@ -103,6 +103,15 @@ Release notes for Jamming 2.1.
 	targets updated after an interrupt.  It now is more careful about
 	counting.
 
+	The debugging flag -d has been extended.  In addition to supporting
+	-dx (turn on debugging for all levels up to x) there is also now
+	-d+x (turn on debugging at only level x).  The default output
+	level is -d1 (-or d2 if -n is given); this can be turned off with
+	-d0.   The debug levels are listed in jam.1 and jam.h.
+
+	The parsing debug output now uses indenting to indicate when
+	one rule invokes another.
+
 
 Release notes for Jam 2.0.
 
