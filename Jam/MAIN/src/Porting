@@ -18,10 +18,11 @@ Notes on porting Jam - revised 1/11/95
 	From execcmd.h:
 
 	    execcmd() - execute a shell script
+	    execwait() - wait for any outstanding execcmd()'s.
 
     Porting to another UNIX platform rarely involves more than fixing 
     file_dirscan() or, more likely, file_archscan() to work on the rogue
-    directory or archive structure.  Porting to another OS, such as NT,
+    directory or archive structure.  Porting to another OS, such as Mac,
     DOS, etc, probably require a completely new implementation of 
     fileunix.c and execunix.c.
 
@@ -43,6 +44,8 @@ Notes on porting Jam - revised 1/11/95
 
     The generated files jamgram.y and jamgramtab.h are distributed for
     places without a sufficiently working sh/awk/sed to run yyacc.
+    yyacc is a yacc preprocessor that handles quoted tokens instead
+    of yacc's symbolic ones.
 
     The generated files jamgram.h and jamgram.c are distributed for the 
     poor souls without yacc.

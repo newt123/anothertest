@@ -6,8 +6,8 @@
  * This file is part of jam.
  *
  * License is hereby granted to use this software and distribute it
- * freely, as long as this notice is retained and modifications are
- * clearly marked.
+ * freely, as long as this copyright notice is retained and modifications 
+ * are clearly marked.
  *
  * ALL WARRANTIES ARE HEREBY DISCLAIMED.
  */
@@ -19,7 +19,7 @@
 /*
  * jam.c - make redux
  *
- * See jam(1), Jambase(5), and Jamfile(5) for usage information.
+ * See jam(1) and Jamfile(5) for usage information.
  *
  * These comments document the code.
  *

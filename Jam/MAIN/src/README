@@ -1,9 +1,17 @@
-Jam - make(1) redux 
+jam - make(1) redux 
 
-This is Release 2 of Jam, a make-like program.
+    /+\
+    +\	Copyright 1993, 1995 Christopher Seiwald.
+    \+/
 
-Differences from Release 1 are in CHANGES.
-Easy reading instructions for using Jam are in Jamfile.5.
+    This is Release 2 of jam, a make-like program.
+
+    License is hereby granted to use this software and distribute it
+    freely, as long as this copyright notice is retained and modifications 
+    are clearly marked.
+
+    ALL WARRANTIES ARE HEREBY DISCLAIMED.
+
 
 FEATURES
 
@@ -18,17 +26,38 @@ FEATURES
 	file dependencies automatically.
 
    ->	Jam is very portable: it runs on UNIX, VMS, and NT.  Most
-	Jamfiles themselves are portable (like the sample above).
+	Jamfiles themselves are portable, like the sample above.
 
    ->   Jam is unintrusive: it is small, it has negligible CPU 
-	overhead, and it doesn't create any of its own funny files.
+	overhead, and it doesn't create any of its own funny files
+	(c.f. Odin, nmake, SunOS make).
 
    ->	Jam can build large projects spread across many directories
 	in one pass, without recursing, tracking the relationships
-	among all files.  (See the accompanying paper.)
+	among all files.  See the accompanying paper.
 
-   ->   Jam isn't under the abhorable GNU copyright - you can do
-        anything you want with it (except copyright it yourself).
+   ->   Jam isn't under the blinkin GNU copyright, so you can 
+	incorporate it into commercial products.
+
+
+INFORMATION GUIDE
+
+    jam.1	Jam man page - a terse description.
+
+    Jamfile.5	Easy reading on creating a Jamfile and using jam.
+
+    Paper.ps    UNIX Application Development Symposium paper on 
+		jam (the syntax has since been extended - see CHANGES).
+
+    CHANGES	Changes from Release 1 to Release 2.
+
+    Porting	Notes on porting jam to wildcat platforms.
+
+    README	This file: installation instructions.
+
+    jam.c	Contains jam's main() as well as an introduction to the 
+		code, for serious hackers.
+
 
 INSTALLING
 
@@ -59,7 +88,8 @@ INSTALLING
 
 	    * requires editing build.com
 
-    See the "Porting" file for info on more wildcat ports.
+    The Makefile (UNIX, NT) and build.com (VMS) are for bootstrapping.
+    Once jam is built, it can rebuild itself.
 
 SEE ALSO
 
@@ -70,7 +100,7 @@ SEE ALSO
 	Makefile	a bootstrap makefile
 	Porting		notes on porting jam
 	Jamfile.5	Manual for writing a Jamfile
-	Paper.ps	UNIX Application Development Symposion paper
+	Paper.ps	UNIX Application Development Symposium paper
 	jam.1		jam man page
 	yyacc		a yacc pre-preprocessor
 
