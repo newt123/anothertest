@@ -127,13 +127,14 @@ object file from any type of source.
 .XB
 Object grammar.o : grammar.y ;
 Object scanner.o : scanner.l ;
+Object fastf.o : fastf.f ;
 Object util.o : util.c ;
 .XE
 .PP
 In addition to calling the compiling rule, \fIObject\fR sets up a bunch
 of variables specific to the source and target files.  These are discussed
 below.
-.SS Cc, Yacc, Lex Rules
+.SS Cc, Yacc, Lex, etc. Rules
 .PP
 The \fIObject\fR calls compiling rules specific to the suffix of the
 source file.  Because the extra work done by the \fIObject\fR rule, it
@@ -175,6 +176,9 @@ actions As
 
 Library libsys.a : alloca.s memcpy.s ;
 .XE
+.PP
+It should be mentioned that the \fB.s\fR suffix is already handled
+by \fIObject\fR.
 .SS Variables
 .PP
 The following variables control the compiling of source files.

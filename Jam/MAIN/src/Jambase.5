@@ -25,6 +25,9 @@ dependents of one of these.
 .IP "\\$1"
 .IP
 ..
+.RP "As obj.o : source.s ;"
+Assemble the file \fIsource.s\fR.  
+Called by the \fIObject\fR rule.
 .RP "Bulk directory : sources ;"
 Copies \fIsources\fR into \fIdirectory\fR. Dependents of \fIfiles\fR.
 .RP "Cc object : source ;"
@@ -37,12 +40,18 @@ compiling \fIsource\fR.
 .RP "CcAddHdrs source : dirs ;"
 Add \fIdirs\fR to the \fIsource\fR-specific value of $(HDRS) when
 scanning and compiling \fIsource\fR.
+.RP "C++ obj.o : source.cc ;"
+Compile the C++ source file \fIsource.cc\fR.  
+Called by the \fIObject\fR rule.
 .RP "Clean clean : targets ;"
 Removes existing \fItargets\fR when \fIclean\fR is built.  \fIclean\fR
 is not a dependency of \fIall\fR, and must be built explicitly for
 \fItargets\fR to be removed.  
 .RP "File target : source ;"
 Copies \fIsource\fR into \fItarget\fR.  Dependent of \fIfiles\fR.
+.RP "Fortran obj.o : source.f ;"
+Compile the Fortran source file \fIsource.f\fR.  
+Called by the \fIObject\fR rule.
 .RP "HdrRule source : headers ;"
 Arranges the proper dependencies when the file \fIsource\fR 
 includes the files \fIheaders\fR through the "#include" C preprocessor
@@ -128,6 +137,14 @@ AR (default \fI"ar ru"\fR)
 .IP
 The archiver used for \fBLibrary\fR.
 .PP
+AS (default \fIas\fR)
+.IP
+The assembler for \fBAs\fR.
+.PP
+ASFLAGS (no default)
+.IP
+Flags handed to the assembler for \fBAs\fR.
+.PP
 BINDIR (default \fI/usr/local/bin\fR)
 .IP
 The install directory for \fBInstallBin\fR.
@@ -141,6 +158,15 @@ CCFLAGS (no default)
 Flags handed to the C compiler for \fBObject\fR.  \fBOPTIM\fR is also
 handed to the C compiler.
 .PP
+C++ (default \fIgcc\fR)
+.IP
+C++ compiler used for \fBC++\fR.
+.PP
+C++FLAGS (no default)
+.IP
+Flags handed to the C++ compiler for \fBC++\fR.  \fBOPTIM\fR is also
+handed to the C++ compiler.
+.PP
 EXEMODE (default \fI711\fR)
 .IP
 Permissions for executables linked with \fBMain\fR.
@@ -148,6 +174,14 @@ Permissions for executables linked with \fBMain\fR.
 FILEMODE (default \fI644\fR)
 .IP
 Permissions for files copied by \fBFile\fR or \fBBulk\fR.
+.PP
+FORTRAN (default \fIf77\fR)
+.IP
+The Fortran compiler used by \fBFortran\fR.
+.PP
+FORTRANFLAGS (no default)
+.IP
+Flags handed to the Fortran compiler for \fBFortran\fR.
 .PP
 HDRPATTERN (default ^#[\\t ]*include[\\t ]*[<"](.*)[">].*$)
 .IP

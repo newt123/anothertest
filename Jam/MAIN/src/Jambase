@@ -18,15 +18,19 @@
 # 09/19/94 (seiwald) - LinkLibraries and Undefs now append
 # 		     - Rule names downshifted.
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
+# 10/14/94 (seiwald) - (Crude) support for .s, .C, and .f files.
 
 # Rules defined by this file:
 #
+# as obj.o : source.s ;			.s -> .o
 # Bulk dir : files ;			populate directory with many files
 # Cc obj.o : source.c ;			.c -> .o
+# C++ obj.o : source.cc ;		.cc -> .o
 # CcAddFlags source : flags ;		add compiler flags for object
 # CcAddHdrs source : dirs ;		add include directories for object
 # Clean clean : sources ;		remove sources with 'jam clean'
 # File dest : source ;			copy file
+# Fortran obj.o : source.f ;		.f -> .o
 # HdrRule source : headers ;		handle #includes
 # Install target : source ;		install any single file
 # InstallBin sources ;			install binaries
@@ -106,15 +110,21 @@ case SOLARIS :	RANLIB default = "" ;
 }
 
 AR 		default = ar ru ;
+AS		default = as ;
+ASFLAGS		default = ;
 BINDIR		default = /usr/local/bin ;
+C++		default = gcc ;
+C++FLAGS	default = ;
 CC 		default = cc ;
 CCFLAGS 	default = ;
 CHMOD 		default = chmod ;
 EXEMODE 	default = 711 ;
 FILEMODE 	default = 644 ;
+FORTRAN		default = f77 ;
+FORTRANFLAGS	default = ;
 HDRS 		default = ;
 JAMFILE		default = Jamfile ;
-JAMRULES	default = 
+JAMRULES	default = ;
 LEX		default = lex ;
 LIBDIR		default = /usr/local/lib ;
 LINK 		default = $(CC) ;
@@ -168,7 +178,6 @@ rule MainFromObjects
 	Clean clean : $(<) ;
 
 	Link $(<) : $(S) ;
-
 }
 
 actions Link 
@@ -301,8 +310,12 @@ rule Object
 	switch $(>:S)
 	{
 	    case .c : 	Cc $(<) : $(>) ;
+	    case .C :	c++ $(<) : $(>) ;
+	    case .cc :	c++ $(<) : $(>) ;
+	    case .f :	Fortran $(<) : $(>) ;
 	    case .l :	Cc $(<) : $(<:S=.c) ;
 			Lex $(<:S=.c) : $(>) ;
+	    case .s :	As $(<) : $(>) ;
 	    case .y : 	Cc $(<) : $(<:S=.c) ; 
 			Yacc $(<:S=.c) : $(>) ;
 	    case * :	UserObject $(<) : $(>) ;
@@ -312,7 +325,7 @@ rule Object
 rule UserObject
 {
 	ECHO "Unknown source file suffix on" $(>) "-"
-		"try defining your own UserObject rule."
+		"try defining your own UserObject rule." ;
 }
 
 rule HdrRule
@@ -338,6 +351,16 @@ rule HdrRule
 	HDRSEARCH on $(>) = $(HDRSEARCH) ;
 	HDRSCAN on $(>) = $(HDRSCAN) ;
 	HDRRULE on $(>) = $(HDRRULE) ;
+}
+
+rule As
+{
+	DEPENDS $(<) : $(>) ;
+}
+
+actions As
+{
+	$(AS) $(ASFLAGS) -o $(<) $(>) ;
 }
 
 rule CcAddFlags
@@ -392,6 +415,26 @@ actions "Cc -mv"
 {
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) $(>)
 	[ $(<) != $(<:D=) ] && $(MV) $(<:D=) $(<)
+}
+
+rule C++
+{
+	DEPENDS $(<) : $(>) ;
+}
+
+actions C++
+{
+	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
+}
+
+rule Fortran
+{
+	DEPENDS $(<) : $(>) ;
+}
+
+actions Fortran
+{
+	$(FORTRAN) $(FORTRANFLAGS) -o $(<) $(>)
 }
 
 rule Lex
