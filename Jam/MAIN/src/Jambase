@@ -49,6 +49,8 @@
 # Objects sources ;			compile sources
 # RmTemps target : sources ;		remove temp sources after target made
 # Setuid image ;			mark an executable Setuid
+# SubDir TOP d1 d2 ... ;		start a subdirectory Jamfile
+# SubInclude TOP d1 d2 ... ;		include a subdirectory Jamfile
 # Shell exe : source ;			make a shell executable
 # Undefines image : symbols ;		save undef's for linking
 # UserObject object : source ;		handle unknown suffixes for Object
@@ -120,6 +122,7 @@ C++		default = gcc ;
 C++FLAGS	default = ;
 CC 		default = cc ;
 CCFLAGS 	default = ;
+CP		default = cp ;
 CHMOD 		default = chmod ;
 EXEMODE 	default = 711 ;
 FILEMODE 	default = 644 ;
@@ -136,6 +139,7 @@ LINKFLAGS 	default = $(CCFLAGS) ;
 LINKLIBS 	default = ;
 LN		default = ln ;
 MANDIR		default = /usr/local/man ;
+MKDIR		default = mkdir ;
 MV 		default = mv -f ;
 OPTIM		default = -O ;
 RANLIB 		default = ranlib ;
@@ -188,7 +192,7 @@ rule MainFromObjects
 actions Link 
 {
 	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) 
-	then chmod $(EXEMODE) $(<) 
+	then $(CHMOD) $(EXEMODE) $(<) 
 	else $(RM) $(<); exit 1
 	fi
 }
@@ -509,8 +513,8 @@ rule File
 actions File
 {
 	$(RM) $(<)
-	cp $(>) $(<) &&
-	chmod $(FILEMODE) $(<)
+	$(CP) $(>) $(<) &&
+	$(CHMOD) $(FILEMODE) $(<)
 }
 
 rule HardLink
@@ -541,7 +545,7 @@ actions Shell
 		{ print }
 	' < $(>) > $(<)
 
-	chmod $(SHELLMODE) $(<)
+	$(CHMOD) $(SHELLMODE) $(<)
 }
 
 rule InstallBin
@@ -615,15 +619,15 @@ else
 {
     actions Install
     {
-	    [ -d "$(<:D)" ] || mkdir $(<:D)
-	    cp $(>) $(<) &&
-	    chmod $(INSTALLMODE) $(<) 
+	    [ -d "$(<:D)" ] || $(MKDIR) $(<:D)
+	    $(CP) $(>) $(<) &&
+	    $(CHMOD) $(INSTALLMODE) $(<) 
     }
 }
 
 actions piecemeal together existing Clean
 {
-	rm -f $(>)
+	$(RM) $(>)
 }
 
 #
@@ -632,7 +636,9 @@ actions piecemeal together existing Clean
 
 rule SubDir
 {
-	# Just a reminder here:
+	# This introduces a subdirectory Jamfile, setting up all the
+	# search & locate stuff.
+	#
 	#	SubDir TOP d1 [ d2 [ d3 [ d4 ] ] ]
 	#
 	# TOP is the name of the (environment) variable that names the 
@@ -682,6 +688,8 @@ rule SubInclude
 {
 	# That's
 	#	SubInclude TOP d1 [ d2 [ d3 [ d4 ] ] ]
+	#
+	# to include a subdirectory's Jamfile.
 
 	if ! $($(<[1])) 
 	{
@@ -722,6 +730,6 @@ rule UNDEFINES { Undefines $(<) : $(>) ; }
 # Now include the user's Jam rules and Jamfile.
 # 
 
-include $(JAMRULES) ;
+include $(JAMUSER) ;
 include $(JAMFILE) ;
 
