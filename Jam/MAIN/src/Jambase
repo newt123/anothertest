@@ -968,8 +968,10 @@ if $(UNIX)
 
     actions Link
     {
-	$(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) ||
-	$(RM) $(<) && exit 1
+	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) 
+	then :
+	else $(RM) $(<) && exit 1
+	fi
     }
 
     actions MkDir1
