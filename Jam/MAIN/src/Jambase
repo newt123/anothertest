@@ -23,10 +23,11 @@
 #		     - Rule names downshifted.
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
 # 10/14/94 (seiwald) - (Crude) support for .s, .C, .cc, .cpp, and .f files.
-# 01/08/94 (seiwald) - Shell now handled with awk, not sed
-# 01/09/94 (seiwald) - Install* now take dest directory as target
-# 01/10/94 (seiwald) - All entries sorted.
-# 01/10/94 (seiwald) - NT support moved in, with LauraW's help.
+# 01/08/95 (seiwald) - Shell now handled with awk, not sed
+# 01/09/95 (seiwald) - Install* now take dest directory as target
+# 01/10/95 (seiwald) - All entries sorted.
+# 01/10/95 (seiwald) - NT support moved in, with LauraW's help.
+# 02/06/95 (seiwald) - ObjectC++Flags and SubDirC++Flags added.
 
 # Special targets defined in this file:
 #
@@ -64,13 +65,15 @@
 # MainFromObjects image : objects ;	link executable from objects
 # Object object : source ;		compile object from source
 # ObjectCcFlags source : flags ;	add compiler flags for object
+# ObjectC++Flags source : flags ;	add compiler flags for object
 # ObjectHdrs source : dirs ;		add include directories for object
 # Objects sources ;			compile sources
 # RmTemps target : sources ;		remove temp sources after target made
 # Setuid image ;			mark an executable Setuid
 # SubDir TOP d1 d2 ... ;		start a subdirectory Jamfile
-# SubDirObjectCcFlags flags ;		add compiler flags until next SubDir
-# SubDirObjectHdrs dirs ;		add include dirs until next SubDir
+# SubDirCcFlags flags ;			add compiler flags until next SubDir
+# SubDirC++Flags flags ;		add compiler flags until next SubDir
+# SubDirHdrs dirs ;			add include dirs until next SubDir
 # SubInclude TOP d1 d2 ... ;		include a subdirectory Jamfile
 # Shell exe : source ;			make a shell executable
 # Undefines image : symbols ;		save undef's for linking
@@ -568,6 +571,18 @@ rule ObjectCcFlags
 	CCFLAGS on $(S) += $(>) ;
 }
 
+rule ObjectC++Flags
+{
+	S = $(<:S=$(SUFOBJ)) ;
+
+	if $(SOURCE_GRIST)
+	{
+	    S = $(S:G=$(SOURCE_GRIST)) ;
+	}
+
+	C++FLAGS on $(S) += $(>) ;
+}
+
 rule ObjectHdrs
 {
 	S = $(<:S=$(SUFOBJ)) ;
@@ -684,12 +699,18 @@ rule SubDir
 	# Reset per-directory ccflags, hdrs
 
 	SUBDIRCCFLAGS = ;
+	SUBDIRC++FLAGS = ;
 	SUBDIRHDRS = ;
 }
 
 rule SubDirCcFlags
 {
 	SUBDIRCCFLAGS += $(<) ;
+}
+
+rule SubDirC++Flags
+{
+	SUBDIRC++FLAGS += $(<) ;
 }
 
 rule SubDirHdrs

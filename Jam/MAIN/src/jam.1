@@ -199,10 +199,11 @@ exits with a failure status.
 .br
 Makes \fI<sources>\fR dependents of anything of which \fI<targets>\fR 
 are dependents.
-.IP "LAURA \fI<targets>\fR : \fI<sources>\fR"
+.IP "LAURA \fI<targets>\fR"
 .br
-Makes \fI<sources>\fR's leaf sources dependents of \fI<targets>\fR.
-The leaf sources are those without any dependents themselves.
+Makes each of \fI<targets>\fR immune to updating unless its leaf
+sources are newer than the target itself.  Its leaf sources are those
+dependents without any dependents themselves.
 .IP "NOCARE \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
@@ -445,8 +446,12 @@ temporary (with the built-in rule TEMPORARY), then its parent's
 modification time is used when comparing against sources.  If a target
 is marked as not being a file (using the built-in rule NOTFILE), it is
 marked for updating only if any of its sources is marked for updating.
-Finally, if a target has been marked with the built-in rule ALWAYS,
-it is always updated (assuming it is in the dependency graph).
+If a target has been marked with the built-in rule LAURA, it is only
+updated only if it cannot be found or its leaf sources are newer.  Leaf
+sources are those dependents of the target that have no dependents
+themselves.  Finally, if a target has been marked with the built-in
+rule ALWAYS, it is always updated (assuming it is in the dependency
+graph).
 .PP
 If a target is a source file that includes header files,
 .B jam

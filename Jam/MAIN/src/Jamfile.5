@@ -144,7 +144,7 @@ Object util.o : util.c ;
 In addition to calling the compiling rule, \fIObject\fR sets up a bunch
 of variables specific to the source and target files.  These are discussed
 below.
-.SS Cc, Yacc, Lex, etc. Rules
+.SS Cc, C++, Yacc, Lex, Fortran, As, etc. Rules
 .PP
 The \fIObject\fR calls compiling rules specific to the suffix of the
 source file.  Because the extra work done by the \fIObject\fR rule, it
@@ -194,7 +194,9 @@ suffix is already handled by \fIObject\fR.
 The following variables control the compiling of source files.
 .BB
 CC              The C Compiler (cc)
+C++             The C++ Compiler (gcc)
 CCFLAGS         C compiler flags()
+C++FLAGS        C++ compiler flags()
 HDRS            non-standard header directories ()
 LEX             The Lex program (lex)
 OPTIM           optimization flag, if desired (-O)
@@ -202,9 +204,9 @@ STDHDRS         standard header directories (/usr/include)
 YACC            The Yacc program (yacc -d)
 .BE
 .PP
-$(CC), $(CCFLAGS), $(OPTIM), and $(HDRS) all affect the compiling of
-C files.  $(CCFLAGS) and $(OPTIM) are split so that the optimization of
-a file can be altered easily without affecting other flags.
+$(CC), $(C++), $(CCFLAGS), $(C++FLAGS), $(OPTIM), and $(HDRS) all affect 
+the compiling of C and C++ files.  $(OPTIM) is separate from $(CCFLAGS)
+and $(C++FLAGS) so they can be set separately.
 .PP
 $(HDRS) lists the directories to search for header files, and it is
 used in two ways: first, it is passed to the C compiler (with the 
@@ -222,12 +224,13 @@ Library libximage.a : xtiff.c xjpeg.c xgif.c ;
 HDRS on xjpeg.o = /usr/local/src/jpeg ;
 CCFLAGS on xtiff.o = -DHAVE_TIFF ;
 .XE
-.SS ObjectCcFlags, ObjectHdrs Rules
+.SS ObjectCcFlags, ObjectC++Flags, ObjectHdrs Rules
 .PP
-$(CCFLAGS) and $(HDRS) can be manipulated directly, but there are two
+$(CCFLAGS), $(C++FLAGS) and $(HDRS) can be manipulated directly, but there are 
 rules that allow these variables to be set by referring to the original
 source file name, rather than to the derived object file name.
 \fIObjectCcFlags\fR adds object-specific flags to the $(CCFLAGS) variable,
+\fIObjectC++Flags\fR adds object-specific flags to the $(C++FLAGS) variable,
 and \fIObjectHdrs\fR add object-specific directories to the $(HDRS)
 variable.
 .XB
@@ -381,8 +384,10 @@ EXEMODE         generic permissions for InstallBin (711)
 SHELLMODE       generic permissions for InstallShell (755)
 .BE
 .PP
-These variable must be set (globally) before calling the install rules
-for them to take effect.
+The directory variables are just defined for convenience: they must
+be passed as the target the appropriate \fIInstall\fR rule.
+The \fIINSTALL\fR and mode variables must be set (globally) before 
+calling the \fIInstall\fR rules to take effect.
 .SH HANDLING DIRECTORY TREES
 .PP
 \fBJam\fR can build large projects spread across many directories in
@@ -435,17 +440,20 @@ the contents of the directory - it is best to put it at the top of each
 
 SubDir TOP src util ;
 
-Main $(TOP)/lib/testutil : test.c ;
+Main $(TOP)/bin/testutil : test.c ;
 
-LinkLibraries $(TOP)/lib/testutil : $(TOP)/lib/libutil.a ;
+LinkLibraries $(TOP)/bin/testutil : $(TOP)/lib/libutil.a ;
 
 Library $(TOP)/lib/libutil.a : gadgets.c gizmos.c widgets.c ;
 .XE
+.PP
+This compiles four files in "$(TOP)/src/util", archives three of the
+objects into "libutil.a", and links the whole thing into "testutil".
 .SS SubInclude Rule
 .PP
 The \fISubInclude\fR rule sources the \fBJamfile\fR from the named
-subdirectory.  Its arguments are the same as \fISubDir\fR's, and its
-only reason for being is to allow including a subdirectory
+subdirectory.  Its arguments are the same format as \fISubDir\fR's, and
+its only reason for being is to allow including a subdirectory
 \fBJamfile\fR without having to use system-specific directory name
 syntax.
 .PP
@@ -479,13 +487,14 @@ LinkLibraries mondo : $(TOP)/lib/libmisc.a $(TOP)/lib/libutil.a ;
 SubInclude TOP src misc ;
 SubInclude TOP src util ;
 .XE
-.SS SubDirCcFlags, SubDirHdrs Rules
+.SS SubDirCcFlags, SubDirC++Flags, SubDirHdrs Rules
 .PP
-These two rules set the values of $(SUBDIRCCFLAGS) and $(SUBDIRHDRS),
-which are used by the \fIObject\fR rule when setting the target-specific
-values for $(CCFLAGS) and $(HDRS).  The \fISubDir\fR rule clears these
-variables out, and thus they provide directory-specific values of $(CCFLAGS)
-and $(HDRS).
+These rules set the values of $(SUBDIRCCFLAGS), $(SUBDIRC++FLAGS) and
+$(SUBDIRHDRS), which are used by the \fICc\fR, \fIC++\fR, and
+\fIObject\fR rules when setting the target-specific values for
+$(CCFLAGS), $(C++FLAGS) and $(HDRS).  The \fISubDir\fR rule clears
+these variables out, and thus they provide directory-specific values of
+$(CCFLAGS), $(C++FLAGS)  and $(HDRS).
 .XB
 SubDir TOP src util ;
 
@@ -498,6 +507,7 @@ LOCATE_TARGET   Directory to put targets.
 SEARCH_SOURCE   Directory to find sources.
 SOURCE_GRIST    Something to perturb source file names.
 SUBDIRCCFLAGS   Per-directory CCFLAGS.
+SUBDIRC++FLAGS  Per-directory C++FLAGS.
 SUBDIRHDRS      Per-directory HDRS.
 .BE
 .PP
@@ -517,11 +527,6 @@ directory name.  $(SOURCE_GRIST) is used by the rules that take
 source files to perturb file names in different directories that
 would otherwise be the same.
 .PP
-$(SUBDIRCCFLAGS) and $(SUBDIRHDRS) are cleared by \fISubDir\fR,
-set by \fISubDirCcFlags\fR and \fISubDirHdrs\fR, and then used
-by \fIObject\fR when setting the target-specific values for $(CCFLAGS)
-and $(HDRS).  They could also be set directly.
-.PP
 It should be noted that the user can set these variables independently
 of \fISubDir\fR, or after it.  The most profitable example is setting
 $(LOCATE_TARGET) to be a directory outside the source tree: in this
@@ -535,16 +540,17 @@ into object modules to be archived isn't flexible enough.  The
 of the \fILibrary\fR rule, but not the compiling.  The user can make
 use of the \fIObjects\fR or \fIObject\fR rule for that.
 .XB
-LibraryFromObjects max.o min.o ;
+LibraryFromObjects libfoo.a : max.o min.o ;
 Object max.o : maxmin.c ;
 Object min.o : maxmin.c ;
 ObjectCcFlags max.c : -DUSEMAX ;
 ObjectCcFlags min.c : -DUSEMIN ;
 .XE
 .PP
-This compiles the same source file into two different objects, with different
-compile flags, and archives them.  Note that \fIObjectCcFlags\fR refered to the
-(nonexistent) source file names for the objects.
+This compiles the same source file into two different objects, with
+different compile flags, and archives them.  Note that
+\fIObjectCcFlags\fR referred to the (nonexistent) source file names for
+the objects.
 .SS MainFromObjects Rule
 .PP
 Similar to \fILibraryFromObjects\fR, \fIMainFromObjects\fR does the linking
@@ -558,10 +564,11 @@ ObjectCcFlags w.c : -DW_CODE ;
 .XE
 .SS Clean Rule
 .PP
-The \fIClean\fR rule has only a simple action: to delete all those
-sources that currently exist.  Thus if \fIClean\fR is invoked with a
-target and some sources, instructing \fBjam\fR to make the target will
-cause it to delete the sources.
+The \fIClean\fR rule has only a simple action: to delete all of its
+sources.  It is normally invoked with intermediate files as sources, so
+that they can be cleaned out.  If \fIClean\fR is invoked with a target
+and some sources, instructing \fBjam\fR to make the target will cause
+it to delete the sources.
 .XB
 Clean zap : junk1 junk2 junk3 ;
 .XE
@@ -581,17 +588,17 @@ Clean uninstall : $(<) ;
 Thus a \f(CWjam uninstall\fP removes anything created with the \fIInstall\fR
 rules, and a \f(CWjam clean\fP removes anything created by the other rules
 listed in this manual page.  It should be noted that \fBjam\fR's cleaning
-mechanism gets rid of exactly the files it created.
+mechanism gets rid of exactly the files it created, not miscellaneous junk
+left around by the user.
 .PP
 Given other, user-defined targets, the \fIClean\fR rule selectively
 remove other generated files.
 .XB
-rule M4 {
+rule M4 
+{
         # File depends on it's m4 source
 
         DEPENDS $(<) : $(>) ;
-
-        # Rid generated m4 files with 'jam m4clean'
 
         Clean m4clean : $(<) ;
 }
@@ -601,6 +608,8 @@ actions M4
         m4 < $(>) > $(<)
 }
 .XE
+.PP
+Here a \f(CWjam m4clean\fR would remove all files created by \fBm4\fR.
 .SS RmTemps Rule
 .PP
 Some intermediate files are meant to be temporary.  The \fIRmTemps\fR
@@ -615,7 +624,7 @@ SpecialUserRuleB ola : foo ;
 RmTemps ola : foo ;
 .XE
 .PP
-This says: build "foo" using \fISpecialUserRuleA\fR and "Wola"
+This says: build "foo" using \fISpecialUserRuleA\fR and "ola"
 using \fISpecialUserRuleB\fR.  Once that is done, remove "foo".
 .SH SPECIAL TARGETS
 .PP
@@ -637,7 +646,7 @@ uninstall       - removes all Install targets
 attribute, meaning that they aren't to be found in the filesystem.
 You can build selected components by using the \fIshell\fR, \fIfiles\fR,
 \fIlib\fR, or \fIexe\fR targets on the command line.  You can remove
-the files that \fBjam\fR build using the \fIclean\fR and \fIuninstall\fR
+the files that \fBjam\fR built using the \fIclean\fR and \fIuninstall\fR
 targets on the command line.  And you can arrange for \fBjam\fR to run
 initialization commands by putting actions on the target \fIfirst\fR.
 .XB
@@ -648,5 +657,69 @@ actions Initialize
 
 Initialize first ;
 .XE
+.SH JAM BUILT-IN RULES AND VARIABLES
+.PP
+This section describes \fBjam\fR's built-in rules and variables.   Built-in
+rules are uppercase, as opposed to the mixed-case rules defined by 
+\fBJambase\fR.  These built-in rules, along with the other \fBjam\fR syntax 
+for setting variables, provide the foundation upon which the \fBJambase\fR
+is built.  A \fBJamfile\fR, or (more likely) a \fBJamrules\fR (q.v.),
+can make use of these built-in rules and variables as well.
+.SS DEPENDS, INCLUDES Rules
+.PP
+These two rules build the dependency graph, in slightly different ways.
+\fIDEPENDS\fR simply makes its sources dependents of its targets.
+\fIINCLUDES\fR makes its sources dependents of anything of which
+its targets are dependents.  This reflects the dependencies that arise
+when one source file includes another: the object built from the source
+file depends both on the original and included source file, but the
+two sources files don't depend on each other.
+.XB
+DEPENDS foo.o : foo.c ;
+INCLUDES foo.c : foo.h ;
+.XE
+.PP
+This examples makes "foo.o" depend on "foo.c" and "foo.h".
+.SS ALWAYS, LAURA, NOCARE, NOTFILE, TEMPORARY Rules
+.PP
+These five rules modify targets so that \fBjam\fR treats them different
+during its target binding and updating phase.  Normally, \fBjam\fR
+updates a target if it can't be found, if it is older than its dependents,
+or if its dependents are being updated.  Note that this only applies
+to targets that are dependents of the targets given to \fBjam\fR on
+the command line, or of the target \fIall\fR if there are no targets 
+on the command line.
+.PP
+The \fIALWAYS\fR rule causes its targets to be always updated.  This is
+used for the \fIclean\fR and \fIuninstall\fR targets, as they have no
+dependents and would otherwise appear never to need building.
+.PP
+The \fINOCARE\fR rule suppresses \fBjam\fR's warning if its targets
+can't be found and have no updating actions, and thus can't be built.
+The \fIHdrRule\fR uses this to let \fBjam\fR know that header file names
+found while scanning source files may not exist.
+.PP
+The \fINOTFILE\fR rule marks its targets as being pseudo targets, that
+is, targets that aren't in the filesystem.  The \fIall\fR target is an
+example of such a target.  These targets are built only if their
+dependents are updated.
+.PP
+The \fITEMPORARY\fR rule allows for targets to be deleted after they
+are generated.  If \fBjam\fR sees that a temporary target is missing,
+it will use the target's parent's time when determining if the target
+needs updating.  Object files that are also archived in a library are
+marked as such, and they are deleted after they are archived.
+.PP
+The \fILAURA\fR rule makes each of its targets depend only on its "leaf" 
+sources.  This makes it immune to its dependents being updated, as the
+"leaf" soures are those without dependents or updating actions.
+This allows a target to be updated only if original source files change.
+.SS ECHO, EXIT Rules
+.PP
+These two rules help during the \fBJamfile\fR compiling phase.
+The \fIECHO\fR rule just echoes its targets to the standard output.
+The \fIEXIT\fR rule does the same and then does a brutal, fatal exit of
+\fBjam\fR.
+.SS 
 .SH SEE ALSO
 \fBjam\fR(1), \fBJambase\fR(5)
