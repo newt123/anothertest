@@ -130,25 +130,28 @@ FILENAME	*f;
 # define DIR_EMPTY	0	/* empty string */
 # define DIR_DEV	1	/* dev: */
 # define DIR_DEVDIR	2	/* dev:[dir] */
-# define DIR_RELDIR	3	/* [.dir] or [-.dir] */
-# define DIR_ABSDIR	4	/* [dir] */
-# define DIR_ROOT	5	/* [000000] or dev:[000000] */
+# define DIR_DOTDIR	3	/* [.dir] */
+# define DIR_DASHDIR	4	/* [-] or [-.dir] */
+# define DIR_ABSDIR	5	/* [dir] */
+# define DIR_ROOT	6	/* [000000] or dev:[000000] */
 
-# define G_DIR		0	/* take dir */
-# define G_ROOT		1	/* take root */
-# define G_VAD		2	/* root's dev: + abs directory */
-# define G_DRD		3	/* root's dev:[dir] + rel directory */
-# define G_VRD		4	/* root's dev: + rel directory */
+# define G_DIR		0	/* take just dir */
+# define G_ROOT		1	/* take just root */
+# define G_VAD		2	/* root's dev: + [abs] */
+# define G_DRD		3	/* root's dev:[dir] + [.rel] */
+# define G_VRD		4	/* root's dev: + [.rel] made [abs] */
+# define G_DDD		5	/* root's dev:[dir] + . + [dir] */
 
-static int grid[6][6] = {
+static int grid[7][7] = {
 
-/* root 	dir	EMPTY	DEV	DEVDIR	RELDIR	ABSDIR	ROOT */
-/* EMPTY */		G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,
-/* DEV */		G_ROOT,	G_DIR,	G_DIR,	G_VRD,	G_VAD,	G_VAD,
-/* DEVDIR */		G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_VAD,	G_VAD,
-/* RELDIR */		G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DIR,	G_DIR,
-/* ABSDIR */		G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DIR,	G_DIR,
-/* ROOT */		G_ROOT,	G_DIR,	G_DIR,	G_VRD,	G_DIR,	G_DIR,
+/* root/dir	EMPTY	DEV	DEVDIR	DOTDIR	DASH,	ABSDIR	ROOT */
+/* EMPTY */	G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,
+/* DEV */	G_ROOT,	G_DIR,	G_DIR,	G_VRD,	G_VAD,	G_VAD,	G_VAD,
+/* DEVDIR */	G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_VAD,	G_VAD,	G_VAD,
+/* DOTDIR */	G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DIR,	G_DIR,	G_DIR,
+/* DASHDIR */	G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DDD,	G_DIR,	G_DIR,
+/* ABSDIR */	G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DIR,	G_DIR,	G_DIR,
+/* ROOT */	G_ROOT,	G_DIR,	G_DIR,	G_VRD,	G_DIR,	G_DIR,	G_DIR,
 
 } ;
 
@@ -207,8 +210,10 @@ struct dirinf *i;
 
 	    if( *buf == '[' && buf[1] == ']' )
 		i->flags = DIR_EMPTY;
-	    else if( *buf == '[' && ( buf[1] == '.' || buf[1] == '-' ) )
-		i->flags = DIR_RELDIR;
+	    else if( *buf == '[' && buf[1] == '.' )
+		i->flags = DIR_DOTDIR;
+	    else if( *buf == '[' && buf[1] == '-' )
+		i->flags = DIR_DASHDIR;
 	    else
 		i->flags = DIR_ABSDIR;
 	}
@@ -231,6 +236,7 @@ int		binding;
 {
 	char *ofile = file;
 	struct dirinf root, dir;
+	int g;
 
 	/* Start with the grist.  If the current grist isn't */
 	/* surrounded by <>'s, add them. */
@@ -250,7 +256,7 @@ int		binding;
 
 	/* Combine */
 
-	switch( grid[ root.flags ][ dir.flags ] )
+	switch( g = grid[ root.flags ][ dir.flags ] )
 	{
 	case G_DIR:	
 		/* take dir */
@@ -273,19 +279,24 @@ int		binding;
 		break;
 		
 	case G_DRD:	
+	case G_DDD:
 		/* root's dev:[dir] + rel directory */
 		memcpy( file, f->f_root.ptr, f->f_root.len );
 		file += f->f_root.len;
 
-		/* Two sanity checks: root ended with ], dir begins with [ */
+		/* sanity checks: root ends with ] */
 
 		if( file[-1] == ']' )
 		     --file;	
-		if( dir.dir.ptr[0] == '[' )
-		     dir.dir.ptr++, dir.dir.len--;
 
-		memcpy( file, dir.dir.ptr, dir.dir.len );
-		file += dir.dir.len;
+		/* Add . if separating two -'s */
+
+		if( g == G_DDD )
+		    *file++ = '.';
+
+		/* skip [ of dir */
+		memcpy( file, dir.dir.ptr + 1, dir.dir.len - 1 );
+		file += dir.dir.len - 1;
 		break;
 
 	case G_VRD:	
@@ -319,10 +330,18 @@ int		binding;
 
 	if( file[-1] == ']' && f->parent )
 	{
-	    while( file > ofile )
+	    while( file-- > ofile )
 	    {
-		if( *--file == '.' )
+		if( *file == '.' )
 		{
+		    *file++ = ']';
+		    break;
+		}
+		else if( *file == '-' )
+		{
+		    /* handle .- or - */
+		    if( file > ofile && file[-1] == '.' )
+		    	--file;
 		    *file++ = ']';
 		    break;
 		}
@@ -331,11 +350,6 @@ int		binding;
 		    if( file[1] == ']' )
 		    {
 		    	file += 2;
-		    }
-		    else if( file[1] == '-' )
-		    {
-			file[1] = ']';
-			file += 2;
 		    }
 		    else
 		    {

@@ -126,6 +126,15 @@ file_dirscan( char *dir, void (*func)() )
     if ( !( status & 1 ) )
 	return;
 
+
+
+    /* Add bogus directory for [000000] */
+
+    if( !strcmp( dir, "[000000]" ) )
+    {
+	(*func)( "[000000]", 1 /* time valid */, 1 /* old but true */ );
+    }
+
     /* Add bogus directory for [] */
 
     if( !strcmp( dir, "[]" ) )

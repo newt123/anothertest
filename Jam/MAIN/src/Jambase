@@ -153,8 +153,6 @@
 #
 # "default =" - set only if unset
 
-if $(NT) { OS = NT ; }
-
 OSFULL = $(OS)$(OSPLAT)$(OSVER) $(OS)$(OSPLAT) $(OS)$(OSVER) $(OS) ;
 
 #
@@ -401,7 +399,7 @@ else if $(VMS)
 	CP		default = copy/replace ;
 	CRELIB		default = true ;
 	DOT		default	= [] ;
-	DOTDOT		default	= - ;
+	DOTDOT		default	= [-] ;
 	EXEMODE		default = (w:e) ;
 	FILEMODE	default = (w:r) ;
 	HDRS		default = ;
@@ -849,6 +847,11 @@ rule MkDir
 		Depends $(<) : $(s) ;
 		MkDir $(s) ;
 	    }
+	    else if $(s)
+	    {
+	        NOTFILE $(s) ;
+	    }
+
 	}
 }
 
@@ -1189,13 +1192,8 @@ rule makeSubDir
 
 	    for _i in $(>[2-])
 	    {
-		_d = $(_d)$(SLASH)$(DOTDOT) ;
+		_d = $(_d:R=$(DOTDOT)) ;
 	    }
-	}
-
-	if $(VMS)
-	{
-	    _d = [$(_d)] ;
 	}
 
 	$(<) = $(_d) ;
@@ -1208,42 +1206,39 @@ rule addDirName
 	# Turn individual elements in $(>) into a usable path.
 	# Add result to $(<).
 
-	if $(>)
+	if ! $(>)
 	{
-	    if $(VMS)
+	    _s = $(DOT) ;
+	}
+	else if $(VMS)
+	{
+	    # This handles the following cases:
+	    # 	a -> [.a]
+	    # 	a b c -> [.a.b.c]
+	    # 	x: -> x:
+	    # 	x: a -> x:[a]
+	    # 	x:[a] b -> x:[a.b]
+
+	    switch $(>[1])
 	    {
-		# This handles the following cases:
-		# 	a -> [a]
-		# 	a b c -> [a.b.c]
-		# 	x: -> x:
-		# 	x: a -> x:[a]
-		# 	x:[a] b -> x:[a.b]
-
-		switch $(>[1])
-		{
-		case *:* : _s = $(>[1]) ;
-		case \\[*\\] : _s = $(>[1]) ;
-		case * : _s = [$(>[1])] ;
-		}
-
-		for _i in [.$(>[2-])]
-		{
-		    _s = $(_i:R=$(_s)) ;
-		}
+	    case *:* : _s = $(>[1]) ;
+	    case \\[*\\] : _s = $(>[1]) ;
+	    case * : _s = [.$(>[1])] ;
 	    }
-	    else
-	    {
-		_s = $(>[1]) ; 
 
-		for _i in $(>[2-])
-		{
-		    _s = $(_s)$(SLASH)$(_i) ;
-		}
+	    for _i in [.$(>[2-])]
+	    {
+		_s = $(_i:R=$(_s)) ;
 	    }
 	}
 	else
 	{
-	    _s = $(DOT) ;
+	    _s = $(>[1]) ; 
+
+	    for _i in $(>[2-])
+	    {
+		_s = $(_i:R=$(_s)) ;
+	    }
 	}
 
 	$(<) += $(_s) ;

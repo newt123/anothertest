@@ -24,15 +24,18 @@
  *
  * The approach is this:
  *
- *	If the command is a single line, and shorter than WRTLEN (what we believe
- *	to be the maximum line length), we just system() it.
+ *	If the command is a single line, and shorter than WRTLEN (what we 
+ *	believe to be the maximum line length), we just system() it.
  *
- *	If the command is multi-line, or longer than WRTLEN, we write the command
- *	block to a temp file, splitting long lines (using "-" at the end of the line
- *	to indicate contiuation), and then source that temp file.
+ *	If the command is multi-line, or longer than WRTLEN, we write the 
+ *	command block to a temp file, splitting long lines (using "-" at 
+ *	the end of the line to indicate contiuation), and then source that 
+ *	temp file.  We use special logic to make sure we don't continue in
+ *	the middle of a quoted string.
  *
  * 05/04/94 (seiwald) - async multiprocess interface; noop on VMS
- * 12/20/96 (seiwald)  - rewritten to handle multi-line commands well
+ * 12/20/96 (seiwald) - rewritten to handle multi-line commands well
+ * 01/14/96 (seiwald) - don't put -'s between "'s
  */
 
 #define WRTLEN 240
@@ -65,7 +68,8 @@ LIST *shell;
 	while( p && isspace( *p ) )
 		++p;
 
-	/* If multi line or long, write to com file.  Otherwise, exec directly. */
+	/* If multi line or long, write to com file. */
+	/* Otherwise, exec directly. */
 
 	if( p && *p || e - s > WRTLEN )
 	{
@@ -102,12 +106,26 @@ LIST *shell;
 
 		while( len > 0 )
 		{
-		    int l = MIN( len, WRTLEN );
+		    char *q = string;
+		    char *qe = string + MIN( len, WRTLEN );
+		    char *qq = q;
+		    int quote = 0;
 
-		    fwrite( string, l, 1, f );
+		    /* Look for matching "'s */
 
-		    len -= l;
-		    string += l;
+		    for( ; q < qe; q++ )
+			if( *q == '"' && ( quote = !quote ) )
+			    qq = q;
+
+		    /* Back up to opening quote, if in one */
+
+		    if( quote )
+			q = qq;
+
+		    fwrite( string, ( q - string ), 1, f );
+
+		    len -= ( q - string );
+		    string = q;
 
 		    if( len )
 		    {

@@ -3,6 +3,6 @@
 
 #define VERSION "2"
 #ifndef PATCHLEVEL 
-#define PATCHLEVEL "1.18"
+#define PATCHLEVEL "1.19"
 #endif
 #define JAMVERSYM "JAMVERSION=2.1"
