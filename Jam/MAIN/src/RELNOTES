@@ -1,152 +1,201 @@
-Changes since 2.1
+Release notes for Jam/MR 2.2 
+(formerly Jam - make(1) redux)
 
-    LOCATE_TARGET now has a new flavor, LOCATE_SOURCE that is used for
-    generated source files (by yacc and lex).
 
-    The 'if' statement now compares all elements in expressions;
-    previously, it only compared the first element of each list.
+1.  Release info:
 
-    Header file includes now happen in the proper order.  The limit
-    of 10 include files has been eliminated.
+	Jam/MR 2.2
+	October 22, 1997
+	VERSION 2.2
+	PATCHLEVEL 0
 
-    The Jambase is now compiled into jam, and so no longer needs
-    installing.  The plain Jambase can still be referenced explicitly 
-    with -f.
 
-    The syntax "if $(A) in $(B)" is now supported.  It is true of all
-    elements of $(A) can be found in $(B), _or_ if $(A) is empty.
+2. Compatibility
 
-    $(FOO:S) now refers to the _last_ suffix if a filename has more than
-    one dot (.) in it.
+	Jam/MR 2.2 is a roll-up of 'Jam - make(1) redux' release 2.1+.
+	Most of the changes described below were available before this,
+	in the jam.2.1.plus.tar ball.
 
-    Variables local to the current context may be declared at the top
-    of a block (just after a {) with "local var ... ;"
+	The Jam/MR 2.2 language is a superset of the 2.1 language;
+	Jamfiles, Jambase, and other rulesets used in 2.1 can be used
+	with the 2.2 language support.
 
-    Rules may be invoked with more than just targets and sources, i.e.
-    there may be more than one : in a rule invocation.  These parameters 
-    are called $(1), $(2), $(3), etc, and $(<) and $(>) are synonymous 
-    with $(1) and $(2).  Actions can still only take two sets parameters,
-    i.e. $(<) and $(>).
+	See 'Jambase Changes', below, to see if your Jamfiles need any
+	changes to work with the 2.2 Jambase.
 
-    On command failure, jam now emits the text of the command that failed.
-    This is a compromise between the normal -d1 behavior (where commands
-    were never seen) and -d2 (where commands are always seen).
 
-    The NT command executor now handles multiple line actions, by writing
-    multi-line actions to a batch file and executing that.
+3. Changes Since 2.1
 
-    Jam now exits non-zero if it doesn't have a total success.  A parse
-    error, sources that can't be found, and targets that can't be built
-    all generate non-zero exit status.
+	New product name: Jam/MR. (Executable program is still named 'jam'.)
 
-    Variables whose values are targets can be expanded to the bounded target
-    names in action blocks.  Previously, only $(<) and $(>) referred to bounded
-    targets.  With new syntax "actions Rulename bind var..." the named variables
-    will be expanded in the action block.
+	Documentation rewritten; HTML versions supplied.
 
-    Jam now by default builds itself into a platform specific subdirectory.
 
-    Due to internal restructuring of the Jambase, the old "Install" rule
-    is no longer available.  Use InstallBin, InstallFile, InstallLib,
-    InstallMan, or InstallShell instead.
+3.1 Changes to Jam/MR Language (See jamMR.html)
 
-    If a command line is longer than MAXCMD (which is OS dependent),
-    jam now issues an error and exits rather than dumping core.
+	Rules may now have more fields than just $(<) and $(>).
 
-    Interactive UNIX (ISC) supported, thanks to Matthew Newhook.
+	Local variables are now supported.
 
-    Targets are universally lowercased on NT and VMS.  Great minds think
-    alike.  (NT courtesy of Matthew Newhook.)
+	The expression 'if $(A) in $(B)' is now supported.
 
-    Concurrent process support is fully enabled for NT, courtesy of
-    Gurusamy Sarathy <gsar@engin.umich.edu>.
+	New variable modifiers :U and :L result in uppercased or lowercased
+	values.
 
-    'actions updated' now includes sources in $(>) that are newer than
-    their parents in the dependency graph.  Previously, only sources
-    that were actually updated in that run were included in the expansion
-    of $(>) for 'actions updated'.  If a source was created in a first
-    invocation of jam (or manually), then in a second run the new source
-    would imply updating the target, but that source wouldn't appear in
-    $(>) for 'actions updated'.  Now any source that causes the target
-    to be updated shows up in $(>) for 'actions updated'.
+	New variable modifier :P reliably results in parent directory
+	of either a file or directory. (Previously, :D was used, but on VMS
+	:D of a directory name is just the directory name.)
 
-    New HDRGRIST variable in Jambase to allow for headers with the same
-    name to be distinguished.
+	The :S variable modifier now results in the _last_ suffix if a 
+	filename has more than one dot (.) in it.
 
-    New JAMDATE variable initialized to be `ctime()` for simple date
-    stamping.
+	New predefined $(JAMDATE) variable is initialized at runtime for 
+	simple date stamping.
 
-    The debugging levels were moved a little (again): -d3 now includes binding
-    and timestamp information for all targets, so that that single level
-    reports the work of make0().  -d4 now just dumps memory statistics.
-    The whole story is:
+	New predefined variables $(OSVER) and $(OSPLAT) are used to 
+	distinguish among operating system versions and hardware platforms,
+	when possible.
 
-	-d1 - trace actions
-	-d2 - dump actions, trace quiet actions
-	-d3 - trace dependency analysis
-	-d4 - show shell arguments
-	-d5 - trace jamfile compilation
-	-d6 - show directory/header file/archive scans
-	-d7 - show variable settings
-	-d8 - show variable fetches
-	-d9 - show variable manipulation, scanner tokens
+	New 'bind' qualifier on action definitions allows variables
+	other than $(<) and $(>) to be bound with SEARCH and LOCATE paths.
 
-    The debugging flag -d has been changed again.  Now any -d turns off the
-    default (-d1): -dx turns on all levels up to x; -d+x turns on level x.
-    So -d0 turns off everything and -d2 _just_ shows command text.
+	Action buffer size is no longer limited by MAXCMD. Instead, each 
+	line in an action is limited by MAXLINE, defined for each OS, and 
+	the entire action size is limited by CMDBUF.
 
-    Fixed a few holes in the path handling on NT: it now knows that the
-    directory component of "D:\" is "D:\", just as on unix it knows that
-    the directory component of "/" is "/".  It also now successfully gets
-    the timestamp for "D:\" or just plain "\".
 
-    JAMDATE now gets set properly -- due to a misplaced paren (forgive
-    my fading C skills) it wasn't being set on NT.  (2.1.14)
+3.2 Jambase Changes (See Jamfile.5.html)
 
-    'actions together' now suppresses duplicate sources from showing up in
-    $(>).  (2.1.15)
+	Jambase has been reworked to incorporate new language features.
 
-    Accessing variables whose names contained ['s (as happens with MkDir
-    on VMS) wasn't working, because it treated the [ as an array subscript.
-    Now [ and ] are, like :, handled specially so that they can appear in
-    variable values.
+	A handful of new utility rules has been added: makeString,
+	makeDirName, etc.
 
-    Multi-line command blocks on VMS are now executed in a single system()
-    call rather than separate ones for each line.  This allows "dcl scripts"
-    to be used.
+	New HDRGRIST variable in Jambase allows for headers with the same
+	name to be distinguished.
 
-    The setting and extracting of grist has been regularized: normally,
-    if you set a component of a filename (using the :DBSMG= modifiers),
-    you are supposed to include the delimiters that set off the component:
-    that is, you say "$(x:S=.suffix)", including the ".".  But with
-    grist it was inconsistent between setting and getting: setting grist
-    required no <>'s, while getting grist included them.   Getting grist
-    continues to return the <>'s, but now setting grist can either
-    include them (the new way) or not (the old way).  (2.1.16)
+	LOCATE_TARGET now has a new flavor, LOCATE_SOURCE, that is used by
+	rules that generate source files (e.g., Yacc and Lex).
 
-    New variable modifiers :U and :L upshift and downshift (respectively)
-    the value of a variable.
+	Header file includes now happen in the proper order. The limit of
+	10 include files has been eliminated.
 
-    New predefined variables $(OSVER) and $(OSPLAT) are used to distinguish
-    (when jam can) among operating system versions and hardware platforms.
+	The old "Install" rule is no longer available.  Use InstallBin, 
+	InstallFile, InstallLib, InstallMan, or InstallShell instead.
 
-    New variable modifier :P reliably gets to parent directory of either
-    a file or directory.  Previously, :D was used, but on VMS :D of a 
-    directory name is just the directory name.
 
-    VMS support is much, much better now.  The path name manipulation
-    routines (in pathvms.c) were more or less rewritten, and they now
-    handle the vagaries of combining directory and file names
-    properly.
+3.3 'jam' Changes (See jam.1.html)
 
-    The 'include' bug has finally been fixed, so that include statements
-    take effect exactly when they are executed, rather than after the
-    current statement block.  This also corrects the problem where an
-    'include' within an 'if' block would wind up including the file
-    one token after the 'if' block's closing brace.  Credit goes to
-    Thomas Woods for suggesting that the parse tree generation and
-    parse tree execution be paired in their own loop, rather than having
-    the parser execute the tree directly.  (2.1.21)
+	'jam' can now be built as a stand-alone program, with Jambase 
+	compiled into the executable. An external or alternate Jambase can 
+	still be referenced explicitly with -f.
+
+	On command failure, 'jam' now emits the text of the command that 
+	failed.  This is a compromise between the normal -d1 behavior (where 
+	commands were never seen) and -d2 (where commands are always seen).
+
+	'jam' now exits non-zero if it doesn't have a total success.  A parse
+	error, sources that can't be found, and targets that can't be built
+	all generate non-zero exit status.
+	
+	The debugging levels (-d flags) have been slightly redefined.
+
+	The supplied Jamfile now builds 'jam' into a platform specific 
+	subdirectory. This lets you use the same source directory to
+	build 'jam' for more than one platform.
+
+	The supplied Jamfile does not rebuild generated source files by 
+	default. (They are supplied with the distribution.) See Jamfile
+	for more information.
+
+
+4.  Fixed Bugs
+
+	The 'include' bug has finally been fixed, so that include
+	statements take effect exactly when they are executed,
+	rather than after the current statement block.  This also
+	corrects the problem where an 'include' within an 'if'
+	block would wind up including the file one token after the
+	'if' block's closing brace.  Credit goes to Thomas Woods
+	for suggesting that the parse tree generation and parse
+	tree execution be paired in their own loop, rather than
+	having the parser execute the tree directly.
+
+	The setting and extracting of grist has been regularized:
+	normally, if you set a component of a filename (using the
+	:DBSMG= modifiers), you are supposed to include the delimiters
+	that set off the component:  that is, you say "$(x:S=.suffix)",
+	including the ".".  But with grist it was inconsistent
+	between setting and getting: setting grist required no
+	<>'s, while getting grist included them.   Getting grist
+	continues to return the <>'s, but now setting grist can
+	either include them (the new way) or not (the old way).
+
+	'actions together' now suppresses duplicate sources from
+	showing up in $(>).
+
+	Accessing variables whose names contained ['s (as happens with
+	MkDir on VMS) wasn't working, because it treated the [ as an
+	array subscript. Now [ and ] are, like :, handled specially so 
+	that they can appear in variable values.
+
+	The 'if' statement now compares all elements in expressions;
+	previously, it only compared the first element of each list.
+
+	If a command line in an action is longer than MAXLINE (formerly
+	MAXCMD), 'jam' now issues an error and exits rather than dumping 
+	core.
+
+	If a Jamfile ended without a trailing newline, jam dumped core.
+	This has been fixed.
+
+
+5.  Porting
+
+	See jam.h for the definitive list of supported platforms.
+	Since 2.1, support has been added for:
+
+	    Macintosh MPW
+	    Alpha VMS
+	    Alpha NT
+	    NT PowerPC
+	    BeOS
+	    MVS OE
+	    UNIXWARE
+	    QNX
+	    SINIX (Nixdorf)
+	    OS/2
+	    Interactive UNIX (ISC), courtesy of Matthew Newhook
+
+
+5.1 NT Support Fixes
+
+	The NT command executor now handles multiple line actions, by writing
+	multi-line actions to a batch file and executing that.
+	
+	Targets are universally lowercased on NT. (Matthew Newhook)
+
+	Concurrent process support is fully enabled for NT.
+	(Gurusamy Sarathy <gsar@engin.umich.edu>)
+	
+	Path handling: Jam/MR now knows that the directory component of "D:\"
+	is "D:\", just as on unix it knows that the directory component of
+	"/" is "/".  It also now successfully gets the timestamp for "D:\"
+	or just plain "\".
+
+
+5.2 VMS Support Fixes
+
+	VMS support is much, much better now.  The path name manipulation
+	routines (in pathvms.c) were more or less rewritten, and they now
+	handle the vagaries of combining directory and file names properly.
+
+	Targets are universally lowercased on VMS.
+
+	Multi-line command blocks on VMS are now executed in a single system()
+	call rather than separate ones for each line, so that actions can
+	be DCL scripts.
+
 
 Release notes for Jam 2.1.
 
@@ -199,7 +248,7 @@ Release notes for Jam 2.1.
 	To handle Linux's wacko yacc, jamgram.h is now included after
 	scan.h so that YYSTYPE is define.
 
-3.  Jambase Changes (see Jamfile.5)
+3.  Jambase Changes (see Jamfile.5.html)
 
 	SubDir now computes the root directory for the source tree, if
 	the variable naming the root directory isn't set in the environment.
@@ -219,7 +268,7 @@ Release notes for Jam 2.1.
 	The File rule now calls the Clean rule, so that installed files
 	get cleaned.
 
-4.  Jam changes (see jam.1)
+4.  Jam changes (see jam.1.html)
 
 	Variables may now be set on the command line with -svar=value.
 

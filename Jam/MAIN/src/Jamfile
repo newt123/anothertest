@@ -11,9 +11,6 @@
 #
 #	- set DO_JAMBASE if you want jam to make new jambase.c
 #
-# 	- set DO_INSTALL if you want to install jam in $(BINDIR)
-#	  and the man pages in $(MANDIR)
-
 # Put executables in platform-specific  subdirectory.
 # If $(OSVER) isn't set, second value is used.
 
@@ -67,19 +64,16 @@ if $(DO_JAMBASE)
 }
 
 Library         libjam.a : 
-		    command.c compile.c $(code) expand.c
-		    glob.c hash.c headers.c 
-		    lists.c make.c make1.c newstr.c option.c parse.c
-		    regexp.c rules.c scan.c search.c timestamp.c
-		    variable.c ;
+		    command.c compile.c $(code) expand.c glob.c
+		    hash.c headers.c lists.c make.c make1.c newstr.c
+		    option.c parse.c regexp.c rules.c scan.c search.c
+		    timestamp.c variable.c ;
 
 #
 # On UNIX, we install this stuff for easy use.
-# On VMS, one must define a symbol:  jam :== $jam.exe -f jambase
-# On NT, you're on your own.
 #
 
-if $(UNIX) && $(DO_INSTALL)
+if $(UNIX)
 {
 	InstallBin $(BINDIR) : jam ;
 }
