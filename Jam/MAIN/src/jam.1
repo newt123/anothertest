@@ -83,7 +83,7 @@ Run up to \fI<jobs>\fR shell commands concurrently (UNIX only).
 .IP "-n"
 Don't actually execute the updating actions, but do everything else.
 .IP "-t\fI<target>\fR"
-Pretend \fI<target>\fR is new, regardless of its actual timestamp.
+Rebuild \fI<target>\fR, even if it is up-to-date.
 
 .SH "THE JAM LANGUAGE"
 .PP
@@ -178,9 +178,12 @@ $(>) includes only targets marked for updating.
 .SS "Built-in Rules"
 .PP
 .B Jam
-has seven built-in rules, none of which have updating actions:
+has eight built-in rules, none of which have updating actions:
 .PP
 .RS
+.IP "ALWAYS \fI<targets>\fR"
+.br
+Rebuilds \fI<targets>\fR, even if they are up-to-date.
 .IP "DEPENDS \fI<targets>\fR : \fI<sources>\fR"
 .br
 Makes \fI<sources>\fR dependents of \fI<targets>\fR.
@@ -403,7 +406,8 @@ values.
 After parsing,
 .B jam
 recursively descends the dependency graph, attempting to locate each
-target file and determine if it is in need of updating.  
+target file and determine if it is in need of updating.  If \fBjam\fR
+detects a cycle in the graph, it issues a warning.
 .PP
 By default, a target is located at the actual path of the target,
 relative to the directory of
@@ -427,15 +431,17 @@ rule NOTFILE), it is left unbound to a file name.
 .PP
 A target is marked for updating if it cannot be found, if its
 filesystem modification time is older than any of its sources, or if
-any of its sources is marked for updating.  If a target is missing,
-no updating actions are associated with the target, and the target has
-not been marked with the built-in rule NOCARE, then
+any of its sources are marked for updating.  If a target is missing,
+and no updating actions are associated with the target, and the target
+has not been marked with the built-in rule NOCARE, then
 .B jam
-emits a warning.  If a target is missing and is marked as temporary
-(with the built-in rule TEMPORARY), then its parent's modification time
-is used when comparing against sources.  If a target is marked as
-not being a file (using the built-in rule, NOTFILE), it is marked for
-updating only if any of its sources is marked for updating.
+emits a warning.  If a target is missing and it has been marked as
+temporary (with the built-in rule TEMPORARY), then its parent's
+modification time is used when comparing against sources.  If a target
+is marked as not being a file (using the built-in rule NOTFILE), it is
+marked for updating only if any of its sources is marked for updating.
+Finally, if a target has been marked with the built-in rule ALWAYS,
+it is always updated (assuming it is in the dependency graph).
 .PP
 If a target is a source file that includes header files,
 .B jam

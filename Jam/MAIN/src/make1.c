@@ -184,7 +184,6 @@ TARGET	*t;
 	    /* shouldn't happen */
 
 	case T_FATE_STABLE:
-	case T_FATE_TOUCHED:
 	    break;
 
 	case T_FATE_CANTFIND:
@@ -197,6 +196,7 @@ TARGET	*t;
 		printf( "using %s\n", t->name );
 	    break;
 
+	case T_FATE_TOUCHED:
 	case T_FATE_MISSING:
 	case T_FATE_OUTDATED:
 	case T_FATE_UPDATE:

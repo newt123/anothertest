@@ -213,7 +213,6 @@ int	anyhow;
 	    In English:
 		If can't find or make child, can't make target.
 		If children changed, make target.
-		If target still unbound (i.e. NOTFILE), make it.
 		If target missing, make it.
 		If children newer, make target.
 		If temp's children newer, make temp.
@@ -230,10 +229,6 @@ int	anyhow;
 	    fate = T_FATE_CANTMAKE;
 	}
 	else if( fate > T_FATE_STABLE )
-	{
-	    fate = T_FATE_UPDATE;
-	}
-	else if( t->binding == T_BIND_UNBOUND )
 	{
 	    fate = T_FATE_UPDATE;
 	}

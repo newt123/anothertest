@@ -98,7 +98,7 @@ struct _target {
 # define 	T_FLAG_TEMP 	0x01	/* TEMPORARY applied */
 # define 	T_FLAG_NOCARE 	0x02	/* NOCARE applied */
 # define 	T_FLAG_NOTFILE 	0x04	/* NOTFILE applied */
-# define	T_FLAG_TOUCHED	0x08	/* -t target applied */
+# define	T_FLAG_TOUCHED	0x08	/* ALWAYS applied or -t target */
 
 	char	binding;		/* how target relates to real file */
 

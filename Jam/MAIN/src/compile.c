@@ -49,7 +49,8 @@
  *			can make use of $(SEARCH)
  * 08/23/94 (seiwald) - Support for '+=' (append to variable)
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
- * 01/22/94 (seiwald) - Exit rule.
+ * 01/22/95 (seiwald) - Exit rule.
+ * 02/02/95 (seiwald) - Always rule.
  */
 
 static int evaluate_if();
@@ -71,6 +72,10 @@ static void builtin_flags();
 void
 compile_builtins()
 {
+    bindrule( "Always" )->procedure = 
+    bindrule( "ALWAYS" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_TOUCHED );
+
     bindrule( "Depends" )->procedure = 
     bindrule( "DEPENDS" )->procedure = 
 	parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, T_DEPS_DEPENDS );

@@ -94,6 +94,7 @@
 #	existing - refers to currently existing sources ($(>)) only
 #
 # Special rules:
+#	ALWAYS - always build a target
 #	DEPENDS - builds the dependency graph
 #	ECHO - blurt out targets on stdout
 #	EXIT - blurt out targets and exit
@@ -107,6 +108,7 @@
 #	$(>) - sources of a rule (to the right of the :)
 #	$(UNIX) - true on UNIX
 #	$(VMS) - true on VMS
+#	$(NT) - true on NT
 #	$(OS) - name of OS - varies wildly
 #
 # Special variables used by jam:
@@ -269,6 +271,7 @@ HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 
 DEPENDS all : first shell files lib exe ;
 NOTFILE all first shell files lib exe clean uninstall ;
+ALWAYS clean uninstall ;
 
 #
 # Rules
