@@ -211,6 +211,7 @@ TARGET	*t;
 	    /* shouldn't happen */
 
 	case T_FATE_STABLE:
+	case T_FATE_NEWER:
 	    break;
 
 	case T_FATE_CANTFIND:
@@ -577,7 +578,7 @@ int	flags;
 	if( ( flags & RULE_EXISTING ) && t->binding != T_BIND_EXISTS )
 	    continue;
 
-	if( ( flags & RULE_NEWSRCS ) && t->fate <= T_FATE_STABLE )
+	if( ( flags & RULE_NEWSRCS ) && t->fate < T_FATE_SPOIL )
 	    continue;
 
 	/* Build new list */

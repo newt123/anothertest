@@ -127,15 +127,22 @@ struct _target {
 
 # define 	T_FATE_INIT	0	/* nothing done to target */
 # define 	T_FATE_MAKING	1	/* make0(target) on stack */
+
 # define 	T_FATE_STABLE	2	/* target didn't need updating */
-# define	T_FATE_TOUCHED	3	/* manually touched with -t */
-					/* ...rest mean new target... */ 
+
+# define	T_FATE_SPOIL	3	/* >= SPOIL rebuilds parents */
+# define	T_FATE_NEWER	3	/* target newer than parent */
 # define 	T_FATE_ISTMP	4	/* unneeded temp target oddly present */
-# define	T_FATE_MISSING	5	/* is missing, needs updating */
-# define 	T_FATE_OUTDATED	6	/* is out of date, needs updating */
-# define 	T_FATE_UPDATE	7	/* deps updated, needs updating */
-# define 	T_FATE_CANTFIND	8	/* no rules to make missing target */
-# define 	T_FATE_CANTMAKE	9	/* can't find dependents */
+
+# define	T_FATE_BUILD	5	/* >= BUILD rebuilds target */
+# define	T_FATE_TOUCHED	5	/* manually touched with -t */
+# define	T_FATE_MISSING	6	/* is missing, needs updating */
+# define 	T_FATE_OUTDATED	7	/* is out of date, needs updating */
+# define 	T_FATE_UPDATE	8	/* deps updated, needs updating */
+
+# define 	T_FATE_BROKEN	9	/* >= BROKEN ruins parents */
+# define 	T_FATE_CANTFIND	9	/* no rules to make missing target */
+# define 	T_FATE_CANTMAKE	10	/* can't find dependents */
 
 	char	progress;		/* tracks make1() progress */
 

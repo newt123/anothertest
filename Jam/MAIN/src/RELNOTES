@@ -75,6 +75,15 @@ Changes since 2.1
 
     Concurrent process support is somewhat enabled for NT.
 
+    'actions updated' now includes sources in $(>) that are newer than
+    their parents in the dependency graph.  Previously, only sources
+    that were actually updated in that run were included in the expansion
+    of $(>) for 'actions updated'.  If a source was created in a first
+    invocation of jam (or manually), then in a second run the new source
+    would imply updating the target, but that source wouldn't appear in
+    $(>) for 'actions updated'.  Now any source that causes the target
+    to be updated shows up in $(>) for 'actions updated'.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

@@ -65,16 +65,17 @@ typedef struct {
 
 static char *target_fate[] = 
 {
-	"init",
-	"making",
-	"ok",
-	"touched",
-	"temp",
-	"missing",
-	"old",
-	"update",
-	"nofind",
-	"nomake"
+	"init",		/* T_FATE_INIT */
+	"making", 	/* T_FATE_MAKING */
+	"stable", 	/* T_FATE_STABLE */
+	"newer",	/* T_FATE_NEWER */
+	"temp", 	/* T_FATE_ISTMP */
+	"touched", 	/* T_FATE_TOUCHED */
+	"missing", 	/* T_FATE_MISSING */
+	"old", 		/* T_FATE_OUTDATED */
+	"update", 	/* T_FATE_UPDATE */
+	"nofind", 	/* T_FATE_CANTFIND */
+	"nomake" 	/* T_FATE_CANTMAKE */
 } ;
 
 static char *target_bind[] = 
@@ -284,13 +285,14 @@ int	anyhow;
 		If temp's children newer, make temp.
 		If deliberately touched, make it.
 		If up-to-date temp file present, use it.
+		If target newer than parent, mark it so.
 	*/
 
-	if( fate >= T_FATE_CANTFIND )
+	if( fate >= T_FATE_BROKEN )
 	{
 	    fate = T_FATE_CANTMAKE;
 	}
-	else if( fate > T_FATE_STABLE )
+	else if( fate >= T_FATE_SPOIL )
 	{
 	    fate = T_FATE_UPDATE;
 	}
@@ -317,6 +319,10 @@ int	anyhow;
 	else if( t->binding == T_BIND_EXISTS && t->flags & T_FLAG_TEMP )
 	{
 	    fate = T_FATE_ISTMP;
+	}
+	else if( t->binding == T_BIND_EXISTS && parent && t->time > parent )
+	{
+	    fate = T_FATE_NEWER;
 	}
 
 	/* Step 3c: handle missing files */
@@ -388,10 +394,10 @@ int	anyhow;
 	    counts->cantfind++;
 	else if( fate == T_FATE_CANTMAKE && t->actions )
 	    counts->cantmake++;
-	else if( fate > T_FATE_STABLE && fate < T_FATE_CANTFIND && t->actions )
+	else if( fate >= T_FATE_BUILD && fate < T_FATE_BROKEN && t->actions )
 	    counts->updating++;
 
-	if( !( t->flags & T_FLAG_NOTFILE ) && fate > T_FATE_STABLE )
+	if( !( t->flags & T_FLAG_NOTFILE ) && fate >= T_FATE_SPOIL )
 	    flag = "+";
 	else if( t->binding == T_BIND_EXISTS && parent && t->time > parent )
 	    flag = "*";
