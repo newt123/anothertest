@@ -60,17 +60,19 @@ includes the files \fIheaders\fR through the "#include" C preprocessor
 directive.  The \fIObject\fR rule arranges for this rule to be called
 when \fBJam\fI does its header file scan of \fIsource\fR.
 .RP "Install target : source ;"
-Copies \fIsource\fR into \fItarget\fR.
+Copies \fIsource\fR into \fItarget\fR, using \fIinstall\fR(1).
 Used by the other \fIInstall\fR* rules.
 .RP "InstallBin sources ; "
-Copy \fIsources\fR into $(BINDIR).  Dependents of \fIinstall\fR.
+Copy \fIsources\fR into $(BINDIR) with mode $(EXEMODE).  
+Dependents of \fIinstall\fR.
 .RP "InstallLib sources ;"
-Copy \fIsources\fR into $(LIBDIR).  Dependents of \fIinstall\fR.
+Copy \fIsources\fR into $(LIBDIR) with mode $(FILEMODE).  
+Dependents of \fIinstall\fR.
 .RP "InstallMan sources ;"
-Copy \fIsources\fR into the appropriate subdirectory of
-$(MANDIR).  Dependents of \fIinstall\fR.
+Copy \fIsources\fR into the appropriate subdirectory of $(MANDIR)
+with mode $(FILEMODE).  Dependents of \fIinstall\fR.
 .RP "InstallShell sources ;"
-Copy \fIsources\fR into $(BINDIR).
+Copy \fIsources\fR into $(BINDIR) with mode $(SHELLMODE).
 Dependents of \fIinstall\fR.
 .RP "Lex source.c : source.l ;"
 Process the \fBlex\fR(1) source file \fIsource.l\fR and rename the 
