@@ -107,7 +107,7 @@ HASHDATA **data;
 	keyval = *b;
 
 	while( *b )
-		keyval = keyval * (unsigned)2903657531 + *b++;
+		keyval = keyval * 2147059363 + *b++;
 
 	keyval &= 0x7FFFFFFF;
 
