@@ -22,7 +22,9 @@
 # if defined (COHERENT) && defined (_I386)
 # include <arcoff.h>
 # else
+# ifndef __QNX__
 # include <ar.h>
+# endif /* QNX */
 # endif	/* COHERENT */
   
 
@@ -138,6 +140,7 @@ file_archscan( archive, func )
 char *archive;
 void (*func)();
 {
+# ifndef __QNX__
 	struct ar_hdr ar_hdr;
 	char buf[ MAXPATH ];
 	long offset;
@@ -223,6 +226,9 @@ void (*func)();
 	    free(string_table);
 
 	close( fd );
+
+# endif /* QNX */
+
 }
 
 # else /* AIAMAG - RS6000 AIX */

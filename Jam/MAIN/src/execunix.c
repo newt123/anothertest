@@ -14,7 +14,8 @@
 # if defined( _AIX) || \
 	(defined (COHERENT) && defined (_I386)) || \
 	defined(__sgi) || \
-	defined(M_XENIX)
+	defined(M_XENIX) || \
+	defined(__QNX__)
 # define vfork() fork()
 # endif
 

@@ -176,6 +176,16 @@ if $(OS) = SUNOS && $(TZ)
 
 if $(UNIX)
 {
+	if $(OS) = QNX 
+	{
+	AR		default = wlib ;
+	CC		default = cc ;
+	C++		default = $(CC) ;
+	LINK		default = $(CC) ;
+	NOARSCAN	default = true ;
+	RANLIB		default = "" ;
+	}
+
 	AR		default = ar ru ;
 	AS		default = as ;
 	AWK		default = awk ;
@@ -1135,10 +1145,19 @@ rule makeRelPath
 
 if $(UNIX)
 {
-
-    actions updated together piecemeal Archive
+    if $(OS) = QNX
     {
+	actions updated together piecemeal Archive
+	{
+	$(AR) $(<) +-$(>) 
+	}
+    }
+    else
+    {
+	actions updated together piecemeal Archive
+	{
 	$(AR) $(<) $(>)
+	}
     }
 
     actions As
