@@ -20,14 +20,17 @@ Example:
 .BE
 ..
 .SH NAME
-\fBJamfile\fR \- \fBjam\fR(1) instructions
+\fBJamfile\fR \- per-directory \fBJam\fR(1) instructions
 .SH DESCRIPTION
 .PP
-\fBJambase\fR contains a set of \fBJam\fR rule definitions that provide
-roughly \fBmake\fR(1)-like functionality.  \fBJam\fR reads
-\fBJambase\fR, which in turn includes the \fBJamfile\fR from the
-current directory.  This manual page gives examples for a \fBJamfile\fR,
-using the rules and variables defined in the stock \fBJambase\fR.  
+\fBJamfile\fR is the file that tells the build tool \fBJam\fR what to
+do in the current directory.  This man page gives examples for a
+\fBJamfile\fR.
+.PP
+The rules used here are defined by \fBJambase\fR(5), the \fBJam\fR
+boilerplate.  \fBJambase\fR contains a set of \fBJam\fR rule
+definitions that provide the roughly \fBmake\fR(1)-like functionality
+shown here.
 .SH EXECUTABLES AND LIBRARIES
 .SS Main Rule
 .PP
@@ -282,7 +285,7 @@ by the program "mkhdr", which can be built from "mkhdr.c".  By calling
 The complete list of variables used by the \fIHdrRule\fR coterie are:
 .BB
 HDRRULE         scan rule, when set activates scanning (HdrRule)
-HDRSCAN         scan pattern, when set activiates scanning ($(HDRPATTERN))
+HDRSCAN         scan pattern ($(HDRPATTERN))
 HDRSEARCH       search list for HdrRule ($(HDRS) $(STDHDRS))
 HDRS            non-standard directories for headers ()
 STDHDRS         standard directories for headers (/usr/include)
@@ -451,13 +454,22 @@ CcAddFlags w.c : -DW_CODE ;
 .XE
 .SS RmTemps Rule
 .PP
-Some intermediate targets are meant to be temporary.  The \fIRmTemps\fR
-rule makes such targets with the TEMPORARY attribute, and then
-deletes them after they are used.  To delete them only after they have
-been used, the \fIRmTemps\fR rule must ...
+Some intermediate files are meant to be temporary.  The \fIRmTemps\fR
+rule makes such files with the TEMPORARY attribute, and then deletes
+them after they are used.  To delete them only when they are finished
+being used, \fIRmTemps\fR must be the rule (with actions) invoked on
+the target that uses the temporary files, and the sources to
+\fIRmTempts\fR must be the temporary files themselves.
+.XE
+SpecialUserRuleA foo : bar ;
+SpecialUserRuleB ola : foo ;
+RmTemps ola : foo ;
+.XE
+This says: build \fIfoo\fR using \fISpecialUserRuleA\fR and \fIola\fR
+using \fISpecialUserRuleB\fR.  Once that is done, remove \fIfoo\fR.
 .SH USER-PROVIDED JAM RULES
 .PP
 It is possible to put user-provided rules and constructs directly into
 the \fBJamfile\fR, but to share them they should be placed in their own
 rule file.  If the variable $(JAMUSER) is set to the name of this file,
-\fBJambase\fR(5) includes it just before reading the \fBJamfile\fR.
+\fBJambase\fR includes it just before reading the \fBJamfile\fR.
