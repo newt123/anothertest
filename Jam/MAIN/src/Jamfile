@@ -1,31 +1,22 @@
 #
-# Jamfile for Jam
+# Jamfile to build Jam (a make(1)-like program)
 #
 
-if $(VMS)	
-{ 
-	JAMLIB = libjam.olb ; 
-	OSFILES = execvms.c filevms.c ; 
-}
-else if $(UNIX)	
-{ 
-	JAMLIB = libjam.a ; 
-	OSFILES = execunix.c fileunix.c ;
+#
+# We have some different files for UNIX, VMS, and NT.
+#
 
-	InstallBin /usr/local/bin : jam ;
-	InstallLib /usr/local/lib/jam : Jambase ;
-	InstallMan /usr/local/man : jam.1 Jambase.5 Jamfile.5 ;
-
-}
-else if $(NT)	
-{ 
-	JAMLIB = libjam.lib ; 
-	OSFILES = execnt.c filent.c ; 
+switch $(OS)
+{
+case VMS :	code = vms ;
+case OPENVMS :	code = vms ;
+case NT :	code = nt ;
+case * :	code = unix ;
 }
 
 #
-# Ugly support for the .yy file: yyacc is a preprocessor to yacc,
-# turning a .yy file into a .y file and a tab.h file.
+# Ugly support for the .yy file: yyacc is a preprocessor to yacc.
+# From gram.yy it makes gram.y and gramtab.h.
 #
 
 rule UserObject
@@ -49,11 +40,29 @@ actions YYacc
 	sh yyacc $(>) $(<)
 }
 
-Main 		jam : jam.c ;
-LinkLibraries 	jam : $(JAMLIB) ;
+#
+# The guts of the Jamfile: how to build Jam
+#
 
-Library         $(JAMLIB) : 
-		command.c compile.c expand.c hash.c glob.c lists.c 
-		make.c make1.c newstr.c option.c parse.c rules.c scan.c 
-		search.c timestamp.c variable.c jamgram.yy headers.c 
-		regexp.c $(OSFILES) ;
+Main 		jam : jam.c ;
+LinkLibraries 	jam : libjam.a ;
+
+Library         libjam.a : 
+		    command.c compile.c exec$(code).c expand.c
+		    file$(code).c glob.c hash.c headers.c jamgram.yy
+		    lists.c make.c make1.c newstr.c option.c parse.c
+		    regexp.c rules.c scan.c search.c timestamp.c
+		    variable.c ;
+
+#
+# On UNIX, we install this stuff for easy use.
+# On VMS, one must define a symbol:  jam :== $jam.exe -f jambase
+# On NT, you're on your own.
+#
+
+if $(UNIX)
+{
+	InstallBin /usr/local/bin : jam ;
+	InstallLib /usr/local/lib/jam : Jambase ;
+	InstallMan /usr/local/man : jam.1 Jambase.5 Jamfile.5 ;
+}

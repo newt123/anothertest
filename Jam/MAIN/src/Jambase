@@ -157,6 +157,7 @@ if $(UNIX)
 	SHELLMODE	default = 755 ;
 	SLASH		default = / ;
 	STDHDRS		default = /usr/include ;
+	SUBLIB		default = .a ;
 	SUFOBJ		default = .o ;
 	SUFEXE		default = "" ;
 	UNDEFFLAG	default = "-u _" ;
@@ -181,6 +182,7 @@ else if $(NT)
 	SLASH		default = \\ ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
+	SUBLIB		default = .lib ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
     }
@@ -205,6 +207,7 @@ else if $(NT)
 	OPTIM		default =  ;
 	SLASH		default = \\ ;
 	STDHDRS		default = $(MSVCNT)\\include ;
+	SUBLIB		default = .lib ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
 	UNDEFFLAG	default = "/u _" ;
@@ -229,6 +232,7 @@ else if $(VMS)
 	SHELLMODE	default = (w:er) ;
 	SLASH		default = . ;
 	STDHDRS		default = "" decc$library_include ;
+	SUBLIB		default = .olb ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
 
@@ -411,6 +415,7 @@ rule LibraryFromObjects
 {
 	# library depends on its member objects
 
+	L = $(<:S=$(SUBLIB)) ;
 	S = $(>) ;
 
 	if $(SOURCE_GRIST)
@@ -418,10 +423,10 @@ rule LibraryFromObjects
 	    S = $(>:G=$(SOURCE_GRIST)) ;
 	}
 
-	DEPENDS lib : $(<) ;
-	DEPENDS $(<) : $(<)($(S:BS)) ;
+	DEPENDS lib : $(L) ;
+	DEPENDS $(L) : $(L)($(S:BS)) ;
 
-	Clean clean : $(<) ;
+	Clean clean : $(L) ;
 
 	# We wish we could locate the library and it's contents,
 	# but the reference to $(NEEDLIBS) in Main's actions
@@ -435,19 +440,19 @@ rule LibraryFromObjects
 
 	for i in $(S)
 	{
-	    DEPENDS $(<)($(i:BS)) : $(i) ;
+	    DEPENDS $(L)($(i:BS)) : $(i) ;
 	}
 
 	# must call separate Archive rule so that 'updated' modifier
 	# on 'actions' refers to updated .o's.
 	# delete objects after archive is made
 
-	if $(CRELIB) { CreLib $(<) ; }
+	if $(CRELIB) { CreLib $(L) ; }
 
-	Archive $(<) : $(S) ;
-	RmTemps $(<) : $(S) ;
+	Archive $(L) : $(S) ;
+	RmTemps $(L) : $(S) ;
 
-	if $(RANLIB) { Ranlib $(<) ; }
+	if $(RANLIB) { Ranlib $(L) ; }
 }
 
 rule LinkLibraries
@@ -457,8 +462,8 @@ rule LinkLibraries
 
 	T = $(<:S=$(SUFEXE)) ;
 
-	DEPENDS $(T) : $(>) ;
-	NEEDLIBS on $(T) += $(>) ;
+	DEPENDS $(T) : $(>:S=$(SUFLIB)) ;
+	NEEDLIBS on $(T) += $(>:S=$(SUFLIB)) ;
 }
 
 rule Main
