@@ -74,18 +74,19 @@ actions Groff
 }
 
 ALLSOURCE = 
-	    README RELNOTES Build.com Jambase Jamfile Jambase.5 Jambase.ps
-	    Jamfile.5 Jamfile.ps Makefile Paper.ps Porting command.c command.h
-	    compile.c compile.h execcmd.h execnt.c execunix.c execvms.c
-	    expand.c expand.h filent.c filesys.h fileunix.c filevms.c
-	    glob.c hash.c hash.h headers.c headers.h jam.1 jam.c jam.h
-	    jam.ps jamgram.c jamgram.h jamgram.y jamgramtab.h lists.c
-	    lists.h make.c make.h make1.c newstr.c newstr.h option.c
-	    option.h parse.c parse.h patchlevel.h regexp.c regexp.h
-	    rules.c rules.h scan.c scan.h search.c search.h timestamp.c
+	    README RELNOTES Build.com Jam.paper.ps Jambase Jamfile
+	    Jambase.5 Jambase.ps Jamfile.5 Jamfile.ps Makefile
+	    Porting command.c command.h compile.c compile.h execcmd.h
+	    execnt.c execunix.c execvms.c expand.c expand.h filent.c
+	    filesys.h fileunix.c filevms.c glob.c hash.c hash.h
+	    headers.c headers.h jam.1 jam.c jam.h jam.ps jamgram.c
+	    jamgram.h jamgram.y jamgramtab.h lists.c lists.h make.c
+	    make.h make1.c newstr.c newstr.h option.c option.h
+	    parse.c parse.h patchlevel.h regexp.c regexp.h rules.c
+	    rules.h scan.c scan.h search.c search.h timestamp.c
 	    timestamp.h variable.c variable.h ;
 
-TempCopy Paper.ps : ../doc/jam.ps ;
+TempCopy Jam.paper.ps : ../doc/jam.paper.ps ;
 Groff jam.ps : jam.1 ;
 Groff Jamfile.ps : Jamfile.5 ;
 Groff Jambase.ps : Jambase.5 ;
@@ -98,14 +99,14 @@ rule Ball
 
 	switch $(<) 
 	{
-	case TAR : Tar $(<) : $(>) ;
-	case SHAR : Shar $(<) : $(>) ;
-	case ZIP : Zip $(<) : $(>) ;
+	case *.tar : Tar $(<) : $(>) ;
+	case *.shar : Shar $(<) : $(>) ;
+	case *.zip : Zip $(<) : $(>) ;
 	}
 
 	PostBall $(<) ;
 
-	RmTemps $(<) : Paper.ps ;
+	RmTemps $(<) : Jam.paper.ps ;
 }
 
 actions PreBall 
@@ -119,10 +120,13 @@ actions PostBall
 	mv Jamfile.sav Jamfile
 }
 
-	
+VERSION = jam-2.1.0 ;
+
 actions Tar
 {
-	tar cvf $(<) $(>)
+	ln -s . $(VERSION)
+	tar cvhf $(<) $(VERSION)/$(>)
+	rm $(VERSION)
 }
 
 actions Shar
@@ -136,6 +140,6 @@ actions Zip
 }
 
 Ball SHAR : $(ALLSOURCE) ;
-Ball TAR : $(ALLSOURCE) ;
+Ball $(VERSION).tar : $(ALLSOURCE) ;
 Ball ZIP : $(ALLSOURCE) ;
 
