@@ -15,6 +15,7 @@
  * 02/22/95 (seiwald) - Jambase now in /usr/local/lib.
  * 04/30/95 (seiwald) - FreeBSD added.  Live Free or Die.
  * 05/10/95 (seiwald) - SPLITPATH character set up here.
+ * 08/20/95 (seiwald) - added LINUX.
  */
 
 # ifdef VMS
@@ -121,6 +122,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif
 # ifdef __FreeBSD__
 # define OTHERSYMS "UNIX=true","OS=FreeBSD"
+# endif
+# ifdef linux
+# define OTHERSYMS "UNIX=true","OS=LINUX"
 # endif
 # ifndef OTHERSYMS
 # define OTHERSYMS "UNIX=true"
