@@ -3,6 +3,8 @@ Release notes for Jam 2.1.
 Semicolon typo in filent.c.
 FreeBSD in jam.h.
 Install -c in Jambase - FreeBSD does move without -c.
+&& for File in Jambase.
+Clean for File rule in Jambase.
 
 Release notes for Jam 2.0.
 

@@ -725,6 +725,7 @@ rule Shell
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 	MODE on $(<) = $(SHELLMODE) ;
+	Clean clean : $(<) ;
 	Chmod $(<) ;
 }
 
@@ -942,7 +943,7 @@ if $(UNIX)
     actions File
     {
 	$(RM) $(<)
-	$(CP) $(>) $(<) &&
+	$(CP) $(>) $(<)
     }
 
     actions Fortran
