@@ -87,6 +87,7 @@
  *	jamgram.yy - jam grammar
  *
  * 05/04/94 (seiwald) - async multiprocess (-j) support
+ * 02/08/95 (seiwald) - -n implies -d2.
  */
 
 struct globs globs = {
@@ -125,7 +126,7 @@ char	**argv;
 	/* Pick up interesting options */
 
 	if( ( s = getoptval( optv, 'n', 0 ) ) )
-	    globs.noexec++;
+	    globs.noexec++, globs.debug = 2;
 
 	if( ( s = getoptval( optv, 'd', 0 ) ) )
 	    globs.debug = atoi( s );
