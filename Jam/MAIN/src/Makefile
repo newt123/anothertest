@@ -2,6 +2,7 @@
 
 CC = cc
 TARGET = -o jam0
+OPTIM = -O
 
 # Special flavors - uncomment appropriate lines
 
@@ -21,4 +22,4 @@ install: jam0
 	jam0 -f Jambase install
 
 jam0:
-	cc $(TARGET) $(CFLAGS) *.c $(LINKLIBS)
+	cc $(TARGET) $(OPTIM) $(CFLAGS) *.c $(LINKLIBS)
