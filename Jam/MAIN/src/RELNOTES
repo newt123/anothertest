@@ -44,6 +44,8 @@ Changes since 2.1
     targets.  With new syntax "actions Rulename bind var..." the named variables
     will be expanded in the action block.
 
+    Jam now by default builds itself into a platform specific subdirectory.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
