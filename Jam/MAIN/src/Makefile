@@ -28,9 +28,9 @@ CFLAGS =
 #LINKLIBS = $(Lib)/oldnames.lib $(Lib)/kernel32.lib $(Lib)/libc.lib
 
 # BeOS - Metroworks CodeWarrior
-CC = mwcc
-Include = /NewDisk/develop/headers/posix
-CFLAGS = -I $(Include)
+#CC = mwcc
+#Include = /NewDisk/develop/headers/posix
+#CFLAGS = -I $(Include)
 
 SOURCES = \
 	command.c compile.c execnt.c execunix.c execvms.c expand.c \
