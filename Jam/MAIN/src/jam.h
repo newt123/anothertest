@@ -252,12 +252,12 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OSPLATSYM ,"OSPLAT=PPC"
 # endif
 
-# ifdef _ALPHA_
+# if defined( _ALPHA_ ) || defined( __alpha__ )
 # undef OSPLATSYM
 # define OSPLATSYM ,"OSPLAT=AXP"
 # endif
 
-# ifdef _i386_ 
+# if defined( _i386_ ) || defined( __i386__ )
 # undef OSPLATSYM
 # define OSPLATSYM ,"OSPLAT=X86"
 # endif 
