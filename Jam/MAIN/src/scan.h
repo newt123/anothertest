@@ -40,7 +40,6 @@ typedef struct _YYSTYPE {
 extern YYSTYPE yylval;
 
 void yyerror();
-void yyiparse();
 void yyfparse();
 int yylex();
 void yymode();

@@ -40,7 +40,7 @@ struct keyword {
 struct include {
 	struct include *next;	/* next serial include file */
 	char 	*string;	/* pointer into current line */
-	char	**strings;	/* for yyiparse() -- text to parse */
+	char	**strings;	/* for yyfparse() -- text to parse */
 	FILE 	*file;		/* for yyfparse() -- file being read */
 	char 	*fname;		/* for yyfparse() -- file name */
 	int 	line;		/* line counter for error messages */
@@ -48,7 +48,6 @@ struct include {
 } ;
 
 static struct include *incp = 0; /* current file; head of chain */
-static struct include *inci = 0; /* where next include file gets inserted */
 
 static int scanmode = SCAN_NORMAL;
 static int anyerrors = 0;
@@ -57,6 +56,7 @@ static char *symdump();
 # define BIGGEST_TOKEN 10240	/* no single token can be larger */
 
 /* 
+ * Set parser mode: normal, string, or keyword
  */
 
 void
@@ -90,39 +90,20 @@ char *s;
 {
 	struct include *i = (struct include *)malloc( sizeof( *i ) );
 
+	/* Push this onto the incp chain. */
+
 	i->string = "";
 	i->strings = 0;
 	i->file = 0;
 	i->fname = copystr( s );
 	i->line = 0;
-
-	/* Incp is the head of the include chain, and we need to keep */
-	/* the chain in order.  Thus when one file includes another, we */
-	/* insert it at the head of the chain and point incp at the new */
-	/* head.  If one statement includes many files, we use inci */
-	/* to insert these files one after another on the chain. */
-
-	/* Inci is reset to 0 by yyline() to mean that the next include */
-	/* should go at the head.  Once is it non-zero, it points to the */
-	/* last file included, after which the next include file will go. */
-
-	if( !inci )
-	{
-	    i->next = incp;
-	    inci = i;
-	    incp = i;
-	}
-	else
-	{
-	    i->next = inci->next;
-	    inci->next = i;
-	    inci = i;
-	}
+	i->next = incp;
+	incp = i;
 
 	/* If the filename is "+", it means use the internal jambase. */
 
 	if( !strcmp( s, "+" ) )
-	    inci->strings = jambase;
+	    i->strings = jambase;
 }
 
 /*
@@ -135,67 +116,66 @@ char *s;
 int
 yyline()
 {
-	struct include *i;
+	struct include *i = incp;
+
+	if( !incp )
+	    return EOF;
 
 	/* Once we start reading from the input stream, we reset the */
 	/* include insertion point so that the next include file becomes */
 	/* the head of the list. */
 
-	inci = 0;
+	/* If there is more data in this line, return it. */
 
-	while( i = incp )
+	if( *i->string )
+	    return *i->string++;
+
+	/* If we're reading from an internal string list, go to the */
+	/* next string. */
+
+	if( i->strings )
 	{
-	    /* If there is more data in this line, return it. */
+	    if( !*i->strings )
+		goto next;
 
-	    if( *i->string )
-		return *i->string++;
-
-	    /* If we're reading from an internal string list, go to the */
-	    /* next string. */
-
-	    if( i->strings )
-	    {
-		if( !*i->strings )
-		    goto next;
-
-		i->line++;
-		i->string = *(i->strings++);
-		return *i->string++;
-	    }
-
-	    /* If necessary, open the file */
-
-	    if( !i->file )
-	    {
-		FILE *f = stdin;
-
-		if( strcmp( i->fname, "-" ) && !( f = fopen( i->fname, "r" ) ) )
-		    perror( i->fname );
-
-		i->file = f;
-	    }
-
-	    /* If there's another line in this file, start it. */
-
-	    if( i->file && fgets( i->buf, sizeof( i->buf ), i->file ) )
-	    {
-		i->line++;
-		i->string = i->buf;
-		return *i->string++;
-	    }
-
-	next:
-	    /* Got to next sequential include. */
-
-	    incp = i->next;
-
-	    /* Close file, free name */
-
-	    if( i->file && i->file != stdin )
-		fclose( i->file );
-	    freestr( i->fname );
-	    free( (char *)i );
+	    i->line++;
+	    i->string = *(i->strings++);
+	    return *i->string++;
 	}
+
+	/* If necessary, open the file */
+
+	if( !i->file )
+	{
+	    FILE *f = stdin;
+
+	    if( strcmp( i->fname, "-" ) && !( f = fopen( i->fname, "r" ) ) )
+		perror( i->fname );
+
+	    i->file = f;
+	}
+
+	/* If there's another line in this file, start it. */
+
+	if( i->file && fgets( i->buf, sizeof( i->buf ), i->file ) )
+	{
+	    i->line++;
+	    i->string = i->buf;
+	    return *i->string++;
+	}
+
+    next:
+	/* This include is done.  */
+	/* Free it up and return EOF so yyparse() returns to parse_file(). */
+
+	incp = i->next;
+
+	/* Close file, free name */
+
+	if( i->file && i->file != stdin )
+	    fclose( i->file );
+	freestr( i->fname );
+	free( (char *)i );
 
 	return EOF;
 }
@@ -208,8 +188,8 @@ yyline()
  *	yychar() - return and advance character; invalid after EOF
  *	yyprev() - back up one character; invalid before yychar()
  *
- * yychar() returns a continuous stream of characters, regardless of
- * include file boundaries.  At the end of the last file it returns EOF.
+ * yychar() returns a continuous stream of characters, until it hits
+ * the EOF of the current include file.
  */
 
 # define yychar() ( *incp->string ? *incp->string++ : yyline() )
