@@ -92,48 +92,36 @@
 # define pcomp( c,l,r )	  parse_make( F0,P0,P0,S0,S0,l,r,c )
 # define plol( p,l )	  parse_make( F0,p,P0,S0,S0,l,L0,0 )
 
+
 %}
 
 %%
 
-/*
- * stmts - the contents of a JAMFILE
- */
-
-stmts	: 
-		{
-			compile_builtins();
-		}
-	| stmts rule
-		{ 
-			/* no target, sources in global scope */
-			/* invoke statement and then free its parse */
-
-			LOL l;
-			lol_init( &l );
-			(*($2.parse->func))( $2.parse, &l );
-			parse_free( $2.parse );
-		}
+run	: block
+		{ parse_save( $1.parse ); }
 	;
 
 /*
- * rules - a strings of rule's together
+ * block - zero or more locals, then zero or more rules
+ * rules - one or more rules
  * rule - any one of jam's rules
  */
 
-rules	: rule0
+block	: /* empty */
+		{ $$.parse = 0; }
+	| rules
 		{ $$.parse = $1.parse; }
-	| LOCAL args _SEMIC rule0
+	| LOCAL args _SEMIC block
 		{ $$.parse = plocal( $2.list, $4.parse ); }
 	;
 
-rule0	: /* empty */
-		{ $$.parse = prules( P0, P0 ); }
-	| rule0 rule
+rules	: rule
+		{ $$.parse = $1.parse; }
+	| rules rule
 		{ $$.parse = prules( $1.parse, $2.parse ); }
 	;
 
-rule	: _LBRACE rules _RBRACE
+rule	: _LBRACE block _RBRACE
 		{ $$.parse = $2.parse; }
 	| INCLUDE args _SEMIC
 		{ $$.parse = pincl( $2.list ); }
@@ -145,13 +133,13 @@ rule	: _LBRACE rules _RBRACE
 		{ $$.parse = pstng( $3.list, $1.list, $5.list, $4.number ); }
 	| arg1 DEFAULT _EQUALS args _SEMIC
 		{ $$.parse = pset( $1.list, $4.list, ASSIGN_DEFAULT ); }
-	| FOR ARG IN args _LBRACE rules _RBRACE
+	| FOR ARG IN args _LBRACE block _RBRACE
 		{ $$.parse = pfor( $2.string, $6.parse, $4.list ); }
 	| SWITCH args _LBRACE cases _RBRACE
 		{ $$.parse = pswitch( $2.list, $4.parse ); }
-	| IF cond _LBRACE rules _RBRACE 
+	| IF cond _LBRACE block _RBRACE 
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, P0 ) ); }
-	| IF cond _LBRACE rules _RBRACE ELSE rule
+	| IF cond _LBRACE block _RBRACE ELSE rule
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, $7.parse ) ); }
 	| RULE ARG rule
 		{ $$.parse = psetc( $2.string, $3.parse ); }
@@ -218,7 +206,7 @@ cases	: /* empty */
 		{ $$.parse = pcases( $1.parse, $2.parse ); }
 	;
 
-case	: CASE ARG _COLON rules
+case	: CASE ARG _COLON block
 		{ $$.parse = pcase( $2.string, $4.parse ); }
 	;
 
@@ -286,4 +274,5 @@ bindlist : /* empty */
 	| BIND args
 		{ $$.list = $2.list; }
 	;
+
 

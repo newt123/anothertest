@@ -38,7 +38,7 @@ char *f;
 
 	    yypsave = 0;
 
-	    if( yyparse() || !( p = yypsave ) || !p->left )
+	    if( yyparse() || !( p = yypsave ) )
 		break;
 
 	    (*(p->func))( p, &l );

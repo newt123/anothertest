@@ -61,28 +61,31 @@
 
 %%
 
-run	: rules
+run	: block
 		{ parse_save( $1.parse ); }
 	;
 
 /*
- * rules - a strings of rule's together
+ * block - zero or more locals, then zero or more rules
+ * rules - one or more rules
  * rule - any one of jam's rules
  */
 
-rules	: rule0
+block	: /* empty */
+		{ $$.parse = 0; }
+	| rules
 		{ $$.parse = $1.parse; }
-	| `local` args `;` rule0
+	| `local` args `;` block
 		{ $$.parse = plocal( $2.list, $4.parse ); }
 	;
 
-rule0	: /* empty */
-		{ $$.parse = prules( P0, P0 ); }
-	| rule0 rule
+rules	: rule
+		{ $$.parse = $1.parse; }
+	| rules rule
 		{ $$.parse = prules( $1.parse, $2.parse ); }
 	;
 
-rule	: `{` rules `}`
+rule	: `{` block `}`
 		{ $$.parse = $2.parse; }
 	| `include` args `;`
 		{ $$.parse = pincl( $2.list ); }
@@ -94,13 +97,13 @@ rule	: `{` rules `}`
 		{ $$.parse = pstng( $3.list, $1.list, $5.list, $4.number ); }
 	| arg1 `default` `=` args `;`
 		{ $$.parse = pset( $1.list, $4.list, ASSIGN_DEFAULT ); }
-	| `for` ARG `in` args `{` rules `}`
+	| `for` ARG `in` args `{` block `}`
 		{ $$.parse = pfor( $2.string, $6.parse, $4.list ); }
 	| `switch` args `{` cases `}`
 		{ $$.parse = pswitch( $2.list, $4.parse ); }
-	| `if` cond `{` rules `}` 
+	| `if` cond `{` block `}` 
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, P0 ) ); }
-	| `if` cond `{` rules `}` `else` rule
+	| `if` cond `{` block `}` `else` rule
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, $7.parse ) ); }
 	| `rule` ARG rule
 		{ $$.parse = psetc( $2.string, $3.parse ); }
@@ -167,7 +170,7 @@ cases	: /* empty */
 		{ $$.parse = pcases( $1.parse, $2.parse ); }
 	;
 
-case	: `case` ARG `:` rules
+case	: `case` ARG `:` block
 		{ $$.parse = pcase( $2.string, $4.parse ); }
 	;
 
