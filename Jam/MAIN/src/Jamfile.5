@@ -225,13 +225,15 @@ All the \fIInstall\fR rules invoke the \fIMkDir\fR rule to create the
 directory for the target file.  \fIMkDir\fR recursively invokes itself
 on its parent directory, to make sure the whole path gets created.
 \fIMkDir\fR marks directories with the built-in rule \fINOUPDATE\fR,
-which tells \fBjam\fR not to update a target once it exists.  In that
-way, the contents of the install directory can depend on the existence
-of the install directory itself, and thus the directory will be made 
-before its contents are installed.  You can call \fIMkDir\fR directly.
+which tells \fBjam\fR not to update a target once it exists, and once
+the target exists to pretend it is eternally old.  In that way, the
+contents of the install directory can depend on the existence of the
+install directory itself, and thus the directory will be made before
+its contents are installed.  You can call \fIMkDir\fR directly.
 .XB
-File /usr/local/bin/junky : junky ;
-DEPENDS /usr/local/bin/junky : /usr/local/bin ;
+File /usr/local/bin/junky : junky ; 
+DEPENDS /usr/local/bin/junky :
+/usr/local/bin ;
 MkDir /usr/local/bin ;
 .XE
 .PP

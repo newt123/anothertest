@@ -211,7 +211,8 @@ Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
 Marks \fI<targets>\fR as not being files (see \fBBinding,\fR below).
 .IP "NOUPDATE \fI<targets>\fR"
 .br
-Prevents \fI<targets>\fR from being rebuilt if they already exist.
+Prevents \fI<targets>\fR from being rebuilt if they already exist, and
+makes existing \fI<targets\fR> appear eternally old.
 .IP "TEMPORARY \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as temporary (see \fBBinding,\fR below).
@@ -463,7 +464,8 @@ only if any of its sources is marked for updating (timestamps are not
 compared).
 .IP \n(bu
 If a target has been marked with NOUPDATE, it is only updated if it is
-missing.
+missing.  Also, if it exists, it will appear eternally old; that is,
+older than anything that depends on it.
 .RE
 .PP
 If a target is a source file that includes header files,
