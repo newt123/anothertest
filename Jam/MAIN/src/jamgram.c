@@ -4,36 +4,39 @@ extern char *malloc(), *realloc();
 # define _AMPERAMPER 259
 # define _LPAREN 260
 # define _RPAREN 261
-# define _COLON 262
-# define _SEMIC 263
-# define _LANGLE 264
-# define _LANGLE_EQUALS 265
-# define _EQUALS 266
-# define _RANGLE 267
-# define _RANGLE_EQUALS 268
-# define ACTIONS 269
-# define CASE 270
-# define DEFAULT 271
-# define ELSE 272
-# define FOR 273
-# define IF 274
-# define IGNORE 275
-# define IN 276
-# define INCLUDE 277
-# define ON 278
-# define PIECEMEAL 279
-# define QUIETLY 280
-# define RULE 281
-# define SWITCH 282
-# define TOGETHER 283
-# define UPDATED 284
-# define _LBRACE 285
-# define _BARBAR 286
-# define _RBRACE 287
-# define ARG 288
-# define STRING 289
+# define _PLUS_EQUALS 262
+# define _COLON 263
+# define _SEMIC 264
+# define _LANGLE 265
+# define _LANGLE_EQUALS 266
+# define _EQUALS 267
+# define _RANGLE 268
+# define _RANGLE_EQUALS 269
+# define _QUESTION_EQUALS 270
+# define ACTIONS 271
+# define CASE 272
+# define DEFAULT 273
+# define ELSE 274
+# define EXISTING 275
+# define FOR 276
+# define IF 277
+# define IGNORE 278
+# define IN 279
+# define INCLUDE 280
+# define ON 281
+# define PIECEMEAL 282
+# define QUIETLY 283
+# define RULE 284
+# define SWITCH 285
+# define TOGETHER 286
+# define UPDATED 287
+# define _LBRACE 288
+# define _BARBAR 289
+# define _RBRACE 290
+# define ARG 291
+# define STRING 292
 
-# line 47 "jamgram.y"
+# line 57 "jamgram.y"
 #include "lists.h"
 #include "parse.h"
 #include "scan.h"
@@ -42,13 +45,11 @@ extern char *malloc(), *realloc();
 
 # define F0 (void (*)())0
 # define P0 (PARSE *)0
-# define L0 (LIST *)0
 # define S0 (char *)0
 
-# define pset( l,r ) 	  parse_make( compile_set,P0,P0,S0,S0,l,r,0 )
-# define psettings( l,p ) parse_make( compile_settings,p,P0,S0,S0,l,L0,0 )
-# define pseton( l,r ) 	  parse_make( F0,P0,P0,S0,S0,l,r,0 )
-# define psetdef( l,r )   parse_make( compile_setdefault,P0,P0,S0,S0,l,r,0 )
+# define pset( l,r,a ) 	  parse_make( compile_set,P0,P0,S0,S0,l,r,a )
+# define pset1( l,p,a )	  parse_make( compile_settings,p,P0,S0,S0,l,L0,a )
+# define pstng( p,l,r,a ) pset1( p, parse_make( F0,P0,P0,S0,S0,l,r,0 ), a )
 # define prule( s,l,r )   parse_make( compile_rule,P0,P0,s,S0,l,r,0 )
 # define prules( l,r )	  parse_make( compile_rules,l,r,S0,S0,L0,L0,0 )
 # define pfor( s,p,l )    parse_make( compile_foreach,p,P0,s,S0,l,L0,0 )
@@ -80,87 +81,88 @@ int yyexca[] ={
 	0, -1,
 	-2, 0,
 -1, 4,
-	266, 35,
-	271, 35,
-	278, 35,
-	-2, 33,
+	263, 36,
+	264, 36,
+	291, 36,
+	-2, 38,
 	};
-# define YYNPROD 43
-# define YYLAST 177
+# define YYNPROD 47
+# define YYLAST 181
 int yyact[]={
 
-    10,    84,    51,    83,     6,     8,    53,    52,     3,    27,
-    50,    49,     9,     7,    81,    47,    11,    10,    88,     4,
-    76,     6,     8,    29,    28,     3,    27,    23,    78,     9,
-     7,    27,    75,    11,    10,    82,     4,    17,     6,     8,
-    59,    57,     3,    26,    33,    27,     9,     7,    87,    27,
-    11,    10,    55,     4,    36,     6,     8,    27,    34,     3,
-    31,    27,    27,     9,     7,    39,    27,    11,    27,    63,
-     4,    40,    41,    38,    42,    43,    36,    79,    73,    14,
-    35,    37,    86,    21,    15,    25,    22,    36,    54,    48,
-     2,    16,    20,    61,    62,    27,    12,    13,    74,    24,
-    18,     5,     1,    37,     0,    19,     0,    30,     0,    32,
-     0,     0,    46,     0,     0,     0,     0,     0,     0,     0,
-     0,    64,    56,     0,    58,     0,    60,    44,    45,     0,
-     0,    67,    68,    69,    70,    71,    72,     0,     0,     0,
-     0,     0,    65,    66,     0,     0,     0,     0,     0,     0,
-     0,     0,    77,     0,     0,     0,    80,     0,     0,     0,
-     0,     0,     0,     0,    85,     0,     0,     0,     0,     0,
-     0,     0,    89,     0,     0,     0,    90 };
+    10,    88,    18,    86,    26,     6,     8,    17,    24,     3,
+    19,    25,    89,     9,     7,    83,    10,    11,    31,    93,
+     4,     6,     8,    82,    27,     3,    20,    33,    32,     9,
+     7,    31,    10,    11,    84,    87,     4,     6,     8,    31,
+    80,     3,    26,    40,    38,     9,     7,    31,    10,    11,
+    31,    60,     4,     6,     8,    31,    62,     3,    30,    37,
+    92,     9,     7,    58,    91,    11,    55,    31,     4,    68,
+    57,    56,    39,    41,    54,    53,    40,    36,    78,    51,
+    40,    18,    59,    31,     2,    31,    17,    43,    29,    19,
+    66,    52,    16,    14,    44,    45,    42,    46,    47,    12,
+    15,    22,    67,    79,    13,    28,    41,    21,     1,     5,
+    50,     0,     0,     0,    34,    35,     0,     0,    23,     0,
+     0,     0,     0,     0,     0,     0,    48,    49,    69,    63,
+     0,     0,     0,    61,    23,    23,    64,    65,     0,     0,
+     0,     0,    70,    71,     0,     0,     0,     0,     0,     0,
+    23,    23,    72,    73,    74,    75,    76,    77,    85,     0,
+     0,     0,     0,    81,     0,     0,     0,     0,     0,     0,
+     0,     0,    90,     0,     0,    95,     0,     0,     0,     0,
+    94 };
 int yypact[]={
 
- -1000,  -218, -1000, -1000, -1000,  -187,  -251, -1000,  -174,  -261,
- -1000, -1000,  -220,  -239, -1000,  -206, -1000,  -232,  -227,  -205,
-  -193,  -174,  -174,  -218,  -273,  -235, -1000, -1000, -1000, -1000,
-  -222, -1000,  -226, -1000,  -201, -1000,  -174,  -174, -1000, -1000,
- -1000, -1000, -1000, -1000, -1000,  -183, -1000, -1000, -1000, -1000,
- -1000, -1000, -1000, -1000, -1000, -1000,  -231, -1000,  -243, -1000,
-  -257,  -210,  -201,  -274,  -252, -1000,  -172,  -279,  -279,  -279,
-  -279,  -279,  -279, -1000,  -286, -1000, -1000,  -262, -1000, -1000,
- -1000,  -180,  -224, -1000, -1000,  -269, -1000,  -218, -1000,  -218,
- -1000 };
+ -1000,  -223, -1000, -1000, -1000,  -181,  -265, -1000,  -249,  -267,
+ -1000, -1000,  -206,  -236, -1000, -1000,  -190, -1000, -1000, -1000,
+  -220,  -244,  -216,  -171,  -249,  -249, -1000,  -223,  -212,  -239,
+ -1000, -1000, -1000, -1000,  -208,  -260, -1000, -1000,  -203, -1000,
+  -249,  -249,  -287,  -287,  -287,  -287,  -287,  -287, -1000,  -183,
+ -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+ -1000,  -224, -1000, -1000,  -241,  -273,  -256,  -203,  -288,  -255,
+ -1000,  -179, -1000, -1000, -1000, -1000, -1000, -1000, -1000,  -291,
+ -1000,  -252, -1000, -1000, -1000, -1000,  -199,  -214, -1000, -1000,
+  -271, -1000,  -223, -1000,  -223, -1000 };
 int yypgo[]={
 
-     0,   102,    88,    85,    92,   101,    93,   105,    99,    98,
-    94,    89 };
+     0,   108,    82,    88,    99,   109,    93,    90,   101,   105,
+   103,   102,    91 };
 int yyr1[]={
 
      0,     1,     1,     3,     3,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     2,     9,     2,     2,     7,
-     7,     7,     7,     7,     7,     7,     7,     7,     7,     7,
-     6,     6,    10,     4,     4,     5,     8,     8,    11,    11,
-    11,    11,    11 };
+     2,     2,     2,     2,     2,     2,    10,     2,     2,     6,
+     6,     6,     8,     8,     8,     8,     8,     8,     8,     8,
+     8,     8,     8,     7,     7,    11,     4,     4,     5,     9,
+     9,    12,    12,    12,    12,    12,    12 };
 int yyr2[]={
 
-     0,     1,     5,     1,     5,     7,     7,    11,     9,    11,
-    13,    15,    11,    11,    15,     7,     1,    11,     7,     3,
-     7,     7,     7,     7,     7,     7,     5,     7,     7,     7,
-     1,     5,     9,     1,     5,     3,     1,     5,     3,     3,
-     3,     3,     3 };
+     0,     1,     5,     1,     5,     7,     7,    11,     9,    13,
+    11,    15,    11,    11,    15,     7,     1,    11,     7,     3,
+     3,     3,     3,     7,     7,     7,     7,     7,     7,     5,
+     7,     7,     7,     1,     5,     9,     1,     5,     3,     1,
+     5,     3,     3,     3,     3,     3,     3 };
 int yychk[]={
 
- -1000,    -1,    -2,   277,   288,    -5,   273,   282,   274,   281,
-   269,   285,    -4,    -4,   266,   271,   278,   288,    -4,    -7,
-    -4,   257,   260,   288,    -8,    -3,   263,   288,   263,   262,
-    -4,   266,    -4,   276,   285,   285,   259,   286,   266,   258,
-   264,   265,   267,   268,    -7,    -7,    -2,   288,   -11,   284,
-   283,   275,   280,   279,    -2,   287,    -4,   263,    -4,   266,
-    -4,    -6,   -10,   270,    -3,    -7,    -7,    -4,    -4,    -4,
-    -4,    -4,    -4,   261,    -9,   263,   263,    -4,   285,   287,
-    -6,   288,   287,   289,   263,    -3,   262,   272,   287,    -3,
-    -2 };
+ -1000,    -1,    -2,   280,   291,    -5,   276,   285,   277,   284,
+   271,   288,    -4,    -4,    -6,   281,   273,   267,   262,   270,
+   291,    -4,    -8,    -5,   257,   260,   291,   291,    -9,    -3,
+   264,   291,   264,   263,    -4,    -4,   267,   279,   288,   288,
+   259,   289,   267,   258,   265,   266,   268,   269,    -8,    -8,
+    -2,   291,   -12,   287,   286,   278,   283,   282,   275,    -2,
+   290,    -4,   264,    -6,    -4,    -4,    -7,   -11,   272,    -3,
+    -8,    -8,    -5,    -5,    -5,    -5,    -5,    -5,   261,   -10,
+   264,    -4,   264,   288,   290,    -7,   291,   290,   292,   264,
+    -3,   263,   274,   290,    -3,    -2 };
 int yydef[]={
 
-     1,    -2,     2,    33,    -2,     0,     0,    33,    33,     0,
-    36,     3,     0,     0,    33,     0,    33,     0,     0,     0,
-    19,    33,    33,     0,     0,     0,     5,    34,     6,    33,
-     0,    33,     0,    33,    30,     3,    33,    33,    33,    33,
-    33,    33,    33,    33,    26,     0,    15,    16,    37,    38,
-    39,    40,    41,    42,     4,    18,     0,     8,     0,    33,
-     0,     0,    30,     0,     0,    27,    28,    20,    21,    22,
-    23,    24,    25,    29,     0,     7,     9,     0,     3,    12,
-    31,     0,    13,    17,    10,     0,     3,     0,    11,    32,
-    14 };
+     1,    -2,     2,    36,    -2,     0,     0,    36,     0,     0,
+    39,     3,     0,     0,    36,    36,     0,    19,    20,    21,
+     0,     0,     0,    22,     0,     0,    38,     0,     0,     0,
+     5,    37,     6,    36,     0,     0,    36,    36,    33,     3,
+     0,     0,     0,     0,     0,     0,     0,     0,    29,     0,
+    15,    16,    40,    41,    42,    43,    44,    45,    46,     4,
+    18,     0,     8,    36,     0,     0,     0,    33,     0,     0,
+    30,    31,    23,    24,    25,    26,    27,    28,    32,     0,
+     7,     0,    10,     3,    12,    34,     0,    13,    17,     9,
+     0,     3,     0,    11,    35,    14 };
 typedef struct { char *t_name; int t_val; } yytoktype;
 #ifndef YYDEBUG
 #	define YYDEBUG	0	/* don't allow debugging */
@@ -175,34 +177,37 @@ yytoktype yytoks[] =
 	"_AMPERAMPER",	259,
 	"_LPAREN",	260,
 	"_RPAREN",	261,
-	"_COLON",	262,
-	"_SEMIC",	263,
-	"_LANGLE",	264,
-	"_LANGLE_EQUALS",	265,
-	"_EQUALS",	266,
-	"_RANGLE",	267,
-	"_RANGLE_EQUALS",	268,
-	"ACTIONS",	269,
-	"CASE",	270,
-	"DEFAULT",	271,
-	"ELSE",	272,
-	"FOR",	273,
-	"IF",	274,
-	"IGNORE",	275,
-	"IN",	276,
-	"INCLUDE",	277,
-	"ON",	278,
-	"PIECEMEAL",	279,
-	"QUIETLY",	280,
-	"RULE",	281,
-	"SWITCH",	282,
-	"TOGETHER",	283,
-	"UPDATED",	284,
-	"_LBRACE",	285,
-	"_BARBAR",	286,
-	"_RBRACE",	287,
-	"ARG",	288,
-	"STRING",	289,
+	"_PLUS_EQUALS",	262,
+	"_COLON",	263,
+	"_SEMIC",	264,
+	"_LANGLE",	265,
+	"_LANGLE_EQUALS",	266,
+	"_EQUALS",	267,
+	"_RANGLE",	268,
+	"_RANGLE_EQUALS",	269,
+	"_QUESTION_EQUALS",	270,
+	"ACTIONS",	271,
+	"CASE",	272,
+	"DEFAULT",	273,
+	"ELSE",	274,
+	"EXISTING",	275,
+	"FOR",	276,
+	"IF",	277,
+	"IGNORE",	278,
+	"IN",	279,
+	"INCLUDE",	280,
+	"ON",	281,
+	"PIECEMEAL",	282,
+	"QUIETLY",	283,
+	"RULE",	284,
+	"SWITCH",	285,
+	"TOGETHER",	286,
+	"UPDATED",	287,
+	"_LBRACE",	288,
+	"_BARBAR",	289,
+	"_RBRACE",	290,
+	"ARG",	291,
+	"STRING",	292,
 	"-unknown-",	-1	/* ends search */
 };
 
@@ -216,9 +221,9 @@ char * yyreds[] =
 	"rule : INCLUDE args _SEMIC",
 	"rule : ARG args _SEMIC",
 	"rule : ARG args _COLON args _SEMIC",
-	"rule : arg1 _EQUALS args _SEMIC",
+	"rule : arg1 assign args _SEMIC",
+	"rule : arg1 ON args assign args _SEMIC",
 	"rule : arg1 DEFAULT _EQUALS args _SEMIC",
-	"rule : arg1 ON args _EQUALS args _SEMIC",
 	"rule : FOR ARG IN args _LBRACE rules _RBRACE",
 	"rule : SWITCH args _LBRACE cases _RBRACE",
 	"rule : IF cond _LBRACE rules _RBRACE",
@@ -227,13 +232,16 @@ char * yyreds[] =
 	"rule : ACTIONS eflags ARG",
 	"rule : ACTIONS eflags ARG STRING",
 	"rule : _LBRACE rules _RBRACE",
-	"cond : args",
-	"cond : args _EQUALS args",
-	"cond : args _BANG_EQUALS args",
-	"cond : args _LANGLE args",
-	"cond : args _LANGLE_EQUALS args",
-	"cond : args _RANGLE args",
-	"cond : args _RANGLE_EQUALS args",
+	"assign : _EQUALS",
+	"assign : _PLUS_EQUALS",
+	"assign : _QUESTION_EQUALS",
+	"cond : arg1",
+	"cond : arg1 _EQUALS arg1",
+	"cond : arg1 _BANG_EQUALS arg1",
+	"cond : arg1 _LANGLE arg1",
+	"cond : arg1 _LANGLE_EQUALS arg1",
+	"cond : arg1 _RANGLE arg1",
+	"cond : arg1 _RANGLE_EQUALS arg1",
 	"cond : _BANG cond",
 	"cond : cond _AMPERAMPER cond",
 	"cond : cond _BARBAR cond",
@@ -251,6 +259,7 @@ char * yyreds[] =
 	"eflag : IGNORE",
 	"eflag : QUIETLY",
 	"eflag : PIECEMEAL",
+	"eflag : EXISTING",
 };
 #endif /* YYDEBUG */
 #line 1 "/usr/lib/yaccpar"
@@ -694,137 +703,149 @@ yyparse()
 	{
 		
 case 1:
-# line 85 "jamgram.y"
+# line 93 "jamgram.y"
 {
 			compile_builtins();
 		} break;
 case 2:
-# line 89 "jamgram.y"
+# line 97 "jamgram.y"
 { 
 			(*(yypvt[-0].parse->func))( yypvt[-0].parse, L0, L0 );
 			parse_free( yypvt[-0].parse );
 		} break;
 case 3:
-# line 101 "jamgram.y"
+# line 109 "jamgram.y"
 { yyval.parse = prules( P0, P0 ); } break;
 case 4:
-# line 103 "jamgram.y"
+# line 111 "jamgram.y"
 { yyval.parse = prules( yypvt[-1].parse, yypvt[-0].parse ); } break;
 case 5:
-# line 107 "jamgram.y"
+# line 115 "jamgram.y"
 { yyval.parse = pincl( yypvt[-1].list ); } break;
 case 6:
-# line 109 "jamgram.y"
+# line 117 "jamgram.y"
 { yyval.parse = prule( yypvt[-2].string, yypvt[-1].list, L0 ); } break;
 case 7:
-# line 111 "jamgram.y"
+# line 119 "jamgram.y"
 { yyval.parse = prule( yypvt[-4].string, yypvt[-3].list, yypvt[-1].list ); } break;
 case 8:
-# line 113 "jamgram.y"
-{ yyval.parse = pset( yypvt[-3].list, yypvt[-1].list ); } break;
+# line 121 "jamgram.y"
+{ yyval.parse = pset( yypvt[-3].list, yypvt[-1].list, yypvt[-2].number ); } break;
 case 9:
-# line 115 "jamgram.y"
-{ yyval.parse = psetdef( yypvt[-4].list, yypvt[-1].list ); } break;
+# line 123 "jamgram.y"
+{ yyval.parse = pstng( yypvt[-3].list, yypvt[-5].list, yypvt[-1].list, yypvt[-2].number ); } break;
 case 10:
-# line 117 "jamgram.y"
-{ yyval.parse = psettings( yypvt[-3].list, pseton( yypvt[-5].list, yypvt[-1].list ) ); } break;
+# line 125 "jamgram.y"
+{ yyval.parse = pset( yypvt[-4].list, yypvt[-1].list, ASSIGN_DEFAULT ); } break;
 case 11:
-# line 119 "jamgram.y"
+# line 127 "jamgram.y"
 { yyval.parse = pfor( yypvt[-5].string, yypvt[-1].parse, yypvt[-3].list ); } break;
 case 12:
-# line 121 "jamgram.y"
+# line 129 "jamgram.y"
 { yyval.parse = pswitch( yypvt[-3].list, yypvt[-1].parse ); } break;
 case 13:
-# line 123 "jamgram.y"
+# line 131 "jamgram.y"
 { yyval.parse = pif( yypvt[-3].parse, pthen( yypvt[-1].parse, P0 ) ); } break;
 case 14:
-# line 125 "jamgram.y"
+# line 133 "jamgram.y"
 { yyval.parse = pif( yypvt[-5].parse, pthen( yypvt[-3].parse, yypvt[-0].parse ) ); } break;
 case 15:
-# line 127 "jamgram.y"
+# line 135 "jamgram.y"
 { yyval.parse = psetc( yypvt[-1].string, yypvt[-0].parse ); } break;
 case 16:
-# line 129 "jamgram.y"
+# line 137 "jamgram.y"
 { scan_asstring = 1; } break;
 case 17:
-# line 131 "jamgram.y"
+# line 139 "jamgram.y"
 { yyval.parse = psete( yypvt[-2].string, yypvt[-0].string, yypvt[-3].number );
 		  scan_asstring = 0; } break;
 case 18:
-# line 134 "jamgram.y"
+# line 142 "jamgram.y"
 { yyval.parse = yypvt[-1].parse; } break;
 case 19:
-# line 142 "jamgram.y"
-{ yyval.parse = pcomp( COND_EXISTS, yypvt[-0].list, L0 ); } break;
-case 20:
-# line 144 "jamgram.y"
-{ yyval.parse = pcomp( COND_EQUALS, yypvt[-2].list, yypvt[-0].list ); } break;
-case 21:
-# line 146 "jamgram.y"
-{ yyval.parse = pcomp( COND_NOTEQ, yypvt[-2].list, yypvt[-0].list ); } break;
-case 22:
-# line 148 "jamgram.y"
-{ yyval.parse = pcomp( COND_LESS, yypvt[-2].list, yypvt[-0].list ); } break;
-case 23:
 # line 150 "jamgram.y"
-{ yyval.parse = pcomp( COND_LESSEQ, yypvt[-2].list, yypvt[-0].list ); } break;
-case 24:
+{ yyval.number = ASSIGN_SET; } break;
+case 20:
 # line 152 "jamgram.y"
-{ yyval.parse = pcomp( COND_MORE, yypvt[-2].list, yypvt[-0].list ); } break;
-case 25:
+{ yyval.number = ASSIGN_APPEND; } break;
+case 21:
 # line 154 "jamgram.y"
-{ yyval.parse = pcomp( COND_MOREEQ, yypvt[-2].list, yypvt[-0].list ); } break;
-case 26:
-# line 156 "jamgram.y"
-{ yyval.parse = pcond( COND_NOT, yypvt[-0].parse, P0 ); } break;
-case 27:
-# line 158 "jamgram.y"
-{ yyval.parse = pcond( COND_AND, yypvt[-2].parse, yypvt[-0].parse ); } break;
-case 28:
-# line 160 "jamgram.y"
-{ yyval.parse = pcond( COND_OR, yypvt[-2].parse, yypvt[-0].parse ); } break;
-case 29:
+{ yyval.number = ASSIGN_DEFAULT; } break;
+case 22:
 # line 162 "jamgram.y"
-{ yyval.parse = yypvt[-1].parse; } break;
+{ yyval.parse = pcomp( COND_EXISTS, yypvt[-0].list, L0 ); } break;
+case 23:
+# line 164 "jamgram.y"
+{ yyval.parse = pcomp( COND_EQUALS, yypvt[-2].list, yypvt[-0].list ); } break;
+case 24:
+# line 166 "jamgram.y"
+{ yyval.parse = pcomp( COND_NOTEQ, yypvt[-2].list, yypvt[-0].list ); } break;
+case 25:
+# line 168 "jamgram.y"
+{ yyval.parse = pcomp( COND_LESS, yypvt[-2].list, yypvt[-0].list ); } break;
+case 26:
+# line 170 "jamgram.y"
+{ yyval.parse = pcomp( COND_LESSEQ, yypvt[-2].list, yypvt[-0].list ); } break;
+case 27:
+# line 172 "jamgram.y"
+{ yyval.parse = pcomp( COND_MORE, yypvt[-2].list, yypvt[-0].list ); } break;
+case 28:
+# line 174 "jamgram.y"
+{ yyval.parse = pcomp( COND_MOREEQ, yypvt[-2].list, yypvt[-0].list ); } break;
+case 29:
+# line 176 "jamgram.y"
+{ yyval.parse = pcond( COND_NOT, yypvt[-0].parse, P0 ); } break;
 case 30:
-# line 173 "jamgram.y"
-{ yyval.parse = P0; } break;
+# line 178 "jamgram.y"
+{ yyval.parse = pcond( COND_AND, yypvt[-2].parse, yypvt[-0].parse ); } break;
 case 31:
-# line 175 "jamgram.y"
-{ yyval.parse = pcases( yypvt[-1].parse, yypvt[-0].parse ); } break;
+# line 180 "jamgram.y"
+{ yyval.parse = pcond( COND_OR, yypvt[-2].parse, yypvt[-0].parse ); } break;
 case 32:
-# line 179 "jamgram.y"
-{ yyval.parse = pcase( yypvt[-2].string, yypvt[-0].parse ); } break;
+# line 182 "jamgram.y"
+{ yyval.parse = yypvt[-1].parse; } break;
 case 33:
-# line 188 "jamgram.y"
-{ yyval.list = L0; } break;
+# line 193 "jamgram.y"
+{ yyval.parse = P0; } break;
 case 34:
-# line 190 "jamgram.y"
-{ yyval.list = list_new( yypvt[-1].list, copystr( yypvt[-0].string ) ); } break;
+# line 195 "jamgram.y"
+{ yyval.parse = pcases( yypvt[-1].parse, yypvt[-0].parse ); } break;
 case 35:
-# line 194 "jamgram.y"
-{ yyval.list = list_new( L0, copystr( yypvt[-0].string ) ); } break;
+# line 199 "jamgram.y"
+{ yyval.parse = pcase( yypvt[-2].string, yypvt[-0].parse ); } break;
 case 36:
-# line 203 "jamgram.y"
-{ yyval.number = 0; } break;
+# line 208 "jamgram.y"
+{ yyval.list = L0; } break;
 case 37:
-# line 205 "jamgram.y"
-{ yyval.number = yypvt[-1].number | yypvt[-0].number; } break;
+# line 210 "jamgram.y"
+{ yyval.list = list_new( yypvt[-1].list, copystr( yypvt[-0].string ) ); } break;
 case 38:
-# line 209 "jamgram.y"
-{ yyval.number = EXEC_UPDATED; } break;
+# line 214 "jamgram.y"
+{ yyval.list = list_new( L0, copystr( yypvt[-0].string ) ); } break;
 case 39:
-# line 211 "jamgram.y"
-{ yyval.number = EXEC_TOGETHER; } break;
+# line 223 "jamgram.y"
+{ yyval.number = 0; } break;
 case 40:
-# line 213 "jamgram.y"
-{ yyval.number = EXEC_IGNORE; } break;
+# line 225 "jamgram.y"
+{ yyval.number = yypvt[-1].number | yypvt[-0].number; } break;
 case 41:
-# line 215 "jamgram.y"
-{ yyval.number = EXEC_QUIETLY; } break;
+# line 229 "jamgram.y"
+{ yyval.number = EXEC_UPDATED; } break;
 case 42:
-# line 217 "jamgram.y"
+# line 231 "jamgram.y"
+{ yyval.number = EXEC_TOGETHER; } break;
+case 43:
+# line 233 "jamgram.y"
+{ yyval.number = EXEC_IGNORE; } break;
+case 44:
+# line 235 "jamgram.y"
+{ yyval.number = EXEC_QUIETLY; } break;
+case 45:
+# line 237 "jamgram.y"
 { yyval.number = EXEC_PIECEMEAL; } break;
+case 46:
+# line 239 "jamgram.y"
+{ yyval.number = EXEC_EXISTING; } break;
 	}
 	goto yystack;		/* reset registers in driver code */
 }

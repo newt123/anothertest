@@ -3,6 +3,7 @@
 %token _AMPERAMPER
 %token _LPAREN
 %token _RPAREN
+%token _PLUS_EQUALS
 %token _COLON
 %token _SEMIC
 %token _LANGLE
@@ -10,10 +11,12 @@
 %token _EQUALS
 %token _RANGLE
 %token _RANGLE_EQUALS
+%token _QUESTION_EQUALS
 %token ACTIONS
 %token CASE
 %token DEFAULT
 %token ELSE
+%token EXISTING
 %token FOR
 %token IF
 %token IGNORE
@@ -35,6 +38,13 @@
 
 /*
  * jamgram.yy - jam grammar
+ *
+ * 04/13/94 (seiwald) - added shorthand L0 for null list pointer
+ * 06/01/94 (seiwald) - new 'actions existing' does existing sources
+ * 08/23/94 (seiwald) - Support for '+=' (append to variable)
+ * 08/31/94 (seiwald) - Allow ?= as alias for "default =".
+ * 09/15/94 (seiwald) - if conditionals take only single arguments, so
+ *			that 'if foo == bar' gives syntax error (use =).
  */
 
 %token ARG STRING
@@ -52,13 +62,11 @@
 
 # define F0 (void (*)())0
 # define P0 (PARSE *)0
-# define L0 (LIST *)0
 # define S0 (char *)0
 
-# define pset( l,r ) 	  parse_make( compile_set,P0,P0,S0,S0,l,r,0 )
-# define psettings( l,p ) parse_make( compile_settings,p,P0,S0,S0,l,L0,0 )
-# define pseton( l,r ) 	  parse_make( F0,P0,P0,S0,S0,l,r,0 )
-# define psetdef( l,r )   parse_make( compile_setdefault,P0,P0,S0,S0,l,r,0 )
+# define pset( l,r,a ) 	  parse_make( compile_set,P0,P0,S0,S0,l,r,a )
+# define pset1( l,p,a )	  parse_make( compile_settings,p,P0,S0,S0,l,L0,a )
+# define pstng( p,l,r,a ) pset1( p, parse_make( F0,P0,P0,S0,S0,l,r,0 ), a )
 # define prule( s,l,r )   parse_make( compile_rule,P0,P0,s,S0,l,r,0 )
 # define prules( l,r )	  parse_make( compile_rules,l,r,S0,S0,L0,L0,0 )
 # define pfor( s,p,l )    parse_make( compile_foreach,p,P0,s,S0,l,L0,0 )
@@ -109,12 +117,12 @@ rule	: INCLUDE args _SEMIC
 		{ $$.parse = prule( $1.string, $2.list, L0 ); }
 	| ARG args _COLON args _SEMIC
 		{ $$.parse = prule( $1.string, $2.list, $4.list ); }
-	| arg1 _EQUALS args _SEMIC
-		{ $$.parse = pset( $1.list, $3.list ); }
+	| arg1 assign args _SEMIC
+		{ $$.parse = pset( $1.list, $3.list, $2.number ); }
+	| arg1 ON args assign args _SEMIC
+		{ $$.parse = pstng( $3.list, $1.list, $5.list, $4.number ); }
 	| arg1 DEFAULT _EQUALS args _SEMIC
-		{ $$.parse = psetdef( $1.list, $4.list ); }
-	| arg1 ON args _EQUALS args _SEMIC
-		{ $$.parse = psettings( $3.list, pseton( $1.list, $5.list ) ); }
+		{ $$.parse = pset( $1.list, $4.list, ASSIGN_DEFAULT ); }
 	| FOR ARG IN args _LBRACE rules _RBRACE
 		{ $$.parse = pfor( $2.string, $6.parse, $4.list ); }
 	| SWITCH args _LBRACE cases _RBRACE
@@ -135,22 +143,34 @@ rule	: INCLUDE args _SEMIC
 	;
 
 /*
+ * assign - = or +=
+ */
+
+assign	: _EQUALS
+		{ $$.number = ASSIGN_SET; }
+	| _PLUS_EQUALS
+		{ $$.number = ASSIGN_APPEND; }
+	| _QUESTION_EQUALS
+		{ $$.number = ASSIGN_DEFAULT; }
+	;
+
+/*
  * cond - a conditional for 'if'
  */
 
-cond	: args 
+cond	: arg1 
 		{ $$.parse = pcomp( COND_EXISTS, $1.list, L0 ); }
-	| args _EQUALS args 
+	| arg1 _EQUALS arg1 
 		{ $$.parse = pcomp( COND_EQUALS, $1.list, $3.list ); }
-	| args _BANG_EQUALS args
+	| arg1 _BANG_EQUALS arg1
 		{ $$.parse = pcomp( COND_NOTEQ, $1.list, $3.list ); }
-	| args _LANGLE args
+	| arg1 _LANGLE arg1
 		{ $$.parse = pcomp( COND_LESS, $1.list, $3.list ); }
-	| args _LANGLE_EQUALS args 
+	| arg1 _LANGLE_EQUALS arg1 
 		{ $$.parse = pcomp( COND_LESSEQ, $1.list, $3.list ); }
-	| args _RANGLE args 
+	| arg1 _RANGLE arg1 
 		{ $$.parse = pcomp( COND_MORE, $1.list, $3.list ); }
-	| args _RANGLE_EQUALS args 
+	| arg1 _RANGLE_EQUALS arg1 
 		{ $$.parse = pcomp( COND_MOREEQ, $1.list, $3.list ); }
 	| _BANG cond
 		{ $$.parse = pcond( COND_NOT, $2.parse, P0 ); }
@@ -215,5 +235,7 @@ eflag	: UPDATED
 		{ $$.number = EXEC_QUIETLY; }
 	| PIECEMEAL
 		{ $$.number = EXEC_PIECEMEAL; }
+	| EXISTING
+		{ $$.number = EXEC_EXISTING; }
 	;
 
