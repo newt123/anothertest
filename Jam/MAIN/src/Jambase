@@ -36,6 +36,7 @@
 # InstallBin sources ;			install binaries
 # InstallLib sources ;			install files
 # InstallMan source ;			install man pages
+# InstallShell source ;			install shell script
 # Lex source.c : source.l ;		.l -> .c
 # Library lib : source ;		archive library from compiled sources
 # LibraryFromObjects lib : objects ;	archive library from objects
@@ -123,6 +124,7 @@ FILEMODE 	default = 644 ;
 FORTRAN		default = f77 ;
 FORTRANFLAGS	default = ;
 HDRS 		default = ;
+INSTALL		default = install ;
 JAMFILE		default = Jamfile ;
 JAMRULES	default = ;
 LEX		default = lex ;
@@ -558,6 +560,15 @@ rule InstallMan
 	}
 }
 
+rule InstallShell
+{
+	for i in $(<) 
+	{
+	    Install $(i:D=$(BINDIR)) : $(i) ;
+	    INSTALLMODE on $(i:D=$(BINDIR)) = $(SHELLMODE) ;
+	}
+}
+
 rule Install
 {
 	DEPENDS install : $(<) ;
@@ -565,11 +576,21 @@ rule Install
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 }
 
-actions Install
+if $(INSTALL)
 {
-	[ -d "$(<:D)" ] || mkdir $(<:D)
-	cp $(>) $(<) &&
-	chmod $(INSTALLMODE) $(<) 
+    actions Install
+    {
+	    $(INSTALL) -m $(INSTALLMODE) $(>) $(<)
+    }
+}
+else
+{
+    actions Install
+    {
+	    [ -d "$(<:D)" ] || mkdir $(<:D)
+	    cp $(>) $(<) &&
+	    chmod $(INSTALLMODE) $(<) 
+    }
 }
 
 actions piecemeal together existing Clean

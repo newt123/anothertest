@@ -339,6 +339,14 @@ the appropriate subdirectories of /usr/local/man.
 .XB
 InstallMan add.1 sub.1 bigfile.8 ;
 .XE
+.SS InstallShell Rule
+.PP
+\fIInstallShell\fR calls \fBinstall\fR(1) to install shell scripts in 
+/usr/local/bin.
+.XB
+Shell bugs : bugs.sh ;
+InstallShell bugs ;
+.XE
 .SS Variables
 .PP
 The following variables control the installation rules:
@@ -346,8 +354,10 @@ The following variables control the installation rules:
 BINDIR          InstallBin directory (/usr/local/bin)
 LIBDIR          InstallLib directory (/usr/local/lib)
 MANDIR          InstallMan directory (/usr/local/man)
+INSTALL		The install program; uses cp if not set (install)
 FILEMODE        generic permissions for InstallLib, InstallMan (644)
 EXEMODE         generic permissions for InstallBin (711)
+SHELLMODE       generic permissions for InstallShell (755)
 .BE
 .PP
 These variable must be set (globally) before calling the install rules
