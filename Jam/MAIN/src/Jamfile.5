@@ -557,34 +557,33 @@ ObjectCcFlags w.c : -DW_CODE ;
 .XE
 .SS Clean Rule
 .PP
-In addition to their other duties, all rules listed above arrange for
-any generated target to be a dependency of the fake target "clean".
-The actions defined for "clean" are to remove all dependent targets
-(thus a "jam clean" removes all generated files).  To arrange this, all
-rules call the \fIClean\fR rule.  If a user-provided rule creates
-targets, these targets can be included in the cleanup as well:
+The \fIClean\fR rule has only a simple action: to delete all those
+sources that currently exist.  Thus if \fIClean\fR is invoked with a
+target and some sources, instructing \fBjam\fR to make the target will
+cause it to delete the sources.
 .XB
-rule MakeHeader
-{
-        # Generated header depends on mkhdr
-
-        DEPENDS $(<) : mkhdr ;
-
-        # Make sure 'jam clean' gets these generated headers
-
-        Clean clean : $(<) ;
-}
-
-actions MakeHeader
-{
-        mkhdr $(<) 
-}
+Clean zap : junk1 junk2 junk3 ;
 .XE
 .PP
-The target "clean" is the standard one for cleaning all files, but
-other targets for \fIClean\fR can be invented.  If a rule produces a
-type of intermediate files, a different \fIClean\fR target can be used
-to rid them.
+Saying \f(CWjam zap\fP would cause it to delete junk1, junk2, and junk3.
+.PP
+All rules listed in this manual page, except the \fIInstall\fR ones, invoke
+the following \fIClean\fR rule:
+.BB
+Clean clean : $(<) ;
+.BE
+The \fIInstall\fR rules invoke the following:
+.BB
+Clean uninstall : $(<) ;
+.BE
+.PP
+Thus a \f(CWjam uninstall\fP removes anything created with the \fIInstall\fR
+rules, and a \f(CWjam clean\fP removes anything created by the other rules
+listed in this manual page.  It should be noted that \fBjam\fR's cleaning
+mechanism gets rid of exactly the files it created.
+.PP
+Given other, user-defined targets, the \fIClean\fR rule selectively
+remove other generated files.
 .XB
 rule M4 {
         # File depends on it's m4 source
@@ -615,7 +614,38 @@ SpecialUserRuleB ola : foo ;
 RmTemps ola : foo ;
 .XE
 .PP
-This says: build "foo" using \fISpecialUserRuleA\fR and "ola"
+This says: build "foo" using \fISpecialUserRuleA\fR and "Wola"
 using \fISpecialUserRuleB\fR.  Once that is done, remove "foo".
+.SH SPECIAL TARGETS
+.PP
+\fBJam\fR has only one special target: \fIall\fR, which it tries
+to build if no targets are on the command line.  \fBJambase\fR makes
+several special targets which are dependencies of \fIall\fR:
+.BB
+all             - parent of first, shell, files, lib, exe
+first           - first dependent of 'all', for potential initialization
+shell           - parent of all Shell targets 
+files           - parent of all File targets
+lib             - parent of all Library targets
+exe             - parent of all Main target
+clean           - removes all Shell, File, Library, and Main targets
+uninstall       - removes all Install targets
+.BE
+.PP
+\fBJambase\fR marks all of these targets with \fBjam\fR's \fINOTFILE\fR 
+attribute, meaning that they aren't to be found in the filesystem.
+You can build selected components by using the \fIshell\fR, \fIfiles\fR,
+\fIlib\fR, or \fIexe\fR targets on the command line.  You can remove
+the files that \fBjam\fR build using the \fIclean\fR and \fIuninstall\fR
+targets on the command line.  And you can arrange for \fBjam\fR to run
+initialization commands by putting actions on the target \fIfirst\fR.
+.XB
+actions Initialize
+{
+	ECHO "This is a test of the jam initialization system."
+}
+
+Initialize first ;
+.XE
 .SH SEE ALSO
 \fBjam\fR(1), \fBJambase\fR(5)
