@@ -19,13 +19,13 @@
 
 /* These get various function declarations. */
 
-# include "newstr.h"
-# include "rules.h"
 # include "lists.h"
 # include "parse.h"
+# include "variable.h"
+# include "rules.h"
+# include "newstr.h"
 # include "scan.h"
 # include "timestamp.h"
-# include "variable.h"
 
 /*
  * jam.c - make redux
