@@ -62,6 +62,7 @@
 # Install target : source ;		install any single file
 # InstallBin dir : sources ;		install binaries
 # InstallLib dir : sources ;		install files
+# InstallFile dir : sources ;		install files
 # InstallMan dir : sources ;		install man pages
 # InstallShell dir : sources ;		install shell scripts
 # Lex source.c : source.l ;		.l -> .c
@@ -451,6 +452,11 @@ rule InstallBin
 	    Install $(i:D=$(<)) : $(i) ;
 	    MODE on $(i:D=$(<)) = $(EXEMODE) ;
 	}
+}
+
+rule InstallFile
+{
+	InstallLib $(<) : $(>) ;
 }
 
 rule InstallLib
