@@ -58,7 +58,7 @@ LIST	*shell;
 	{
 	    /* Can't do much here - we just blew our buffer! */
 	    printf( "fatal error: command too long\n" );
-	    exit( -1 );
+	    exit( EXITBAD );
 	}
 
 	if( !chain ) chain = cmd;

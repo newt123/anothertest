@@ -48,6 +48,7 @@
 # define MAXCMD	1023 /* longest command */
 # define JAMBASE "Jambase"
 # define EXITOK 1
+# define EXITBAD 0
 
 # else
 
@@ -67,6 +68,7 @@
 # define JAMBASE "Jambase"
 # define MAXCMD	996	/* longest command */
 # define EXITOK 0
+# define EXITBAD 1
 
 # else
 
@@ -131,12 +133,13 @@
 # endif
 # define MAXCMD	10240	/* longest command */
 # define EXITOK 0
+# define EXITBAD 1
 
 # endif /* NT */
 
 # endif /* UNIX */
 
-/* You probably don't need to much with these. */
+/* You probably don't need to muck with these. */
 
 # define MAXSYM	1024	/* longest symbol in the environment */
 # define MAXPATH 1024	/* longest filename */

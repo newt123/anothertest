@@ -33,6 +33,10 @@ rule UserObject
 	Yacc $(<:S=.c) : $(<:S=.y) ;
 	Cc $(<) : $(<:S=.c) ; 
     }
+    else
+    {
+	EXIT $(>) unknown suffix ;
+    }
 }
 
 actions YYacc

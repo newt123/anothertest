@@ -118,7 +118,7 @@ char	**argv;
 	if( ( n = getoptions( argc, argv, "d:j:f:t:na", optv ) ) < 0 )
 	{
 		printf( "usage: %s\n", usage );
-		exit( 1 );
+		exit( EXITBAD );
 	}
 
 	argc -= n, argv += n;

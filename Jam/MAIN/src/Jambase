@@ -96,6 +96,7 @@
 # Special rules:
 #	DEPENDS - builds the dependency graph
 #	ECHO - blurt out targets on stdout
+#	EXIT - blurt out targets and exit
 #	INCLUDES - marks sources as headers for target (a codependency)
 #	NOCARE - don't panic if the target can't be built
 #	NOTFILE - ignore the timestamp of the target (it's not a file)
@@ -627,7 +628,7 @@ rule SubDir
 
 	if ! $($(<[1]))
 	{
-	    ECHO Top level of source tree has not been set with $(<[1]) ;
+	    EXIT Top level of source tree has not been set with $(<[1]) ;
 	}
 
 	#
@@ -701,7 +702,7 @@ rule SubInclude
 
 	if ! $($(<[1]))
 	{
-	    ECHO Top level of source tree has not been set with $(<[1]) ;
+	    EXIT Top level of source tree has not been set with $(<[1]) ;
 	}
 
 	s = "" ;
@@ -721,7 +722,7 @@ rule Undefines
 
 rule UserObject
 {
-	ECHO "Unknown suffix on" $(>) "- see UserObject rule in Jambase(5)." ;
+	EXIT "Unknown suffix on" $(>) "- see UserObject rule in Jambase(5)." ;
 }
 
 rule Yacc

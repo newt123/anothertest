@@ -178,7 +178,7 @@ $(>) includes only targets marked for updating.
 .SS "Built-in Rules"
 .PP
 .B Jam
-has six built-in rules, none of which have updating actions:
+has seven built-in rules, none of which have updating actions:
 .PP
 .RS
 .IP "DEPENDS \fI<targets>\fR : \fI<sources>\fR"
@@ -187,6 +187,10 @@ Makes \fI<sources>\fR dependents of \fI<targets>\fR.
 .IP "ECHO \fI<args>\fR"
 .br
 Blurts out the message \fI<args>\fR to stdout.
+.IP "EXIT \fI<args>\fR"
+.br
+Blurts out the message \fI<args>\fR to stdout and then
+exits with a failure status.
 .IP "INCLUDES \fI<targets>\fR : \fI<sources>\fR"
 .br
 Makes \fI<sources>\fR dependents of anything of which \fI<targets>\fR 

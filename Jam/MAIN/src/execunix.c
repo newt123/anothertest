@@ -92,7 +92,7 @@ LIST *shell;
 	if( slot == MAXJOBS )
 	{
 	    printf( "no slots for child!\n" );
-	    exit( 1 );
+	    exit( EXITBAD );
 	}
 
 	/* Forumulate argv */
@@ -124,7 +124,7 @@ LIST *shell;
 	    if( !ok || i <= 1 )
 	    {
 		printf( "bungled JAMSHELL value!\n" );
-		exit( 1 );
+		exit( EXITBAD );
 	    }
 	}
 	else
@@ -152,7 +152,7 @@ LIST *shell;
 	if( pid == -1 )
 	{
 	    perror( "vfork" );
-	    exit( -1 );
+	    exit( EXITBAD );
 	}
 
 	/* Save the operation for execwait() to find. */
@@ -194,7 +194,7 @@ execwait()
 	{
 	    printf( "child process(es) lost!\n" );
 	    perror("wait");
-	    exit( -1 );
+	    exit( EXITBAD );
 	}
 
 	/* Find the process in the cmdtab. */
@@ -206,7 +206,7 @@ execwait()
 	if( i == MAXJOBS )
 	{
 	    printf( "waif child found!\n" );
-	    exit( -1 );
+	    exit( EXITBAD );
 	}
 
 	/* Drive the completion */

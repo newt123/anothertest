@@ -37,6 +37,7 @@
  *
  *	builtin_depends() - DEPENDS/INCLUDES rule
  *	builtin_echo() - ECHO rule
+ *	builtin_exit() - EXIT rule
  *	builtin_flags() - NOCARE, NOTFILE, TEMPORARY rule
  *
  * 02/03/94 (seiwald) -	Changed trace output to read "setting" instead of 
@@ -48,12 +49,14 @@
  *			can make use of $(SEARCH)
  * 08/23/94 (seiwald) - Support for '+=' (append to variable)
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
+ * 01/22/94 (seiwald) - Exit rule.
  */
 
 static int evaluate_if();
 
 static void builtin_depends();
 static void builtin_echo();
+static void builtin_exit();
 static void builtin_flags();
 
 
@@ -75,6 +78,10 @@ compile_builtins()
     bindrule( "Echo" )->procedure = 
     bindrule( "ECHO" )->procedure = 
 	parse_make( builtin_echo, P0, P0, C0, C0, L0, L0, 0 );
+
+    bindrule( "Exit" )->procedure = 
+    bindrule( "EXIT" )->procedure = 
+	parse_make( builtin_exit, P0, P0, C0, C0, L0, L0, 0 );
 
     bindrule( "Includes" )->procedure = 
     bindrule( "INCLUDES" )->procedure = 
@@ -610,6 +617,24 @@ LIST		*sources;
 {
 	list_print( targets );
 	printf( "\n" );
+}
+
+/*
+ * builtin_exit() - EXIT rule
+ *
+ * The EXIT builtin rule echoes the targets to the user and exits
+ * the program with a failure status.
+ */
+
+static void
+builtin_exit( parse, targets, sources )
+PARSE		*parse;
+LIST		*targets;
+LIST		*sources;
+{
+	list_print( targets );
+	printf( "\n" );
+	exit( EXITBAD ); /* yeech */
 }
 
 /*
