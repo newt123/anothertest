@@ -431,9 +431,10 @@ else if $(VMS)
 else if $(MAC)
 {
 	CWGUSI		default = "Macintosh HD:Perforce:mac:CWGUSI" ;
+	CWMAC		default = "Macintosh HD:CW10 Gold:Metrowerks CodeWarrior:MacOS Support" ;
+
 	CWGUSIHDR	default = $(CWGUSI):include ;
 	CWGUSILIB	default = $(CWGUSI):Lib ;
-	CWMAC		default = "Macintosh HD:CW10 Gold:Metrowerks CodeWarrior:MacOS Support" ;
 	CWMACLIB	default = $(CWMAC):Libraries ;
 	CWMACHDR	default = $(CWMAC):Headers ;
 	
@@ -442,7 +443,9 @@ else if $(MAC)
 	CP		default = copy ;
 	DOT		default = ":" ;
 	DOTDOT		default = "::" ;
-	HDRS		default = $(CWGUSIHDR) $(CWMACHDR):"ANSI Headers" $(CWMACHDR):"Universal Headers" ;
+	HDRS		default = $(CWGUSIHDR) 
+				  $(CWMACHDR):"ANSI Headers" 
+				  $(CWMACHDR):"Universal Headers" ;
 	LINK		default = mwlinkppc ;
 	LINKFLAGS	default = -mpwtool -warn ;
 	LINKLIBS	default = "$(CWGUSILIB):GUSIMPW.Lib.PPC" 
@@ -470,6 +473,7 @@ else if $(MAC)
 # Define some MS-specific commands for MS-specific actions (which
 # are not yet added to Jambase)
 #
+
 if $(NT) || $(OS2)
 {
 	MSLIB 		default = lib ;
