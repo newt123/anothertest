@@ -971,11 +971,18 @@ rule makeDirName
 	# Turn individual elements in $(>) into a usable path.
 	# Return result in $(<)
 
-	_s = $(>[1]) ;
-
-	for _i in $(>[2-])
+	if $(>)
 	{
-	    _s = $(_s)$(SLASH)$(_i) ;
+	    _s = $(>[1]) ;
+
+	    for _i in $(>[2-])
+	    {
+		_s = $(_s)$(SLASH)$(_i) ;
+	    }
+	}
+	else
+	{
+	    _s = $(DOT) ;
 	}
 
 	if $(VMS)
