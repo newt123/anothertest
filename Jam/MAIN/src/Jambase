@@ -1192,7 +1192,7 @@ else if $(NT)
 
 	actions together quietly CreLib
 	{
-	if not exist $(<) $(AR) /out:$(<) $(>)
+	if not exist $(<) $(AR) /out:$(<) $(>[1])
 	}
 
 	actions Cc
