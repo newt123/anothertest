@@ -7,7 +7,11 @@
 # include "jam.h"
 # include "hash.h"
 # include "filesys.h"
+#ifdef FATFS
+# include "timestam.h"
+#else
 # include "timestamp.h"
+#endif
 # include "newstr.h"
 
 /*
