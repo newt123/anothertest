@@ -89,6 +89,13 @@
 # UserObject object : source ;		handle unknown suffixes for Object
 # Yacc source.c : source.y ;		.y -> .c
 #
+# Utility rules that have no side effects:
+#
+# makeSubDir var : d1 d2 ... ;		$(var) = path to root
+# makeDirName var : d1 d2 ... ;		$(var) = path from root to dir
+# makeGrist var : d1 d2 ... ;		$(var) = grist form of dir
+# makeGristedName var : value ;		$(var) = $(value:G=$(SOURCE_GRIST))
+#
 
 # Brief review of the jam language:
 #
@@ -341,9 +348,9 @@ rule As
 
 rule Bulk
 {
-	for i in $(>)
+	for _i in $(>)
 	{
-	    File $(i:D=$(<)) : $(i) ;
+	    File $(_i:D=$(<)) : $(_i) ;
 	}
 }
 
@@ -452,10 +459,10 @@ rule Install
 
 rule InstallBin
 {
-	for i in $(>)
+	for _i in $(>)
 	{
-	    Install $(i:D=$(<)) : $(i) ;
-	    MODE on $(i:D=$(<)) = $(EXEMODE) ;
+	    Install $(_i:D=$(<)) : $(_i) ;
+	    MODE on $(_i:D=$(<)) = $(EXEMODE) ;
 	}
 }
 
@@ -466,10 +473,10 @@ rule InstallFile
 
 rule InstallLib
 {
-	for i in $(>)
+	for _i in $(>)
 	{
-	    Install $(i:D=$(<)) : $(i) ;
-	    MODE on $(i:D=$(<)) = $(FILEMODE) ;
+	    Install $(_i:D=$(<)) : $(_i) ;
+	    MODE on $(_i:D=$(<)) = $(FILEMODE) ;
 	}
 }
 
@@ -477,29 +484,29 @@ rule InstallMan
 {
 	# Really this just strips the . from the suffix
 
-	for i in $(>)
+	for _i in $(>)
 	{
-	    switch $(i:S)
+	    switch $(_i:S)
 	    {
-	    case .1 : s = 1 ; case .2 : s = 2 ; case .3 : s = 3 ;
-	    case .4 : s = 4 ; case .5 : s = 5 ; case .6 : s = 6 ;
-	    case .7 : s = 7 ; case .8 : s = 8 ; case .l : s = l ;
-	    case .n : s = n ; case .man : s = 1 ;
+	    case .1 : _s = 1 ; case .2 : _s = 2 ; case .3 : _s = 3 ;
+	    case .4 : _s = 4 ; case .5 : _s = 5 ; case .6 : _s = 6 ;
+	    case .7 : _s = 7 ; case .8 : _s = 8 ; case .l : _s = l ;
+	    case .n : _s = n ; case .man : _s = 1 ;
 	    }
 
-	    d = $(i:D=man$(s):S=.$(s)) ;
+	    _d = $(_i:D=man$(_s):S=.$(_s)) ;
 
-	    Install $(d:R=$(<)) : $(i) ;
-	    MODE on $(d:R=$(<)) = $(FILEMODE) ;
+	    Install $(_d:R=$(<)) : $(_i) ;
+	    MODE on $(_d:R=$(<)) = $(FILEMODE) ;
 	}
 }
 
 rule InstallShell
 {
-	for i in $(>)
+	for _i in $(>)
 	{
-	    Install $(i:D=$(<)) : $(i) ;
-	    MODE on $(i:D=$(<)) = $(SHELLMODE) ;
+	    Install $(_i:D=$(<)) : $(_i) ;
+	    MODE on $(_i:D=$(<)) = $(SHELLMODE) ;
 	}
 }
 
@@ -518,24 +525,22 @@ rule Library
 
 rule LibraryFromObjects
 {
+	# Add grist to file names
+
+	makeGristedName _s : $(>) ;
+
 	# library depends on its member objects
 
-	l = $(<:S=$(SUFLIB)) ;
-	s = $(>) ;
+	_l = $(<:S=$(SUFLIB)) ;
 
-	if $(SOURCE_GRIST)
-	{
-	    s = $(>:G=$(SOURCE_GRIST)) ;
-	}
-
-	DEPENDS lib : $(l) ;
+	DEPENDS lib : $(_l) ;
 
 	# We wish we could locate the library and it's contents,
 	# but the reference to $(NEEDLIBS) in Main's actions
 	# get the unbound names.  Only $(<) and $(>) refer to
 	# bound file name in rule actions.  Sigh.
 	#
-	# LOCATE on $(<) $(<)($(s:BS)) = $(LOCATE_TARGET) ;
+	# LOCATE on $(<) $(<)($(_s:BS)) = $(LOCATE_TARGET) ;
 
 	if $(NOLIBSCAN) 
 	{ 
@@ -546,7 +551,7 @@ rule LibraryFromObjects
 	    # to-date when files (from other directories) haven't been
 	    # recompiled.
 
-	    DEPENDS $(l) : $(s) ;
+	    DEPENDS $(_l) : $(_s) ;
 	}
 	else
 	{
@@ -554,22 +559,22 @@ rule LibraryFromObjects
 	    # on its members and each member depend on the on-disk
 	    # object file.
 
-	    DEPENDS $(l) : $(l)($(s:BS)) ;
+	    DEPENDS $(_l) : $(_l)($(_s:BS)) ;
 
-	    for i in $(s)
+	    for _i in $(_s)
 	    {
-		DEPENDS $(l)($(i:BS)) : $(i) ;
+		DEPENDS $(_l)($(_i:BS)) : $(_i) ;
 	    }
 	}
 
-	Clean clean : $(l) ;
+	Clean clean : $(_l) ;
 
-	if $(CRELIB) { CreLib $(l) : $(s[1]) ; }
+	if $(CRELIB) { CreLib $(_l) : $(_s[1]) ; }
 
-	Archive $(l) : $(s) ;
-	RmTemps $(l) : $(s) ;
+	Archive $(_l) : $(_s) ;
+	RmTemps $(_l) : $(_s) ;
 
-	if $(RANLIB) { Ranlib $(l) ; }
+	if $(RANLIB) { Ranlib $(_l) ; }
 }
 
 rule Link
@@ -585,13 +590,13 @@ rule LinkLibraries
 
 	if $(<:S)
 	{
-	    t = $(<) ;
+	    _t = $(<) ;
 	} else {
-	    t = $(<:S=$(SUFEXE)) ;
+	    _t = $(<:S=$(SUFEXE)) ;
 	}
 
-	DEPENDS $(t) : $(>:S=$(SUFLIB)) ;
-	NEEDLIBS on $(t) += $(>:S=$(SUFLIB)) ;
+	DEPENDS $(_t) : $(>:S=$(SUFLIB)) ;
+	NEEDLIBS on $(_t) += $(>:S=$(SUFLIB)) ;
 }
 
 rule Main
@@ -602,29 +607,26 @@ rule Main
 
 rule MainFromObjects
 {
+	# Add grist to file names
+
+	makeGristedName _s : $(>) ;
+
 	# make compiled sources a dependency of target
-
-	s = $(>) ;
-
-	if $(SOURCE_GRIST)
-	{
-	    s = $(>:G=$(SOURCE_GRIST)) ;
-	}
 
 	if $(<:S)
 	{
-	    t = $(<) ;
+	    _t = $(<) ;
 	} else {
-	    t = $(<:S=$(SUFEXE)) ;
+	    _t = $(<:S=$(SUFEXE)) ;
 	}
 
-	DEPENDS exe : $(t) ;
-	DEPENDS $(t) : $(s) ;
-	LOCATE on $(t) = $(LOCATE_TARGET) ;
+	DEPENDS exe : $(_t) ;
+	DEPENDS $(_t) : $(_s) ;
+	LOCATE on $(_t) = $(LOCATE_TARGET) ;
 
-	Clean clean : $(t) ;
+	Clean clean : $(_t) ;
 
-	Link $(t) : $(s) ;
+	Link $(_t) : $(_s) ;
 }
 
 rule MkDir
@@ -646,12 +648,12 @@ rule MkDir
 	    # On VMS, $(<:D) = $(<), no recursing, but you don't need to 
 	    # create parent directories explicitly there.
 
-	    s = $(<:D) ;
+	    _s = $(<:D) ;
 
-	    if $(s) && $(s) != $(<)
+	    if $(_s) && $(_s) != $(<)
 	    {
-		Depends $(<) : $(s) ;
-		MkDir $(s) ;
+		Depends $(<) : $(_s) ;
+		MkDir $(_s) ;
 	    }
 	}
 }
@@ -678,22 +680,22 @@ rule Object
 	# with the scanned file as the target and the found headers
 	# as the sources.  HDRSEARCH is just grist for HdrRule.
 
-	# $(h) is where cc first looks for #include "foo.h" files.
+	# $(_h) is where cc first looks for #include "foo.h" files.
 	# If the source file is in a distant directory, look there.
 	# Else, look in "" (the current directory).
 
 	if $(SEARCH_SOURCE)
 	{
-	    h = $(SEARCH_SOURCE) ;
+	    _h = $(SEARCH_SOURCE) ;
 	}
 	else
 	{
-	    h = "" ;
+	    _h = "" ;
 	}
 
 	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
-	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(h) $(STDHDRS) ;
+	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(_h) $(STDHDRS) ;
 
 	# if source is not .c, generate .c with specific rule
 
@@ -715,52 +717,40 @@ rule Object
 
 rule ObjectCcFlags
 {
-	s = $(<:S=$(SUFOBJ)) ;
+	# Add grist to file names
 
-	if $(SOURCE_GRIST)
-	{
-	    s = $(s:G=$(SOURCE_GRIST)) ;
-	}
+	makeGristedName _s : $(<:S=$(SUFOBJ)) ;
 
-	CCFLAGS on $(s) += $(>) ;
+	CCFLAGS on $(_s) += $(>) ;
 }
 
 rule ObjectC++Flags
 {
-	s = $(<:S=$(SUFOBJ)) ;
+	# Add grist to file names
 
-	if $(SOURCE_GRIST)
-	{
-	    s = $(s:G=$(SOURCE_GRIST)) ;
-	}
+	makeGristedName _s : $(<:S=$(SUFOBJ)) ;
 
-	C++FLAGS on $(s) += $(>) ;
+	C++FLAGS on $(_s) += $(>) ;
 }
 
 rule ObjectHdrs
 {
-	s = $(<:S=$(SUFOBJ)) ;
+	# Add grist to file names
 
-	if $(SOURCE_GRIST)
-	{
-	    s = $(s:G=$(SOURCE_GRIST)) ;
-	}
+	makeGristedName _s : $(<:S=$(SUFOBJ)) ;
 
-	HDRS on $(s) += $(>) ;
+	HDRS on $(_s) += $(>) ;
 }
 
 rule Objects
 {
-	s = $(<) ;
+	# Add grist to file names
 
-	if $(SOURCE_GRIST)
-	{
-	    s = $(<:G=$(SOURCE_GRIST)) ;
-	}
+	makeGristedName _s : $(<) ;
 
-	for i in $(s)
+	for _i in $(_s)
 	{
-		Object $(i:S=$(SUFOBJ)) : $(i) ;
+		Object $(_i:S=$(SUFOBJ)) : $(_i) ;
 	}
 }
 
@@ -773,12 +763,12 @@ rule Setuid
 {
 	if $(<:S)
 	{
-	    t = $(<) ;
+	    _t = $(<) ;
 	} else {
-	    t = $(<:S=$(SUFEXE)) ;
+	    _t = $(<:S=$(SUFEXE)) ;
 	}
 
-	MODE on $(t) = 4711 ;
+	MODE on $(_t) = 4711 ;
 }
 
 rule Shell
@@ -815,26 +805,7 @@ rule SubDir
 		EXIT SubDir syntax error ;
 	    }
 
-	    if ! $(<[2]) 
-	    {
-		d = $(DOT) ;
-	    } 
-	    else
-	    {
-		d = $(DOTDOT) ;
-
-		for i in $(<[3-])
-		{
-		    d = $(d)$(SLASH)$(DOTDOT) ;
-		}
-	    }
-
-	    if $(VMS)
-	    {
-		d = [$(d)] ;
-	    }
-
-	    $(<) = $(d) ;
+	    makeSubDir $(<[1]) : $(<[2-) ;
 	}
 
 	#
@@ -849,40 +820,23 @@ rule SubDir
 
 	    # File is $(TOPRULES) or $(TOP)/Jamrules.
 
-	    r = $($(<[1])RULES) ;
+	    _r = $($(<[1])RULES) ;
 
-	    if ! $(r)
+	    if ! $(_r)
 	    {
-		r = $(JAMRULES:R=$($(<[1]))) ;
+		_r = $(JAMRULES:R=$($(<[1]))) ;
 	    }
 
 	    # Include it.
 
-	    include $(r) ;
-
+	    include $(_r) ;
 	}
 
-	# Get the grist $(g), search $(s), by concatenating the
-	# directory elements using the OS specific path separator.
-
-	g = $(<[2]) ;
-	s = $(<[2]) ;
-
-	for i in $(<[3-])
-	{
-	    g = $(g)!$(i) ;
-	    s = $(s)$(SLASH)$(i) ;
-	}
-
-	if $(VMS)
-	{
-	    s = [$(s)] ;
-	}
-
-	# The result of our calculation: this directory.
+	# Get path to current directory from root using makeSubDir.
 	# Save dir tokens for other potential uses.
 
-	SUBDIR = $(s:R=$($(<[1]))) ;
+	makeDirName _s : $(<[2-]) ;
+	SUBDIR = $(_s:R=$($(<[1]))) ;
         SUBDIR_TOKENS = $(<[2-]) ;
 
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
@@ -892,7 +846,7 @@ rule SubDir
 
 	SEARCH_SOURCE = $(SUBDIR) ;
 	LOCATE_TARGET = $(ALL_LOCATE_TARGET) $(SUBDIR) ;
-	SOURCE_GRIST = $(g) ;
+	makeGrist SOURCE_GRIST : $(<[2-]) ;
 
 	# Reset per-directory ccflags, hdrs
 
@@ -928,31 +882,31 @@ rule SubInclude
 	    EXIT Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	s = $(<[2]) ;
+	_s = $(<[2]) ;
 
-	for i in $(<[3-])
+	for _i in $(<[3-])
 	{
-	    s = $(s)$(SLASH)$(i) ;
+	    _s = $(_s)$(SLASH)$(_i) ;
 	}
 
 	if $(VMS)
 	{
-	    s = [$(s)] ;
+	    _s = [$(_s)] ;
 	}
 
-	include $(JAMFILE:D=$(s):R=$($(<[1]))) ;
+	include $(JAMFILE:D=$(_s):R=$($(<[1]))) ;
 }
 
 rule Undefines
 {
 	if $(<:S)
 	{
-	    t = $(<) ;
+	    _t = $(<) ;
 	} else {
-	    t = $(<:S=$(SUFEXE)) ;
+	    _t = $(<:S=$(SUFEXE)) ;
 	}
 
-	UNDEFS on $(t) += $(UNDEFFLAG)$(>) ;
+	UNDEFS on $(_t) += $(UNDEFFLAG)$(>) ;
 }
 
 rule UserObject
@@ -962,22 +916,103 @@ rule UserObject
 
 rule Yacc
 {
-	h = $(<:BS=.h) ;
+	_h = $(<:BS=.h) ;
 
 	# Some places don't have a yacc.
 
 	if $(YACC)
 	{
-	    DEPENDS $(<) $(h) : $(>) ;
-	    Yacc1 $(<) $(h) : $(>) ;
-	    Clean clean : $(<) $(h) ;
+	    DEPENDS $(<) $(_h) : $(>) ;
+	    Yacc1 $(<) $(_h) : $(>) ;
+	    Clean clean : $(<) $(_h) ;
 	}
 
-	# make sure someone includes $(h) else it will be
+	# make sure someone includes $(_h) else it will be
 	# a deadly independent target
 
-	INCLUDES $(<) : $(h) ;
-	LOCATE on $(<) $(h) = $(LOCATE_TARGET) ;
+	INCLUDES $(<) : $(_h) ;
+	LOCATE on $(<) $(_h) = $(LOCATE_TARGET) ;
+}
+
+#
+# Utility rules; no side effects on these
+#
+
+rule makeSubDir
+{
+	# If $(>) is the path to the current directory, compute the
+	# path (using ../../ etc) back to that root directory.
+	# Sets result in $(<)
+
+	if ! $(>[1]) 
+	{
+	    _d = $(DOT) ;
+	} 
+	else
+	{
+	    _d = $(DOTDOT) ;
+
+	    for _i in $(>[2-])
+	    {
+		_d = $(_d)$(SLASH)$(DOTDOT) ;
+	    }
+	}
+
+	if $(VMS)
+	{
+	    _d = [$(_d)] ;
+	}
+
+	$(<) = $(_d) ;
+}
+
+rule makeDirName
+{
+	# Turn individual elements in $(>) into a usable path.
+	# Return result in $(<)
+
+	_s = $(>[1]) ;
+
+	for _i in $(>[2-])
+	{
+	    _s = $(_s)$(SLASH)$(_i) ;
+	}
+
+	if $(VMS)
+	{
+	    _s = [$(_s)] ;
+	}
+
+	$(<) = $(_s) ;
+}
+
+rule makeGrist
+{
+	# Turn individual elements in $(>) into grist.
+	# Return result in $(<)
+
+	_g = $(>[1]) ;
+
+	for _i in $(>[2-])
+	{
+	    _g = $(_g)!$(_i) ;
+	}
+
+	$(<) = $(_g) ;
+}
+
+rule makeGristedName
+{
+	# Produce name with grist in it, if SOURCE_GRIST is set.
+
+	if $(SOURCE_GRIST)
+	{
+	    $(<) = $(>:G=$(SOURCE_GRIST)) ;
+	}
+	else
+	{
+	    $(<) = $(>) ;
+	}
 }
 
 #
@@ -1320,5 +1355,4 @@ rule INSTALLMAN { InstallMan $(MANDIR) : $(<) ; }
 #
 
 include $(JAMFILE) ;
-
 
