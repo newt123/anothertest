@@ -109,7 +109,6 @@ char	**argv;
 	int		n;
 	char		*s;
 	struct option	optv[N_OPTS];
-	char		*ruleset = JAMBASE;
 	char		*all = "all";
 	int		anyhow = 0;
 
@@ -152,7 +151,7 @@ char	**argv;
 
 	if( !n )
 	{
-	    yyfparse( ruleset );
+	    yyfparse( JAMBASE );
 	    yyparse();
 	}
 
