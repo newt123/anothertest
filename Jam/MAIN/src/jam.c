@@ -35,6 +35,12 @@
 # include "timestamp.h"
 # endif
 
+/* Macintosh is "special" */
+
+# ifdef macintosh
+# include <QuickDraw.h>
+# endif
+
 /*
  * jam.c - make redux
  *
@@ -144,6 +150,10 @@ char	**argv;
 	char		*all = "all";
 	int		anyhow = 0;
 	int		status;
+
+# ifdef macintosh
+	InitGraf(&qd.thePort);
+# endif
 
 	argc--, argv++;
 
