@@ -22,7 +22,7 @@ CFLAGS =
 #CC = cl /nologo
 #CFLAGS = -I $(Include) -DNT 
 #TARGET = /Fejam0
-#LINKLIBS = $(Lib)/kernel32.lib $(Lib)/libc.lib
+#LINKLIBS = $(Lib)/oldnames.lib $(Lib)/kernel32.lib $(Lib)/libc.lib
 
 SOURCES = \
 	command.c compile.c execnt.c execunix.c execvms.c expand.c \

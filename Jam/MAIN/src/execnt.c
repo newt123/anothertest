@@ -6,17 +6,45 @@
 
 # if defined( NT ) || defined( __OS2__ )
 
+/*
+ * execnt.c - execute a shell script on NT
+ *
+ * Because I can't find a wait() call on NT, this implementation uses
+ * cwait() to wait for each process.  That means parallelism is crippled:
+ * all concurrent jobs must complete before the next can be issued.
+ *
+ * External routines:
+ *	execcmd() - launch an async command execution
+ * 	execwait() - wait and drive at most one execution completion
+ *
+ * Internal routines:
+ *	onintr() - bump intr to note command interruption
+ *
+ * 05/31/96 (seiwald) - async multiprocess interface for NT
+ */
+
 # include "jam.h"
 # include "execcmd.h"
 # include "lists.h"
-
-/*
- * execunix.c - execute a shell script on UNIX
- *
- * 05/04/94 (seiwald) - async multiprocess interface; noop on NT
- */
+# include <errno.h>
+# include <process.h>
 
 static int intr = 0;
+
+static int cmdsrunning = 0;
+
+static void (*istat)();
+
+static struct
+{
+	int	pid;
+	void	(*func)();
+	void 	*closure;
+} cmdtab[ MAXJOBS ] = {0};
+
+/*
+ * onintr() - bump intr to note command interruption
+ */
 
 void
 onintr( disp )
@@ -25,7 +53,11 @@ int disp;
 	intr++;
 	printf( "...interrupted\n" );
 }
-	
+
+/*
+ * execcmd() - launch an async command execution
+ */
+
 void
 execcmd( string, func, closure, shell )
 char *string;
@@ -33,34 +65,94 @@ void (*func)();
 void *closure;
 LIST *shell;
 {
-	int status, pid, w, rstat;
-	void (*istat)();
+	int pid;
+	int slot;
+	char *argv[ MAXARGC + 1 ];	/* +1 for NULL */
+	static char *comspec;
 
-	/* Execute each line separately for dame-brammaged DOS shell. */
+	if( !comspec && !( comspec = getenv( "COMSPEC" ) ) )
+	    comspec = "CMD.EXE";
 
-	do
-	{
-	    /* Copy next line to buf. */
+	/* Find a slot in the running commands table for this one. */
 
-	    char buf[ MAXCMD ];
-	    char *b = buf;
-
-	    while( *string )
-	    	if( ( *b++ = *string++ ) == '\n' )
-		    break;
-
-	    if( b == buf )
+	for( slot = 0; slot < MAXJOBS; slot++ )
+	    if( !cmdtab[ slot ].pid )
 		break;
 
-	    *b++ = '\0';
+	if( slot == MAXJOBS )
+	{
+	    printf( "no slots for child!\n" );
+	    exit( EXITBAD );
+	}
+	else
+	{
+	    argv[0] = comspec;
+	    argv[1] = "/C";
+	    argv[2] = string;
+	    argv[3] = 0;
+	}
 
-	    /* Execute line */
+	/* Catch interrupts whenever commands are running. */
 
+	if( !cmdsrunning++ )
 	    istat = signal( SIGINT, onintr );
-	    status = system( buf );
-	    signal( SIGINT, istat );
 
-	    /* Divine status. */
+	/* Start the command */
+
+	if( ( pid = spawnv( P_NOWAIT, comspec, argv ) ) < 0 )
+	{
+	    perror( "spawn" );
+	    exit( EXITBAD );
+	}
+
+	/* Save the operation for execwait() to find. */
+
+	cmdtab[ slot ].pid = pid;
+	cmdtab[ slot ].func = func;
+	cmdtab[ slot ].closure = closure;
+
+	/* Wait until we're under the limit of concurrent commands. */
+	/* Don't trust globs.jobs alone. */
+
+	while( cmdsrunning >= MAXJOBS || cmdsrunning >= globs.jobs )
+	    if( !execwait() )
+		break;
+}
+
+/*
+ * execwait() - wait and drive at most one execution completion
+ */
+
+int
+execwait()
+{
+	int i;
+	int status, w;
+	int rstat;
+
+	/* Handle naive make1() which doesn't know if cmds are running. */
+
+	if( !cmdsrunning )
+	    return 0;
+
+	for( i = 0; i < MAXJOBS && cmdsrunning; i++ )
+	    if( w = cmdtab[ i ].pid )
+	{
+	    /* Pick up process pid and status */
+    
+	    w = cwait( &status, w, _WAIT_CHILD );
+
+	    if( w == -1 )
+	    {
+		printf( "child process(es) lost!\n" );
+		perror("wait");
+		exit( EXITBAD );
+	    }
+
+	    /* Drive the completion */
+
+	    if( !--cmdsrunning )
+		signal( SIGINT, istat );
 
 	    if( intr )
 		rstat = EXEC_CMD_INTR;
@@ -69,17 +161,12 @@ LIST *shell;
 	    else
 		rstat = EXEC_CMD_OK;
 
-	} while( rstat == EXEC_CMD_OK );
+	    cmdtab[ i ].pid = 0;
 
-	/* Signal completion. */
+	    (*cmdtab[ i ].func)( cmdtab[ i ].closure, rstat );
+	}
 
-	(*func)( closure, rstat );
-}
-
-int 
-execwait()
-{
-	return 0;
+	return 1;
 }
 
 # endif /* NT */

@@ -121,7 +121,7 @@ struct globs globs = {
 
 static char *othersyms[] = { OTHERSYMS, JAMVERSYM, 0 } ;
 
-# ifndef __OS2__
+# ifndef __WATCOM__
 extern char **environ;
 # endif
 

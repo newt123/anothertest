@@ -757,10 +757,10 @@ char *s;
 {
 	static int level = 0;
 	static char indent[36] = ">>>>|>>>>|>>>>|>>>>|>>>>|>>>>|>>>>|";
-	char *i = &indent[35 - (((1+level) * 2) % 35)];
+	int i = ((1+level) * 2) % 35;
 
 	if( which >= 0 )
-	    printf( "%s ", i );
+	    printf( "%*.*s ", i, i, indent );
 
 	if( s )
 	    printf( "%s ", s );

@@ -186,7 +186,7 @@ LOL	*lol;
 
 		for( ; l; l = list_next( l ) )
 		{
-		    int so = strlen( out );
+		    int so = strlen( l->string );
 
 		    if( out + so >= oute )
 			return -1;

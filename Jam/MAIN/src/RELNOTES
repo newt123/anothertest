@@ -73,6 +73,8 @@ Changes since 2.1
     Targets are universally lowercased on NT and VMS.  Great minds think
     alike.  (NT courtesy of Matthew Newhook.)
 
+    Concurrent process support is somewhat enabled for NT.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
