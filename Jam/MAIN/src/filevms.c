@@ -46,9 +46,18 @@
 #include <credef.h>
 #include <mhddef.h>
 #include <lhidef.h>
+#include <lib$routines.h>
+#include <starlet.h>
 
 # include "jam.h"
 # include "filesys.h"
+
+/* Supply missing prototypes for lbr$-routines*/
+int lbr$close();
+int lbr$get_index();
+int lbr$ini_control();
+int lbr$open();
+int lbr$set_module();
 
 /*
  * unlink() - remove a file
@@ -273,8 +282,8 @@ time_t *unixtime;
     static unsigned int bastim[2] = { 0x4BEB4000, 0x007C9567 }; /* 1/1/1970 */
     int delta[2], remainder;
 
-    LIB$SUBX( curtime, bastim, delta );
-    LIB$EDIV( &divisor, delta, unixtime, &remainder );
+    lib$subx( curtime, bastim, delta );
+    lib$ediv( &divisor, delta, unixtime, &remainder );
 }
 
 # define DEFAULT_FILE_SPECIFICATION "[]*.*;0"
@@ -284,9 +293,6 @@ time_t *unixtime;
 void
 file_dirscan( char *dir, void (*func)() )
 {
-    size_t SYS$PARSE( );
-    size_t SYS$SEARCH( );
-    size_t LIB$SIGNAL( );
 
     struct FAB xfab;
     struct NAM xnam;
@@ -324,7 +330,7 @@ file_dirscan( char *dir, void (*func)() )
     xfab.fab$l_xab = (char *)&xab;       /* address of XAB block     */
 
 
-    status = SYS$PARSE( &xfab );
+    status = sys$parse( &xfab );
 
     if( DEBUG_BINDSCAN )
 	printf( "scan directory %s\n", dir );
@@ -332,7 +338,7 @@ file_dirscan( char *dir, void (*func)() )
     if ( !( status & 1 ) )
 	return;
 
-    while ( (status = SYS$SEARCH( &xfab )) & 1 )
+    while ( (status = sys$search( &xfab )) & 1 )
     {
 	char *s;
 	time_t time;
@@ -360,7 +366,7 @@ file_dirscan( char *dir, void (*func)() )
     }
 
     if ( status != RMS$_NMF && status != RMS$_FNF )
-	LIB$SIGNAL( xfab.fab$l_sts, xfab.fab$l_stv );
+	lib$signal( xfab.fab$l_sts, xfab.fab$l_stv );
 }    
 
 int
@@ -396,7 +402,7 @@ unsigned long *rfa;
 
     bufdsc.dsc$a_pointer = filename;
     bufdsc.dsc$w_length = sizeof( filename );
-    status = LBR$SET_MODULE( &context, rfa, &bufdsc,
+    status = lbr$set_module( &context, rfa, &bufdsc,
 			     &bufdsc.dsc$w_length, NULL );
     if ( !(status & 1) )
 	return ( 1 );
@@ -434,20 +440,20 @@ void (*func)();
     VMS_archive = archive;
     VMS_func = func;
 
-    status = LBR$INI_CONTROL( &context, &lfunc, &typ, NULL );
+    status = lbr$ini_control( &context, &lfunc, &typ, NULL );
     if ( !( status & 1 ) )
 	return;
 
     library.dsc$a_pointer = archive;
     library.dsc$w_length = strlen( archive );
 
-    status = LBR$OPEN( &context, &library, NULL, NULL, NULL, NULL, NULL );
+    status = lbr$open( &context, &library, NULL, NULL, NULL, NULL, NULL );
     if ( !( status & 1 ) )
 	return;
 
-    (void) LBR$GET_INDEX( &context, &index, file_archmember, NULL );
+    (void) lbr$get_index( &context, &index, file_archmember, NULL );
 
-    (void) LBR$CLOSE( &context );
+    (void) lbr$close( &context );
 }
 
 # endif /* VMS */

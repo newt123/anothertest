@@ -1,6 +1,4 @@
 ! Bootstrap build script for Jam
-! On OPENVMS you need the next line
-! $ cc := cc/stand=vaxc
 $ cc command.c
 $ cc compile.c
 $ cc expand.c

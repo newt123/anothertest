@@ -18,7 +18,7 @@
 
 # ifdef VMS
 
-# ifdef __ALPHA
+int unlink( char *f ); 	/* In filevms.c */
 
 # include <types.h>
 # include <file.h>
@@ -29,22 +29,12 @@
 # include <signal.h>
 # include <string.h>
 # include <time.h>
+# include <unixlib.h>
 
+# ifdef __DECC
 # define OTHERSYMS "VMS=true","OS=OPENVMS"
-
 # else
-
-# include <types.h>
-# include <file.h>
-# include <stat.h>
-# include <stdio.h>
-# include <ctype.h>
-# include <signal.h>
-# include <string.h>
-# include <time.h>
-
 # define OTHERSYMS "VMS=true","OS=VMS"
-
 # endif 
 
 # define MAXCMD	255 /* longest command - related to quotas */
