@@ -1188,7 +1188,7 @@ rule makeRelPath
 	if $(_r) = $(DOT) {
 	    $(<[1]) = $(_l) ;
 	} else {
-	    $(<[1]) = $(_r:R=$(l)) ;
+	    $(<[1]) = $(_r:R=$(_l)) ;
 	}
 }
 
@@ -1567,6 +1567,7 @@ rule INSTALLMAN { InstallMan $(MANDIR) : $(<) ; }
 # Now include the user's Jamfile.
 #
 
-include $(JAMFILE) ;
-
+{
+    if $(JAMFILE) { include $(JAMFILE) ; }
+}
 

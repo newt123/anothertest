@@ -31,8 +31,8 @@ SOURCES = \
 	newstr.c option.c parse.c pathunix.c pathvms.c regexp.c \
 	rules.c scan.c search.c timestamp.c variable.c
 
-install: jam0
-	jam0 install
+all: jam0
+	jam0
 
 jam0:
 	$(CC) $(TARGET) $(CFLAGS) $(SOURCES) $(LINKLIBS)
