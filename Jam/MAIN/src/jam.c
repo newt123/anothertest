@@ -3,6 +3,8 @@
  * +\	Copyright 1993, 1995 Christopher Seiwald.
  * \+/
  *
+ * This file is part of jam.
+ *
  * License is hereby granted to use this software and distribute it
  * freely, as long as this notice is retained and modifications are
  * clearly marked.
