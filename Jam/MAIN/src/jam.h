@@ -257,7 +257,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OSPLATSYM ,"OSPLAT=AXP"
 # endif
 
-# if defined( _i386_ ) || defined( __i386__ )
+# if defined( _i386_ ) || defined( __i386__ ) || defined( _M_IX86 )
 # undef OSPLATSYM
 # define OSPLATSYM ,"OSPLAT=X86"
 # endif 
