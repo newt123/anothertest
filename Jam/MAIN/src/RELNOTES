@@ -39,6 +39,11 @@ Changes since 2.1
     error, sources that can't be found, and targets that can't be built
     all generate non-zero exit status.
 
+    Variables whose values are targets can be expanded to the bounded target
+    names in action blocks.  Previously, only $(<) and $(>) referred to bounded
+    targets.  With new syntax "actions Rulename bind var..." the named variables
+    will be expanded in the action block.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

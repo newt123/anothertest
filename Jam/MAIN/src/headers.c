@@ -50,7 +50,6 @@ TARGET *t;
 	PARSE	p[3];
 	regexp	*re[ MAXINC ];
 	int	rec = 0;
-	char	*fname = t->boundname ? t->boundname : t->name;
 
 	if( !( hdrscan = var_get( "HDRSCAN" ) ) || 
 	    !( hdrrule = var_get( "HDRRULE" ) ) )
@@ -74,7 +73,7 @@ TARGET *t;
 	p[0].left = &p[1];
 	p[1].llist = list_new( L0, t->name );
 	p[1].left = &p[2];
-	p[2].llist = headers1( headlist, fname, rec, re );
+	p[2].llist = headers1( headlist, t->boundname, rec, re );
 	p[2].left = 0;
 
 	if( p[2].llist )

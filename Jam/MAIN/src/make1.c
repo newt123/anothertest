@@ -27,7 +27,8 @@
  *	make1cmds() - turn ACTIONS into CMDs, grouping, splitting, etc
  *	make1chunk() - compute number of source that can fit on cmd line
  *	make1list() - turn a list of targets into a LIST, for $(<) and $(>)
- *	make1remove() - remove targets after interrupted command
+ * 	make1settings() - for vars that get bound values, build up replacement lists
+ * 	make1bind() - bind targets that weren't bound in dependency analysis
  *
  * 04/16/94 (seiwald) - Split from make.c.
  * 04/21/94 (seiwald) - Handle empty "updated" actions.
@@ -60,10 +61,10 @@ static void make1d();
 
 static CMD *make1cmds();
 static int make1chunk();
-static void make1remove();
 static LIST *make1list();
 static int make1exec();
-static SETTINGS *make1bind();
+static SETTINGS *make1settings();
+static void make1bind();
 
 /* Ugly static - it's too hard to carry it through the callbacks. */
 
@@ -372,7 +373,15 @@ int	status;
 	/* is not "precious", remove the targets */
 
 	if( status != EXEC_CMD_OK && !( cmd->rule->flags & RULE_TOGETHER ) )
-	    make1remove( lol_get( &cmd->args, 0 ) );
+	{
+	    LIST *targets = lol_get( &cmd->args, 0 );
+
+	    for( ; targets; targets = list_next( targets ) )
+		if( !unlink( targets->string ) )
+		    printf( "...removing %s\n", targets->string );
+	}
+
+	/* Free this command and call make1c() to move onto next command. */
 
 	t->status = status;
 	t->cmds = (char *)cmd_next( cmd );
@@ -406,7 +415,7 @@ ACTIONS	*a0;
 	for( ; a0; a0 = a0->next )
 	{
 	    RULE    *rule = a0->action->rule;
-	    SETTINGS *latebinds;
+	    SETTINGS *boundvars;
 	    int	    chunk = 0;
 	    LIST    *nt, *ns;
 	    ACTIONS *a1;
@@ -445,8 +454,8 @@ ACTIONS	*a0;
 
 	    /* If we had 'actions xxx bind vars' we bind the vars now */
 
-	    latebinds = make1bind( rule->bindlist );
-	    pushsettings( latebinds );
+	    boundvars = make1settings( rule->bindlist );
+	    pushsettings( boundvars );
 
 	    /* If rule is to be cut into (at most) MAXCMD pieces, estimate */
 	    /* bytes per $(>) element and aim for using MAXCMD minus a */
@@ -454,6 +463,8 @@ ACTIONS	*a0;
 
 	    if( rule->flags & RULE_PIECEMEAL )
 		chunk = make1chunk( rule->actions, nt, ns );
+
+	    /* Either cut the actions into pieces, or do it whole. */
 
 	    if( chunk )
 	    {
@@ -480,8 +491,10 @@ ACTIONS	*a0;
 		cmds = cmd_new( cmds, rule, nt, ns, list_copy( L0, shell ) );
 	    }
 
-	    popsettings( latebinds );
-	    freesettings( latebinds );
+	    /* Free the variables whose values were bound by 'actions xxx bind vars' */
+
+	    popsettings( boundvars );
+	    freesettings( boundvars );
 	}
 
 	return cmds;
@@ -524,6 +537,7 @@ LIST	*sources;
 	return chunk;
 }
 
+
 /*
  * make1list() - turn a list of targets into a LIST, for $(<) and $(>)
  */
@@ -538,27 +552,13 @@ int	flags;
     {
 	TARGET *t = targets->target;
 
-	/*
-	 * spot the kludge!  If a target is not in the dependency tree,
-	 * it didn't get bound by make0(), so we have to do it here.
-	 * Ugly.
-	 */
+	/* Sources to 'actions existing' are never in the dependency */
+	/* graph (if they were, they'd get built and 'existing' would */
+	/* be superfluous, so throttle warning message about independent */
+	/* targets. */
 
-	if( t->binding == T_BIND_UNBOUND && !( t->flags & T_FLAG_NOTFILE ) )
-	{
-	    /* Sources to 'actions existing' are never in the dependency */
-	    /* graph (if they were, they'd get built and 'existing' would */
-	    /* be superfluous, so throttle warning message about independent */
-	    /* targets. */
-
-	    if( !( flags & RULE_EXISTING ) )
-		printf( "warning: using independent target %s\n", t->name );
-
-	    pushsettings( t->settings );
-	    t->boundname = search( t->name, &t->time );
-	    t->binding = t->time ? T_BIND_EXISTS : T_BIND_MISSING;
-	    popsettings( t->settings );
-	}
+	if( t->binding == T_BIND_UNBOUND )
+	    make1bind( t, !( flags & RULE_EXISTING ) );
 
 	if( ( flags & RULE_EXISTING ) && t->binding != T_BIND_EXISTS )
 	    continue;
@@ -566,66 +566,77 @@ int	flags;
 	if( ( flags & RULE_NEWSRCS ) && t->fate <= T_FATE_STABLE )
 	    continue;
 
-	/* boundname is null for T_FLAG_NOTFILE targets - use name */
+	/* Build new list */
 
-	l = list_new( l, copystr( t->boundname ? t->boundname : t->name ) );
+	l = list_new( l, copystr( t->boundname ) );
     }
 
     return l;
 }
 
 /*
- * make1remove() - remove targets after interrupted command
+ * make1settings() - for vars that get bound values, build up replacement lists
  */
 
-static void
-make1remove( targets )
-LIST *targets;
-{
-	for( ; targets; targets = list_next( targets ) )
-	{
-	    if( !unlink( targets->string ) )
-		printf( "...removing %s\n", targets->string );
-	}
-}
-
 static SETTINGS *
-make1bind( vars )
+make1settings( vars )
 LIST	*vars;
 {
 	SETTINGS *settings = 0;
 
 	for( ; vars; vars = list_next( vars ) )
 	{
-	    LIST *l;
+	    LIST *l = var_get( vars->string );
 	    LIST *nl = 0;
 
-	    for( l = var_get( vars->string ); l; l = list_next( l ) )
+	    for( ; l; l = list_next( l ) ) 
 	    {
 		TARGET *t = bindtarget( l->string );
 
-		if( t->binding == T_BIND_UNBOUND && !( t->flags & T_FLAG_NOTFILE ) )
-		{
-		    /* Sources to 'actions existing' are never in the dependency */
-		    /* graph (if they were, they'd get built and 'existing' would */
-		    /* be superfluous, so throttle warning message about independent */
-		    /* targets. */
+		/* Make sure the target is bound, warning if it is not in the */
+		/* dependency graph. */
 
-		    printf( "warning: using independent target %s\n", t->name );
+		if( t->binding == T_BIND_UNBOUND )
+		    make1bind( t, 1 );
 
-		    pushsettings( t->settings );
-		    t->boundname = search( t->name, &t->time );
-		    t->binding = t->time ? T_BIND_EXISTS : T_BIND_MISSING;
-		    popsettings( t->settings );
-		}
+		/* Build new list */
 
-		/* boundname is null for T_FLAG_NOTFILE targets - use name */
-
-		nl = list_new( nl, copystr( t->boundname ? t->boundname : t->name ) );
+		nl = list_new( nl, copystr( t->boundname ) );
 	    }
+
+	    /* Add to settings chain */
 
 	    settings = addsettings( settings, 0, vars->string, nl );
 	}
 
 	return settings;
+}
+
+/*
+ * make1bind() - bind targets that weren't bound in dependency analysis
+ *
+ * Spot the kludge!  If a target is not in the dependency tree, it didn't 
+ * get bound by make0(), so we have to do it here.  Ugly.
+ */
+
+static void
+make1bind( t, warn )
+TARGET	*t;
+int	warn;
+{
+	if( t->flags & T_FLAG_NOTFILE )
+	    return;
+
+	/* Sources to 'actions existing' are never in the dependency */
+	/* graph (if they were, they'd get built and 'existing' would */
+	/* be superfluous, so throttle warning message about independent */
+	/* targets. */
+
+	if( warn )
+	    printf( "warning: using independent target %s\n", t->name );
+
+	pushsettings( t->settings );
+	t->boundname = search( t->name, &t->time );
+	t->binding = t->time ? T_BIND_EXISTS : T_BIND_MISSING;
+	popsettings( t->settings );
 }

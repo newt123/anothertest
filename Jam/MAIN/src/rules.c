@@ -84,6 +84,7 @@ char	*targetname;
 	{
 	    memset( (char *)t, '\0', sizeof( *t ) );
 	    t->name = newstr( targetname );	/* never freed */
+	    t->boundname = t->name;		/* default for T_FLAG_NOTFILE */
 	}
 
 	return t;
