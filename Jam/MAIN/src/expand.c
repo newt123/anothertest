@@ -345,10 +345,7 @@ char	*out;
 
 	/* Put filename back together */
 
->>>> ORIGINAL VERSION
-	file_build( &old, out );
-==== THEIR VERSION
-	file_build( &old, out );
+	file_build( &old, out, 0 );
 
 	/* Handle upshifting, downshifting now */
 
@@ -362,9 +359,6 @@ char	*out;
 	    for( ; *out; ++out )
 		*out = tolower( *out );
 	}
-==== YOUR VERSION
-	file_build( &old, out, 0 );
-<<<<
 }
 
 
