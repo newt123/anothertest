@@ -294,7 +294,7 @@ else if $(NT)
 
 	AR		default = lib /nologo ;
 	CC		default = cl /nologo ;
-	CCFLAGS		default = /I$(MSVCNT)\\include ;
+	CCFLAGS		default = ;
 	C++		default = $(CC) ;
 	C++FLAGS	default = $(CCFLAGS) ;
 	CRELIB		default = true ;
@@ -1350,12 +1350,12 @@ else if $(NT) || $(OS2)
 
 	actions Cc
 	{
-	$(CC) /c $(CCFLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) $(>)
+	$(CC) /c $(CCFLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /I$(STDHDRS) $(>)
 	}
 
 	actions C++
 	{
-	$(C++) /c $(C++FLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /Tp$(>)
+	$(C++) /c $(C++FLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /I$(STDHDRS) /Tp$(>)
 	}
 
 	actions Link
