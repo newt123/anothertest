@@ -604,8 +604,13 @@ rule LibraryFromObjects
 
 	# Set LOCATE for the library and its contents.  The bound
 	# value shows up as $(NEEDLIBS) on the Link actions.
+	# For compatibility, we only do this if the library doesn't
+	# already have a path.
 
-	MakeLocate $(<) $(<)($(s:BS)) : $(LOCATE_TARGET) ;
+	if ! $(<:D)
+	{
+	    MakeLocate $(<) $(<)($(s:BS)) : $(LOCATE_TARGET) ;
+	}
 
 	if $(NOARSCAN) 
 	{ 
