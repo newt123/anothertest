@@ -1022,13 +1022,22 @@ rule makeGristedName
 {
 	# Produce name with grist in it, if SOURCE_GRIST is set.
 
-	if $(SOURCE_GRIST)
-	{
-	    $(<) = $(>:G=$(SOURCE_GRIST)) ;
-	}
-	else
+	if ! $(SOURCE_GRIST)
 	{
 	    $(<) = $(>) ;
+	}
+	else 
+	{
+	    _o = ;
+	    for _i in $(>)
+	    {
+		switch $(_i)
+		{
+		case *.h :	_o += $(_i) ;
+		case * : 	_o += $(_i:G=$(SOURCE_GRIST)) ;
+		}
+	    }
+	    $(<) = $(_o) ;
 	}
 }
 
