@@ -1,7 +1,7 @@
 # Makefile for jam
 
 CC = cc
-CFLAGS = -o jam0
+TARGET = -o jam0
 
 # Special flavors - uncomment appropriate lines
 
@@ -13,11 +13,12 @@ CFLAGS = -o jam0
 #CFLAGS = -DAIX
 
 # NT (with Microsoft compiler)
-# CC = cl
-# CFLAGS = -DNT /Fejam0
+#CC = cl
+#CFLAGS = -DNT 
+#TARGET = /Fejam0
 
 install: jam0
 	jam0 -f Jambase install
 
 jam0:
-	cc $(CFLAGS) *.c $(LINKLIBS)
+	cc $(TARGET) $(CFLAGS) *.c $(LINKLIBS)

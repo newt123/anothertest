@@ -540,9 +540,9 @@ rule Object
 	switch $(>:S)
 	{
 	    case .c :	Cc $(<) : $(>) ;
-	    case .C :	c++ $(<) : $(>) ;
-	    case .cc :	c++ $(<) : $(>) ;
-	    case .cpp : c++ $(<) : $(>) ;
+	    case .C :	C++ $(<) : $(>) ;
+	    case .cc :	C++ $(<) : $(>) ;
+	    case .cpp : C++ $(<) : $(>) ;
 	    case .f :	Fortran $(<) : $(>) ;
 	    case .l :	Cc $(<) : $(<:S=.c) ;
 			Lex $(<:S=.c) : $(>) ;
