@@ -1,5 +1,9 @@
 Release notes for Jam 2.1.
 
+Nasty little bug in compile.c w.r.t setting variables fixed: if the first
+two variable names (or target names for on target) were the same, the 
+variable value got trashed.
+
 Failed actions now delete the targets.
 InstallFIle an alias for InstallLib.
 NOUPDATE immune to -a (anyhow) flag, so jam -a works on MkDir.

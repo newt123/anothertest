@@ -400,7 +400,6 @@ LIST		*sources;
 	LIST	*nt = var_list( parse->llist, targets, sources );
 	LIST	*ns = var_list( parse->rlist, targets, sources );
 	LIST	*l;
-	int	count = 0;
 	int	setflag;
 	char	*trace = "";
 
@@ -422,13 +421,14 @@ LIST		*sources;
 
 	/* Call var_set to set variable */
 	/* var_set keeps ns, so need to copy it */
+	/* avoid copy if just setting one variable. */
 
-	for( l = nt; l; l = list_next( l ), count++ )
+	for( l = nt; l; l = list_next( l ) )
 	    var_set( l->string, 
-		count ? list_copy( (LIST*)0, ns ) : ns,
+		list_next( l ) ? list_copy( (LIST*)0, ns ) : ns,
 		setflag );
 
-	if( !count )
+	if( !nt )
 	    list_free( ns );
 
 	list_free( nt );
@@ -509,7 +509,6 @@ LIST		*sources;
 	LIST	*ns = var_list( parse->left->rlist, targets, sources );
 	LIST	*ts;
 	int	append = parse->num == ASSIGN_APPEND;
-	int	count = 0;
 
 	/* Reset targets */
 
@@ -535,14 +534,12 @@ LIST		*sources;
 	    TARGET 	*t = bindtarget( ts->string );
 	    LIST	*l;
 
-	    for( l = nt; l; l = list_next( l ), count++ )
-		t->settings = addsettings( t->settings, append, l->string, 
-				count ? list_copy( (LIST*)0, ns ) : ns );
+	    for( l = nt; l; l = list_next( l ) )
+		t->settings = addsettings( t->settings, append, 
+				l->string, list_copy( (LIST*)0, ns ) );
 	}
 
-	if( !count )
-	    list_free( ns );
-
+	list_free( ns );
 	list_free( nt );
 	list_free( targets );
 }
