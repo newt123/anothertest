@@ -82,7 +82,6 @@ Library         libjam.a :
 if $(UNIX) && $(DO_INSTALL)
 {
 	InstallBin $(BINDIR) : jam ;
-	InstallMan $(MANDIR) : jam.1 Jambase.5 Jamfile.5 ;
 }
 
 #### --- cut
