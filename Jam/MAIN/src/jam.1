@@ -21,7 +21,7 @@ redux
 \fBJam\fR recursively builds target files from their source files,
 using two files to define the dependency graph and the updating actions
 for all targets.  The file \fBJambase\fR (usually located in
-/usr/local/lib/jam) define rules, and the file \fBJamfile\fR (located in
+/usr/local/lib/jam) defines rules, and the file \fBJamfile\fR (located in
 the current directory) lists the targets and sources in terms of those
 rules.  \fBJam\fR does not need to rely on suffix-driven implicit rules
 or directory contents.  A \fBJambase\fR is provided with \fBjam\fR; the
@@ -35,7 +35,7 @@ page describes the program that interprets \fBJambase \fR and
 .PP
 If \fItarget\fR is provided on the command line, \fBjam\fR attempts to
 build that target; otherwise \fBjam\fR attempts to build the target
-"\fIall\fR".
+\fIall\fR.
 .PP
 \fBJam\fR supports the following options:
 .IP "-a"
@@ -73,30 +73,29 @@ Print the version of \fBjam\fR and exit.
 
 .SH "THE JAM LANGUAGE"
 .PP
-The \fBjam\fR language supports defining and using rules, setting
-variables, and flow-of-control structures.  \fBJambase\fR and
-\fBJamfile\fR share this language.
+The \fBjam\fR language supports defining rules, invoking rules, and
+setting variables.  It also has a few flow-of-control statements.
+\fBJambase\fR and \fBJamfile\fR share this language.
 .SS "Lexical Features"
 \fBJam\fR treats its input files as whitespace-separated tokens, with
 two exceptions: double quotes (") can enclose whitespace to embed it
 into a token, and everything between the matching curly braces ({}) in
 the definition of a rule action is treated as a single string.  A
-backslash (\\) can escape a double quote.  It should be noted that
-whitespace must surround two common tokens,
+backslash (\\) can escape a double quote.  
 .PP
 \fBJam\fR requires whitespace (blanks, tabs, or newlines) to surround
 all tokens, including the colon (:) and semicolon (;) tokens.  This is
 because \fBjam\fR runs on many platforms and no characters, save
 whitespace, are uncommon in the file names on all of those platforms.
 .SS Targets
-Targets and sources (collectively "targets") are files to be updated
-and the files used in updating those targets.  A target is simply a
-file name, either rooted or relative to the directory of \fBjam\fR's
-invocation.  The special syntax, \fIfile(member)\fR, refers to an
-\fBar\fR(1) library member.  The special syntax, \fI<grist>file\fR,
-perturbs a file name to distinguish it from other files with the same
-name.  The \fI<grist>\fR is stripped from the name during binding (see
-\fBBinding\fR, below).
+Targets are files to be updated and sources are the files used in
+updating those targets.  Collectively, they are just referred to as
+"targets".  A target is simply a file name, either rooted or relative
+to the directory of \fBjam\fR's invocation.  The special syntax,
+\fIfile(member)\fR, refers to an \fBar\fR(1) library member.  The
+special syntax, \fI<grist>file\fR, perturbs a file name to distinguish
+it from other files with the same name.  The \fI<grist>\fR is stripped
+from the name during binding (q.v., below).
 .SS Rules
 \fBJam\fR's basic entity is called a rule, which is used to relate
 targets to their sources.  A rule is defined in two parts: the
@@ -129,9 +128,9 @@ In both the rule's procedure definition and the rule's actions, the
 special variables $(<) and $(>) refer to the \fI<targets>\fR and
 \fI<sources>\fR given at rule invocation.  However, in the rule's
 actions, $(<) and $(>) refer to the \fI<targets>\fR and \fI<sources>\fR
-after they have been bound by the binding phase (see \fBBinding\fR,
-below).  \fBJam\fR issues a warning if $(<) or $(>) have elements not
-in the dependency graph.
+after they have been bound by the binding phase (q.v., below).
+\fBJam\fR issues a warning if $(<) or $(>) have elements not in the
+dependency graph.
 .PP
 The following action \fImodifiers\fR are understood:
 .RS
@@ -191,7 +190,7 @@ makes existing \fI<targets\fR> appear eternally old.
 .br
 Marks \fI<targets>\fR as temporary.
 .RE
-.SS "Flow of Control"
+.SS "Flow-of-Control"
 .PP
 \fBJam\fR has several simple flow-of-control statements:
 .IP
@@ -203,13 +202,12 @@ switch \fI<a>\fR { case \fI<v1>\fR : \fI<statements>\fR ; case \fI<v2>\fR : \fI<
 .IP
 if \fI<cond>\fR { \fI<statements>\fR } [ else { \fI<statements>\fR } ]
 .PP
-The \fBinclude\fR statement includes the named file; the file is bound
+The \fBinclude\fR statement includes the named file.  The file is bound
 like regular targets (see \fBBinding\fR, below), but unlike regular
-targets it cannot be built.
+targets the include file cannot be built.
 .PP
 The \fBfor\fR loop executes \fI<statements>\fR for each value in
-\fI<args>\fR, setting the variable \fI<a>\fR to the value; \fI<a>\fR is
-not variable-expanded.
+\fI<args>\fR, setting the variable \fI<a>\fR to the value.
 .PP
 The \fBswitch\fR statement executes zero or one of the enclosed
 \fI<statements>\fR, depending on which value \fI<a>\fR matches.  The
@@ -274,13 +272,13 @@ A variable is defined with:
 .IP
 \fI<variable>\fR default = \fI<values>\fR ;
 .PP
-The first two forms set \fI<variable>\fR globally; the third and forth
-forms arrange for \fI<variable>\fR to take on a value only during the
-binding and updating \fI<targets>\fR.  The \fB=\fR operator replaces
-any previous value of \fI<variable>\fR with \fI<values>\fR; the
-\fB+=\fR operation appends \fI<values>\fR to any previous value.  The
-final form sets \fI<variable>\fR globally, but only if it was
-previously unset.
+The first two forms set \fI<variable>\fR globally.  The third and forth
+forms set a target-specific variable, where \fI<variable>\fR takes on a
+value only during the binding and updating \fI<targets>\fR.  The
+\fB=\fR operator replaces any previous value of \fI<variable>\fR with
+\fI<values>\fR; the \fB+=\fR operation appends \fI<values>\fR to any
+previous value.  The final form sets \fI<variable>\fR globally, but
+only if it was previously unset.
 .PP
 On program start-up, \fBjam\fR imports the environment variable
 settings into \fBjam\fR variables.  Environment variables are split at
@@ -362,10 +360,10 @@ Remove components not listed; components is one or more of
 updating.
 .SS Parsing
 .PP
-\fBJam\fR parses the \fBJambase\fR file, which by default includes
-\fBJamfile\fR.  The results of parsing are: the dependency graph of
-targets; update actions associated with the targets; and variables set
-to specific values.
+\fBJam\fR parses the \fBJambase\fR file, which includes \fBJamfile\fR.
+The results of parsing are: the dependency graph of targets; update
+actions associated with the targets; and variables set to specific
+values.
 .PP
 .SS Binding
 After parsing, \fBjam\fR recursively descends the dependency graph,
@@ -375,25 +373,24 @@ warning.
 .PP
 By default, a target is located at the actual path of the target,
 relative to the directory of \fBjam\fR's invocation.  If $(LOCATE) is
-set to a directory name, \fBjam\fR locates the target in that
-directory; else if $(SEARCH) is set to a directory list, \fBjam\fR
-first searches along the directory list for the target file.  If the
-target name has a rooted directory component then $(SEARCH) and
-$(LOCATE) do not apply: the target is located at the actual path of the
-target.  If a target is marked as not being a file (using the built-in
-rule NOTFILE), it is left unbound to a file name.
+set to a directory name, \fBjam\fR prepends that directory name to the
+target; else if $(SEARCH) is set to a directory list, \fBjam\fR
+searches along the directory list for the target file, and if the file
+is found prepends the directory name to the target.  If the target name
+has a rooted directory component then $(SEARCH) and $(LOCATE) do not
+apply: the target is located at the actual path of the target.  If a
+target is marked as not being a file (using the built-in rule NOTFILE),
+it is left unbound to a file name.
 .PP
 After binding each target, \fBjam\fR determines whether the target
 needs updating, and marks the target if necessary for the updating
-phase.  A target is marked for updating for any of three reasons:
-.RS
-.IP 1)
+phase.  A target is marked for updating for any of these three reasons:
+.IP 
 It is missing.
-.IP 2)
+.IP
 Its filesystem modification time is older than any of its sources.
-.IP 3)
+.IP
 Any of its sources are marked for updating.  
-.RE
 .PP
 This basic behavior can be modified applying (usually one of) the 
 following six built-in rules to the target:
@@ -419,12 +416,16 @@ will appear eternally old; that is, older than anything that depends on
 it.
 .RE
 .PP
-If a target is a source file that includes header files, \fBjam\fR
-invokes the $(HDRRULE) rule on the target, giving it as sources the
-(unbound) names of the header files.  A target is scanned for header
-file dependencies if $(HDRSCAN) is set to a \fBregexp\fR(3) pattern
-with ()'s surrounding the include file name (see \fBHDRPATTERN\fR in
-\fBJambase \fR for an example).
+If a target is a source file that includes other files, \fBjam\fR scans
+the source file for header file include lines.  It scans the file by
+matching each line against a \fBregexp\fR(3) pattern that has ()'s
+surrounding the included file name.  The pattern is provided by the
+user through the special variable $(HDRSCAN) (see \fBHDRPATTERN\fR in
+\fBJambase\fR for an example).  The result of the scan is formed into a
+rule invocation, with the scanned file as the target and the found
+included file names as the sources.  The rule invoked is named by the
+special variable $(HDRRULE).  \fBJam\fR only scans files if $(HDRSCAN)
+is set, and $(HDRSCAN) is normally set target-specific.
 .PP
 Between binding and updating, \fBjam\fR announces the number of targets
 to be updated.
