@@ -193,7 +193,7 @@ cond	: arg1
 		{ $$.parse = pcomp( COND_MORE, $1.list, $3.list ); }
 	| arg1 _RANGLE_EQUALS arg1 
 		{ $$.parse = pcomp( COND_MOREEQ, $1.list, $3.list ); }
-	| arg1 IN arg1
+	| arg1 IN args
 		{ $$.parse = pcomp( COND_IN, $1.list, $3.list ); }
 	| _BANG cond
 		{ $$.parse = pcond( COND_NOT, $2.parse, P0 ); }

@@ -157,7 +157,7 @@ cond	: arg1
 		{ $$.parse = pcomp( COND_MORE, $1.list, $3.list ); }
 	| arg1 `>=` arg1 
 		{ $$.parse = pcomp( COND_MOREEQ, $1.list, $3.list ); }
-	| arg1 `in` arg1
+	| arg1 `in` args
 		{ $$.parse = pcomp( COND_IN, $1.list, $3.list ); }
 	| `!` cond
 		{ $$.parse = pcond( COND_NOT, $2.parse, P0 ); }

@@ -1,13 +1,7 @@
 #ifndef lint
-static char yysccsid[] = "@(#)yaccpar	1.9 (Berkeley) 02/21/93";
+static char yysccsid[] = "@(#)yaccpar	1.8 (Sybase) 06/01/96";
 #endif
 #define YYBYACC 1
-#define YYMAJOR 1
-#define YYMINOR 9
-#define yyclearin (yychar=(-1))
-#define yyerrok (yyerrflag=0)
-#define YYRECOVERING (yyerrflag!=0)
-#define YYPREFIX "yy"
 #line 64 "jamgram.y"
 #include "jam.h"
 
@@ -40,7 +34,7 @@ static char yysccsid[] = "@(#)yaccpar	1.9 (Berkeley) 02/21/93";
 # define pcomp( c,l,r )	  parse_make( F0,P0,P0,S0,S0,l,r,c )
 # define plol( p,l )	  parse_make( F0,p,P0,S0,S0,l,L0,0 )
 
-#line 44 "y.tab.c"
+#line 38 "y.tab.c"
 #define _BANG 257
 #define _BANG_EQUALS 258
 #define _AMPERAMPER 259
@@ -102,7 +96,7 @@ short yydefred[] = {                                      1,
     0,    0,   42,    0,    0,    0,    0,   22,   21,   23,
     0,   42,   42,   52,   49,   51,   50,   48,   47,    0,
    46,   42,   32,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    8,   43,   17,    0,    0,    7,
+   42,    0,    0,    0,    8,   43,   17,    0,    0,    7,
     6,   42,    9,   42,    0,    0,   42,    0,    0,   35,
    26,   27,   28,   25,   29,   30,   31,   33,    0,    0,
     0,    0,    0,    5,   40,    0,   42,   10,   54,   18,
@@ -114,55 +108,55 @@ short yydgoto[] = {                                       1,
    68,   99,  108,   83,   20,   41,
 };
 short yysindex[] = {                                      0,
- -150,    0, -282, -250,    0, -281,    0, -268,    0,    0,
- -112, -115, -265, -250, -250,    0, -120, -246, -245, -264,
- -150, -254,    0, -267, -150, -221, -209,    0,    0,    0,
- -208,    0,    0,    0,    0,    0,    0,    0,    0, -212,
-    0,    0,    0, -233, -229, -229, -229, -229, -229, -229,
- -229, -250, -268, -250,    0,    0,    0, -204, -194,    0,
-    0,    0,    0,    0, -235, -192,    0, -217, -211,    0,
-    0,    0,    0,    0,    0,    0,    0,    0, -210, -178,
- -203, -201, -204,    0,    0, -180,    0,    0,    0,    0,
- -268, -186, -169,    0,    0, -150,    0, -166, -199, -193,
- -150, -268,    0,    0,    0,    0,    0, -183,    0,
+ -138,    0, -282, -248,    0, -279,    0, -267,    0,    0,
+ -120, -123, -261, -248, -248,    0, -176, -257, -242, -268,
+ -138, -264,    0, -249, -138, -213, -236,    0,    0,    0,
+ -216,    0,    0,    0,    0,    0,    0,    0,    0, -212,
+    0,    0,    0, -220, -241, -241, -241, -241, -241, -241,
+    0, -248, -267, -248,    0,    0,    0, -203, -191,    0,
+    0,    0,    0,    0, -235, -190,    0, -211, -210,    0,
+    0,    0,    0,    0,    0,    0,    0,    0, -209, -173,
+ -206, -198, -203,    0,    0, -166,    0,    0,    0,    0,
+ -267, -167, -161,    0,    0, -138,    0, -154, -183, -189,
+ -138, -267,    0,    0,    0,    0,    0, -180,    0,
 };
 short yyrindex[] = {                                      0,
-    0,    0,    0,    0,    0,    0,    0, -167, -196,    0,
-    0,    0,    0,    0,    0,    0, -257,    0,    0, -187,
-    0,    0,    0,    0, -255, -158,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0, -177,
+    0,    0,    0,    0,    0,    0,    0, -155, -186,    0,
+    0,    0,    0,    0,    0,    0, -243,    0,    0, -195,
+    0,    0,    0,    0, -263, -151,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0, -171,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0, -167,    0,    0,    0,    0, -176,    0,    0,
+    0,    0, -155,    0,    0,    0,    0, -175,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
-    0,    0,    0,    0,    0,    0,    0,    0,    0, -252,
-    0,    0, -176,    0,    0,    0,    0,    0,    0,    0,
- -167,    1,    0,    0,    0, -251,    0,    0,    0,    0,
-    0, -185,    0,    0,    0,    0,    0,    0,    0,
+    0,    0,    0,    0,    0,    0,    0,    0,    0, -253,
+    0,    0, -175,    0,    0,    0,    0,    0,    0,    0,
+ -155,    1,    0,    0,    0, -256,    0,    0,    0,    0,
+    0, -172,    0,    0,    0,    0,    0,    0,    0,
 };
 short yygindex[] = {                                      0,
-   -1,  -45,   28,   -2,   53,    2,   52,   35,    9,    0,
+   -1,  -49,   40,   -2,   63,    9,   62,   45,   -8,    0,
     0,    0,    0,    0,    0,    0,
 };
 #define YYTABLESIZE 294
 short yytable[] = {                                      10,
-   15,   24,   19,   24,   22,   17,   14,   79,   34,   15,
-   13,   21,   52,   23,   42,   17,   17,    3,   55,   57,
-   59,    4,   43,   44,   60,   52,   28,   70,   56,   65,
-   66,   29,   24,   24,   30,   58,    3,   34,   34,   69,
-    4,   62,   16,   53,   54,  100,   71,   72,   73,   74,
-   75,   76,   77,   17,   63,   17,  107,   54,   64,   67,
-   78,   86,   80,   16,   89,   44,   42,   42,   81,   84,
-   44,   88,   90,   44,   41,   41,   41,   44,   91,   41,
-   52,   92,   41,   97,   98,    5,   44,    5,  101,   93,
-   94,    5,    5,  102,  104,    5,   42,  103,  105,  106,
-    5,    5,   41,    5,    5,   39,    5,    5,  109,    5,
-    5,   96,   53,    5,   85,   36,   87,   95,    5,    5,
-    2,    0,    5,    0,    5,    5,    3,    4,    0,    0,
-    5,    0,    0,    0,    0,    6,    7,   45,    0,    8,
-    0,    0,    9,    0,   46,   47,   48,   49,   50,   28,
-    0,    0,    0,    0,   29,    0,    0,   30,    0,   51,
-   34,   31,    0,   35,    0,    0,    0,    0,   36,   37,
-   32,    0,   38,   39,    0,    0,    0,   40,    0,    0,
+   15,   52,   19,   79,   22,   43,   44,   34,   14,    3,
+   13,   15,   17,   21,   23,   24,    4,   24,   42,   57,
+   59,   55,   17,   17,   56,   58,   28,   63,    3,   65,
+   66,   29,   53,   54,   30,    4,   34,   34,   52,   69,
+   70,  100,   60,   78,   16,   80,   24,   24,   77,   62,
+   64,   16,  107,   71,   72,   73,   74,   75,   76,   67,
+   17,   86,   17,   41,   89,   41,   41,   41,   41,   81,
+   54,   41,   84,   88,   41,   44,   42,   42,   90,   91,
+   44,   45,   92,   44,   98,   52,   93,   44,   46,   47,
+   48,   49,   50,   94,   41,   41,   44,   97,    5,  106,
+    5,  102,  105,   51,    5,    5,   42,  101,    5,  103,
+  104,  109,   39,    5,    5,    5,   36,    5,   53,    5,
+    5,    5,    5,   96,   85,    5,   87,   95,    0,    0,
+    5,    5,    2,    0,    5,    0,    5,    5,    3,    4,
+    0,   28,    5,    0,    0,    0,   29,    6,    7,   30,
+    0,    8,   34,   31,    9,   35,    0,    0,    0,    0,
+   36,   37,   32,    0,   38,   39,    0,    0,    0,   40,
+    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -177,24 +171,24 @@ short yytable[] = {                                      10,
    15,    0,   15,   15,
 };
 short yycheck[] = {                                       1,
-    0,  259,    5,  261,    7,    4,  257,   53,  261,  260,
-  293,  293,  259,  282,  280,   14,   15,  273,  264,   21,
-   23,  273,   14,   15,  292,  259,  262,  261,  293,   32,
-   33,  267,  290,  291,  270,  290,  292,  290,  291,   42,
-  292,  263,  293,  290,  291,   91,   45,   46,   47,   48,
-   49,   50,   51,   52,  264,   54,  102,  291,  267,  272,
-   52,   64,   54,  293,   67,  262,  263,  264,  273,  264,
-  267,  264,  290,  270,  262,  263,  264,  274,  290,  267,
-  259,  292,  270,  264,   87,  271,  283,  273,  275,  293,
-  292,  277,  278,  263,  294,  281,  293,  264,  292,  101,
-  286,  287,  290,  271,  290,  264,  292,  293,  292,  277,
-  278,   84,  290,  281,   62,  292,   65,   83,  286,  287,
-  271,   -1,  290,   -1,  292,  293,  277,  278,   -1,   -1,
-  281,   -1,   -1,   -1,   -1,  286,  287,  258,   -1,  290,
-   -1,   -1,  293,   -1,  265,  266,  267,  268,  269,  262,
-   -1,   -1,   -1,   -1,  267,   -1,   -1,  270,   -1,  280,
-  276,  274,   -1,  279,   -1,   -1,   -1,   -1,  284,  285,
-  283,   -1,  288,  289,   -1,   -1,   -1,  293,   -1,   -1,
+    0,  259,    5,   53,    7,   14,   15,  261,  257,  273,
+  293,  260,    4,  293,  282,  259,  273,  261,  280,   21,
+   23,  264,   14,   15,  293,  290,  262,  264,  292,   32,
+   33,  267,  290,  291,  270,  292,  290,  291,  259,   42,
+  261,   91,  292,   52,  293,   54,  290,  291,   51,  263,
+  267,  293,  102,   45,   46,   47,   48,   49,   50,  272,
+   52,   64,   54,  259,   67,  261,  262,  263,  264,  273,
+  291,  267,  264,  264,  270,  262,  263,  264,  290,  290,
+  267,  258,  292,  270,   87,  259,  293,  274,  265,  266,
+  267,  268,  269,  292,  290,  291,  283,  264,  271,  101,
+  273,  263,  292,  280,  277,  278,  293,  275,  281,  264,
+  294,  292,  264,  286,  287,  271,  292,  290,  290,  292,
+  293,  277,  278,   84,   62,  281,   65,   83,   -1,   -1,
+  286,  287,  271,   -1,  290,   -1,  292,  293,  277,  278,
+   -1,  262,  281,   -1,   -1,   -1,  267,  286,  287,  270,
+   -1,  290,  276,  274,  293,  279,   -1,   -1,   -1,   -1,
+  284,  285,  283,   -1,  288,  289,   -1,   -1,   -1,  293,
+   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
    -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
@@ -260,7 +254,7 @@ char *yyrule[] = {
 "cond : arg1 _LANGLE_EQUALS arg1",
 "cond : arg1 _RANGLE arg1",
 "cond : arg1 _RANGLE_EQUALS arg1",
-"cond : arg1 IN arg1",
+"cond : arg1 IN args",
 "cond : _BANG cond",
 "cond : cond _AMPERAMPER cond",
 "cond : cond _BARBAR cond",
@@ -289,9 +283,12 @@ char *yyrule[] = {
 #ifndef YYSTYPE
 typedef int YYSTYPE;
 #endif
+#define yyclearin (yychar=(-1))
+#define yyerrok (yyerrflag=0)
 #ifdef YYSTACKSIZE
-#undef YYMAXDEPTH
+#ifndef YYMAXDEPTH
 #define YYMAXDEPTH YYSTACKSIZE
+#endif
 #else
 #ifdef YYMAXDEPTH
 #define YYSTACKSIZE YYMAXDEPTH
@@ -300,25 +297,39 @@ typedef int YYSTYPE;
 #define YYMAXDEPTH 500
 #endif
 #endif
-int yydebug;
-int yynerrs;
-int yyerrflag;
-int yychar;
+#define yystacksize YYSTACKSIZE
+#ifndef YYPRINTF
+#define YYPRINTF printf
+#endif
+#ifndef YYLEXCALL
+#define YYLEXCALL() yylex()
+#endif
+#ifndef YYTOKENERRORCALL
+#define YYTOKENERRORCALL() yyerror("syntax error")
+#endif
+#ifndef YYSTACKERRORCALL
+#define YYSTACKERRORCALL() yyerror("yacc stack overflow")
+#endif
+#ifndef YYINT
+#define YYINT int
+#endif
+YYINT yydebug;
+YYINT yynerrs;
+YYINT yyerrflag;
+YYINT yychar;
 short *yyssp;
 YYSTYPE *yyvsp;
 YYSTYPE yyval;
 YYSTYPE yylval;
 short yyss[YYSTACKSIZE];
 YYSTYPE yyvs[YYSTACKSIZE];
-#define yystacksize YYSTACKSIZE
 #define YYABORT goto yyabort
-#define YYREJECT goto yyabort
 #define YYACCEPT goto yyaccept
 #define YYERROR goto yyerrlab
-int
+YYINT
 yyparse()
 {
-    register int yym, yyn, yystate;
+    register YYINT yym, yyn, yystate;
 #if YYDEBUG
     register char *yys;
     extern char *getenv();
@@ -343,15 +354,15 @@ yyloop:
     if (yyn = yydefred[yystate]) goto yyreduce;
     if (yychar < 0)
     {
-        if ((yychar = yylex()) < 0) yychar = 0;
+        if ((yychar = YYLEXCALL()) < 0) yychar = 0;
 #if YYDEBUG
         if (yydebug)
         {
             yys = 0;
             if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
             if (!yys) yys = "illegal-symbol";
-            printf("%sdebug: state %d, reading %d (%s)\n",
-                    YYPREFIX, yystate, yychar, yys);
+            YYPRINTF("yydebug: state %d, reading %d (%s)\n", yystate,
+                    yychar, yys);
         }
 #endif
     }
@@ -360,8 +371,8 @@ yyloop:
     {
 #if YYDEBUG
         if (yydebug)
-            printf("%sdebug: state %d, shifting to state %d\n",
-                    YYPREFIX, yystate, yytable[yyn]);
+            YYPRINTF("yydebug: state %d, shifting to state %d\n",
+                    yystate, yytable[yyn]);
 #endif
         if (yyssp >= yyss + yystacksize - 1)
         {
@@ -384,7 +395,7 @@ yyloop:
     goto yynewerror;
 #endif
 yynewerror:
-    yyerror("syntax error");
+    YYTOKENERRORCALL();
 #ifdef lint
     goto yyerrlab;
 #endif
@@ -401,8 +412,8 @@ yyinrecovery:
             {
 #if YYDEBUG
                 if (yydebug)
-                    printf("%sdebug: state %d, error recovery shifting\
- to state %d\n", YYPREFIX, *yyssp, yytable[yyn]);
+                    YYPRINTF("yydebug: state %d, error recovery shifting\
+ to state %d\n", *yyssp, yytable[yyn]);
 #endif
                 if (yyssp >= yyss + yystacksize - 1)
                 {
@@ -416,8 +427,8 @@ yyinrecovery:
             {
 #if YYDEBUG
                 if (yydebug)
-                    printf("%sdebug: error recovery discarding state %d\n",
-                            YYPREFIX, *yyssp);
+                    YYPRINTF("yydebug: error recovery discarding state %d\n",
+                            *yyssp);
 #endif
                 if (yyssp <= yyss) goto yyabort;
                 --yyssp;
@@ -434,8 +445,8 @@ yyinrecovery:
             yys = 0;
             if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
             if (!yys) yys = "illegal-symbol";
-            printf("%sdebug: state %d, error recovery discards token %d (%s)\n",
-                    YYPREFIX, yystate, yychar, yys);
+            YYPRINTF("yydebug: state %d, error recovery discards token %d (%s)\n",
+                    yystate, yychar, yys);
         }
 #endif
         yychar = (-1);
@@ -444,8 +455,8 @@ yyinrecovery:
 yyreduce:
 #if YYDEBUG
     if (yydebug)
-        printf("%sdebug: state %d, reducing by rule %d (%s)\n",
-                YYPREFIX, yystate, yyn, yyrule[yyn]);
+        YYPRINTF("yydebug: state %d, reducing by rule %d (%s)\n",
+                yystate, yyn, yyrule[yyn]);
 #endif
     yym = yylen[yyn];
     yyval = yyvsp[1-yym];
@@ -677,7 +688,7 @@ case 54:
 #line 287 "jamgram.y"
 { yyval.list = yyvsp[0].list; }
 break;
-#line 681 "y.tab.c"
+#line 692 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;
@@ -687,23 +698,23 @@ break;
     {
 #if YYDEBUG
         if (yydebug)
-            printf("%sdebug: after reduction, shifting from state 0 to\
- state %d\n", YYPREFIX, YYFINAL);
+            YYPRINTF("yydebug: after reduction, shifting from state 0 to\
+ state %d\n", YYFINAL);
 #endif
         yystate = YYFINAL;
         *++yyssp = YYFINAL;
         *++yyvsp = yyval;
         if (yychar < 0)
         {
-            if ((yychar = yylex()) < 0) yychar = 0;
+            if ((yychar = YYLEXCALL()) < 0) yychar = 0;
 #if YYDEBUG
             if (yydebug)
             {
                 yys = 0;
                 if (yychar <= YYMAXTOKEN) yys = yyname[yychar];
                 if (!yys) yys = "illegal-symbol";
-                printf("%sdebug: state %d, reading %d (%s)\n",
-                        YYPREFIX, YYFINAL, yychar, yys);
+                YYPRINTF("yydebug: state %d, reading %d (%s)\n",
+                        YYFINAL, yychar, yys);
             }
 #endif
         }
@@ -717,8 +728,8 @@ break;
         yystate = yydgoto[yym];
 #if YYDEBUG
     if (yydebug)
-        printf("%sdebug: after reduction, shifting from state %d \
-to state %d\n", YYPREFIX, *yyssp, yystate);
+        YYPRINTF("yydebug: after reduction, shifting from state %d \
+to state %d\n", *yyssp, yystate);
 #endif
     if (yyssp >= yyss + yystacksize - 1)
     {
@@ -728,7 +739,7 @@ to state %d\n", YYPREFIX, *yyssp, yystate);
     *++yyvsp = yyval;
     goto yyloop;
 yyoverflow:
-    yyerror("yacc stack overflow");
+    YYSTACKERRORCALL();
 yyabort:
     return (1);
 yyaccept:
