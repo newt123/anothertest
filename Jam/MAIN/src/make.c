@@ -292,6 +292,7 @@ int	anyhow;		/* forcibly touch all (real) targets */
 		If up-to-date temp file present, use it.
 		If target exists but parent not, mark target newer.
 		If target newer than parent, mark target newer.
+		Don't propagate child's "newer" status.
 	*/
 
 	if( fate >= T_FATE_BROKEN )
@@ -333,6 +334,10 @@ int	anyhow;		/* forcibly touch all (real) targets */
 	else if( t->binding == T_BIND_EXISTS && ptime && t->time > ptime )
 	{
 	    fate = T_FATE_NEWER;
+	}
+	else if( fate == T_FATE_NEWER )
+	{
+	    fate = T_FATE_STABLE;
 	}
 
 	/* Step 3c: handle missing files */
