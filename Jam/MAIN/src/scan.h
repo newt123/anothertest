@@ -10,6 +10,7 @@
  * External functions:
  *
  *	yyerror( char *s ) - print a parsing error message
+ *	yyiparse( char *name, char **s ) - tell scanner to parse s
  *	yyfparse( char *s ) - tell the scanner to include file s
  *	yylex() - parse the next token, returning its type
  *	yymode() - adjust lexicon of scanner
@@ -39,6 +40,7 @@ typedef struct _YYSTYPE {
 extern YYSTYPE yylval;
 
 int yyerror();
+void yyiparse();
 void yyfparse();
 int yylex();
 void yymode();

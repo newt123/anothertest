@@ -38,11 +38,12 @@ struct keyword {
 
 struct include {
 	struct include *next;	/* next serial include file */
-	char 	*string;
-	FILE 	*file;
-	char 	*fname;
-	int 	line;
-	char 	buf[ 512 ];
+	char 	*string;	/* pointer into current line */
+	char	**strings;	/* for yyiparse() -- text to parse */
+	FILE 	*file;		/* for yyfparse() -- file being read */
+	char 	*fname;		/* for yyfparse() -- file name */
+	int 	line;		/* line counter for error messages */
+	char 	buf[ 512 ];	/* for yyfparse() -- line buffer */
 } ;
 
 static struct include *incp = 0; /* current file; head of chain */
@@ -71,12 +72,22 @@ char *s;
 }
 
 void
+yyiparse( name, s )
+char *name;
+char **s;
+{
+	yyfparse( name );
+	inci->strings = s;
+}
+
+void
 yyfparse( s )
 char *s;
 {
 	struct include *i = (struct include *)malloc( sizeof( *i ) );
 
 	i->string = "";
+	i->strings = 0;
 	i->file = 0;
 	i->fname = copystr( s );
 	i->line = 0;
@@ -129,6 +140,19 @@ yyline()
 	    if( *i->string )
 		return *i->string++;
 
+	    /* If we're reading from an internal string list, go to the */
+	    /* next string. */
+
+	    if( i->strings )
+	    {
+		if( !*i->strings )
+		    goto next;
+
+		i->line++;
+		i->string = *(i->strings++);
+		return *i->string++;
+	    }
+
 	    /* If necessary, open the file */
 
 	    if( !i->file )
@@ -150,6 +174,7 @@ yyline()
 		return *i->string++;
 	    }
 
+	next:
 	    /* Got to next sequential include. */
 
 	    incp = i->next;

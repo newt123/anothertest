@@ -18,6 +18,7 @@
  * 08/20/95 (seiwald) - added LINUX.
  * 08/21/95 (seiwald) - added NCR.
  * 10/23/95 (seiwald) - added SCO.
+ * 03/13/96 (seiwald) - Jambase now compiled in; remove JAMBASE variable.
  */
 
 # ifdef VMS
@@ -42,7 +43,6 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif 
 
 # define MAXCMD	255 /* longest command - related to quotas */
-# define JAMBASE "Jambase"
 # define SPLITPATH ','
 # define EXITOK 1
 # define EXITBAD 0
@@ -62,7 +62,6 @@ int unlink( char *f ); 	/* In filevms.c */
 # include <time.h>
 
 # define OTHERSYMS "NT=true","OS=NT"
-# define JAMBASE "Jambase"
 # define SPLITPATH ';'
 # define MAXCMD	996	/* longest command */
 # define EXITOK 0
@@ -146,9 +145,6 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "UNIX=true","OS=UNKNOWN"
 # endif
 
-# ifndef JAMBASE
-# define JAMBASE "/usr/local/lib/Jambase"
-# endif
 # define MAXCMD	10240	/* longest command */
 # define SPLITPATH ':'
 # define EXITOK 0

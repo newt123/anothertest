@@ -9,6 +9,10 @@ Changes since 2.1
     Header file includes now happen in the proper order.  The limit
     of 10 include files has been eliminated.
 
+    The Jambase is now compiled into jam, and so no longer needs
+    installing.  The plain Jambase can still be referenced explicitly 
+    with -f.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

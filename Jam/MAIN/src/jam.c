@@ -15,6 +15,7 @@
 # include "jam.h"
 # include "option.h"
 # include "make.h"
+# include "jambase.h"
 # ifdef FATFS
 # include "patchlev.h"
 # else
@@ -44,11 +45,12 @@
  *
  * The top half of the code is structured such:
  *
- *                       jam 
- *                      / | \
- *                 +---+  |  \
- *                /       |   \
- *         jamgram     option  \
+ *                        jam 
+ *                       -----
+ *                      / | \ \
+ *                 +---+  |  \ \
+ *                /       |   \ \
+ *         jamgram     jambase \ option
  *        /  |   \              \
  *       /   |    \              \
  *      /    |     \             |
@@ -91,6 +93,8 @@
  *	filevms.c - manipulate file names and scan directories on VMS
  *	hash.c - simple in-memory hashing routines 
  *	headers.c - handle #includes in source files
+ *	jambase.c - compilable copy of Jambase
+ *	jamgram.y - jam grammar
  *	lists.c - maintain lists of strings
  *	make.c - bring a target up to date, once rules are in place
  *	make1.c - execute command to bring targets up to date
@@ -103,7 +107,6 @@
  *	search.c - find a target along $(SEARCH) or $(LOCATE) 
  *	timestamp.c - get the timestamp of a file or archive member
  *	variable.c - handle jam multi-element variables
- *	jamgram.yy - jam grammar
  *
  * 05/04/94 (seiwald) - async multiprocess (-j) support
  * 02/08/95 (seiwald) - -n implies -d2.
@@ -219,7 +222,7 @@ char	**argv;
 
 	if( !n )
 	{
-	    yyfparse( JAMBASE );
+	    yyiparse( "internal jambase", jambase );
 	    yyparse();
 	}
 

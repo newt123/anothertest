@@ -19,10 +19,33 @@ LinkLibraries 	jam : libjam.a ;
 
 Library         libjam.a : 
 		    command.c compile.c $(code) expand.c
-		    glob.c hash.c headers.c jamgram.y
+		    glob.c hash.c headers.c jambase.c jamgram.y
 		    lists.c make.c make1.c newstr.c option.c parse.c
 		    regexp.c rules.c scan.c search.c timestamp.c
 		    variable.c ;
+
+rule GenFile {
+	Depends $(<) : $(>) ;
+}
+
+actions GenFile {
+	(
+	    echo '/* Generated from Jambase */' 
+	    echo 'char *jambase[] = {'
+
+	    sed '
+		/^[ 	]*#/d
+		/^$/d
+		s/\\/\\\\/g
+		s/"/\\"/g
+		s/^.*$/"&\\n",/
+		s/       /\\t/g' $(>)
+
+	    echo '0};'
+	) > $(<)
+}
+
+GenFile jambase.c : Jambase ;
 
 #
 # On UNIX, we install this stuff for easy use.
@@ -33,7 +56,6 @@ Library         libjam.a :
 if $(UNIX)
 {
 	InstallBin $(BINDIR) : jam ;
-	InstallLib $(LIBDIR) : Jambase ;
 	InstallMan $(MANDIR) : jam.1 Jambase.5 Jamfile.5 ;
 }
 
@@ -73,18 +95,18 @@ actions Groff
 	groff -Tps -man $(>) > $(<)
 }
 
-ALLSOURCE = 
+ALLSOURCE =
 	    README RELNOTES Build.com Jam.paper.ps Jambase Jamfile
-	    Jambase.5 Jambase.ps Jamfile.5 Jamfile.ps Makefile
-	    Porting command.c command.h compile.c compile.h execcmd.h
-	    execnt.c execunix.c execvms.c expand.c expand.h filent.c
-	    filesys.h fileunix.c filevms.c glob.c hash.c hash.h
-	    headers.c headers.h jam.1 jam.c jam.h jam.ps jamgram.c
+	    Jambase.5 Jambase.ps Jamfile.5 Jamfile.ps Makefile Porting
+	    command.c command.h compile.c compile.h execcmd.h execnt.c
+	    execunix.c execvms.c expand.c expand.h filent.c filesys.h
+	    fileunix.c filevms.c glob.c hash.c hash.h headers.c headers.h
+	    jam.1 jam.c jam.h jam.ps jambase.c jambase.h jamgram.c
 	    jamgram.h jamgram.y jamgramtab.h lists.c lists.h make.c
-	    make.h make1.c newstr.c newstr.h option.c option.h
-	    parse.c parse.h patchlevel.h regexp.c regexp.h rules.c
-	    rules.h scan.c scan.h search.c search.h timestamp.c
-	    timestamp.h variable.c variable.h ;
+	    make.h make1.c newstr.c newstr.h option.c option.h parse.c
+	    parse.h patchlevel.h regexp.c regexp.h rules.c rules.h scan.c
+	    scan.h search.c search.h timestamp.c timestamp.h variable.c
+	    variable.h ;
 
 TempCopy Jam.paper.ps : ../doc/jam.paper.ps ;
 Groff jam.ps : jam.1 ;
