@@ -164,7 +164,7 @@ char		*file;
 	    /* UNIX: Special case for dir \ : don't add another \ */
 	    /* NT:   Special case for dir / : don't add another / */
 
-	    if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == '\\' ) )
+	    if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == DELIM ) )
 		*file++ = DELIM;
 	}
 
