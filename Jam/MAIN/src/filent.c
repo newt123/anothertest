@@ -4,12 +4,16 @@
  * This file is part of Jam - see jam.c for Copyright information.
  */
 
-# ifdef NT
+# if defined( NT ) || defined( __OS2__ )
 
 # include "jam.h"
 # include "filesys.h"
 
 # include <io.h>
+
+# ifdef __OS2__
+# include <dos.h>
+# endif
 
 /*
  * fileunix.c - manipulate file names and scan directories on UNIX
@@ -187,7 +191,11 @@ void	(*func)();
 	char filename[ MAXPATH ];
 	long handle;
 	int ret;
-	struct _finddata_t fileinfo[1];
+# ifndef __OS2__
+	struct _finddata_t finfo[1];
+# else /* OS2 */
+	struct _find_t finfo[1];
+# endif /* OS2 */
 
 	/* First enter directory itself */
 
@@ -210,24 +218,47 @@ void	(*func)();
 	if( DEBUG_BINDSCAN )
 	    printf( "scan directory %s\n", dir );
 
-	handle = _findfirst( filespec, fileinfo );
+# ifndef __OS2__
+	handle = _findfirst( filespec, finfo );
 
 	if( ret = ( handle < 0L ) )
 	    return;
 
 	while( !ret )
 	{
-	    f.f_base.ptr = fileinfo->name;
-	    f.f_base.len = strlen( fileinfo->name );
+	    f.f_base.ptr = finfo->name;
+	    f.f_base.len = strlen( finfo->name );
 
 	    file_build( &f, filename );
 
-	    (*func)( filename, 1 /* stat()'ed */, fileinfo->time_write );
+	    (*func)( filename, 1 /* stat()'ed */, finfo->time_write );
 
-		ret = _findnext( handle, fileinfo );
+	    ret = _findnext( handle, finfo );
 	}
 
 	_findclose( handle );
+
+# else /* OS2 */
+
+	/* Time info in dos find_t is not very useful.  It consists */
+	/* of a separate date and time, and putting them together is */
+	/* not easy.  So we leave that to a later stat() call. */
+
+	if( !_dos_findfirst( filespec, _A_NORMAL|_A_RDONLY|_A_SUBDIR, finfo ) )
+	{
+	    do
+	    {
+		f.f_base.ptr = finfo->name;
+		f.f_base.len = strlen( finfo->name );
+
+		file_build( &f, filename );
+
+		(*func)( filename, 0 /* not stat()'ed */, (time_t)0 );
+	    }
+	    while( !_dos_findnext( finfo ) );
+	}
+
+# endif /* OS2 */
 }
 
 /*
@@ -239,6 +270,16 @@ file_time( filename, time )
 char	*filename;
 time_t	*time;
 {
+	/* This is called on OS2, not NT.  */
+	/* NT fills in the time in the dirscan. */
+
+	struct stat statbuf;
+
+	if( stat( filename, &statbuf ) < 0 )
+	    return -1;
+
+	*time = statbuf.st_mtime;
+
 	return 0;
 }
 

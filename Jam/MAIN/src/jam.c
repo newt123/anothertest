@@ -120,7 +120,10 @@ struct globs globs = {
 /* Symbols to be defined as true for use in Jambase */
 
 static char *othersyms[] = { OTHERSYMS, JAMVERSYM, 0 } ;
+
+# ifndef __OS2__
 extern char **environ;
+# endif
 
 main( argc, argv )
 char	**argv;

@@ -82,7 +82,7 @@ struct hash
 } ;
 
 static hashrehash();
-int hashstat();
+void hashstat();
 
 /*
  * hashitem() - find a record in the table, and optionally enter a new one
@@ -229,6 +229,7 @@ struct hash *hp;
 
 /* ---- */
 
+void
 hashstat( hp )
 struct hash *hp;
 {

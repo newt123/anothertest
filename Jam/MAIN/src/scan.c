@@ -64,6 +64,7 @@ int n;
 	scanmode = n;
 }
 
+void
 yyerror( s )
 char *s;
 {

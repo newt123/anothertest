@@ -6,9 +6,9 @@
 # We have some different files for UNIX, VMS, and NT.
 #
 
-if $(NT) 	{ code = execnt.c filent.c ; } 
-else if $(VMS) 	{ code = execvms.c filevms.c ; } 
-else 		{ code = execunix.c fileunix.c ; }
+if $(NT) || $(OS2)	{ code = execnt.c filent.c ; } 
+else if $(VMS) 		{ code = execvms.c filevms.c ; } 
+else 			{ code = execunix.c fileunix.c ; }
 
 if $(OS) = SOLARIS { CCFLAGS += -Dsolaris ; }
 

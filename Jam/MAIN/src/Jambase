@@ -297,6 +297,39 @@ else if $(NT)
     }
 
 }
+else if $(OS2)
+{
+    	CP		default = copy ;
+	DOT		default	= . ;
+	DOTDOT		default	= .. ;
+	MKDIR		default = mkdir ;
+    	MV		default = move ;
+    	RM		default = del /f ;
+    	SLASH		default = \\ ;
+    	SUFLIB		default = .lib ;
+    	SUFOBJ		default = .obj ;
+    	SUFEXE		default = .exe ;
+     
+    if ! $(watcom)
+    {
+	EXIT On OS2, set watcom to the root of the Watcom directory. ;
+    }
+
+	ECHO "OS2 compiler is Watcom." ;
+
+	AR		default = wlib ;
+	CC		default = wcc386 ;
+	CCFLAGS		default = /zq /DOS2 /I$(watcom)\\h ; # zq=quiet
+	C++		default = $(CC) ;
+	C++FLAGS	default = $(CCFLAGS) ;
+	LINK		default = wcl386 ;
+	LINKFLAGS	default = /zq ; # zq=quiet
+	LINKLIBS	default = ;
+	NOLIBSCAN	default = true ;
+	OPTIM		default = ;
+	STDHDRS		default = $(watcom)\\h ;
+	UNDEFFLAG	default = "/u _" ;
+}
 else if $(VMS)
 {
 	AS		default = as ;
@@ -692,7 +725,7 @@ rule Object
 	# yacc, lex, etc) are located in $(LOCATE_TARGET), possibly
 	# different from $(SEARCH_SOURCE).
 
-	HDRS on $(<) = $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
+	HDRS on $(<) = $(SEARCH_SOURCE) $(HDRS) $(SUBDIRHDRS) ;
 
 	# handle #includes for source: Jam scans for headers with
 	# the regexp pattern $(HDRSCAN) and then invokes $(HDRRULE)
@@ -1221,7 +1254,7 @@ if $(UNIX)
 	}
     }
 }
-else if $(NT)
+else if $(NT) || $(OS2)
 {
     if $(BCCROOT)
     {
@@ -1299,6 +1332,28 @@ else if $(NT)
 	actions Link
 	{
 	$(LINK) $(LINKFLAGS) /out:$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	}
+    }
+    else if $(watcom)
+    {
+	actions updated together piecemeal Archive
+	{
+	$(AR) $(<) +-$(>) 
+	}
+
+	actions Cc
+	{
+	$(CC) $(CCFLAGS) $(OPTIM) /Fo=$(<) /I$(HDRS) $(>)
+	}
+
+	actions C++
+	{
+	$(C++) $(C++FLAGS) $(OPTIM) /Fo=$(<) /I$(HDRS) /Tp$(>)
+	}
+
+	actions Link
+	{
+	$(LINK) $(LINKFLAGS) /Fe=$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
     }
 

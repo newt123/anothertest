@@ -138,7 +138,7 @@ char *s, *e, *b;
 	{
 		int i;
 		for( i = 0; i < BITLISTSIZE; i++ )
-			b[ i ] ^= -1;
+			b[ i ] ^= 0377;
 	}
 
 	/* Don't include \0 in either $[chars] or $[^chars] */

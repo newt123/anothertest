@@ -4,7 +4,7 @@
  * This file is part of Jam - see jam.c for Copyright information.
  */
 
-# ifdef NT
+# if defined( NT ) || defined( __OS2__ )
 
 # include "jam.h"
 # include "execcmd.h"

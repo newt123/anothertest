@@ -39,7 +39,7 @@ typedef struct _YYSTYPE {
 
 extern YYSTYPE yylval;
 
-int yyerror();
+void yyerror();
 void yyiparse();
 void yyfparse();
 int yylex();
