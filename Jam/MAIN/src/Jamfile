@@ -73,7 +73,10 @@ actions YYacc
 	sh yyacc $(>) $(<)
 }
 
-YYacc jamgram.y jamgramtab.h : jamgram.yy ;
+if $(UNIX)
+{
+	YYacc jamgram.y jamgramtab.h : jamgram.yy ;
+}
 
 rule TempCopy
 {
