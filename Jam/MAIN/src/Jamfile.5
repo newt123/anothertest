@@ -225,6 +225,9 @@ Main xviewer : viewer.c ;
 CcAddFlags viewer.c : -DXVERSION ;
 CcAddHdrs viewer.c : /usr/include/X11 ;
 .XE
+.PP
+Actually, the file suffix (\fB.c\fR in this case) is ignored: the
+rules know to refer to the object.
 .SH HEADER FILE PROCESSING
 .PP
 One of the functions of the \fIObject\fR rule is to scan source files
