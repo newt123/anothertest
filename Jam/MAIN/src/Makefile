@@ -6,6 +6,9 @@ CFLAGS =
 
 # Special flavors - uncomment appropriate lines
 
+# NCR seems to have a broken readdir() -- use gnu
+#CC = gcc
+
 # Solaris 2.0 seem not to have any identifying cpp symbol
 #CFLAGS = -Dsolaris
 

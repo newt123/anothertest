@@ -1264,22 +1264,21 @@ if $(UNIX)
 	actions C++
 	{
 	[ $(>:S) != .C ] && $(CP) $(>) $(>:S=.C) && trap "rm -f $(>:S=.C)" 0
-	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>:S=.C)
+	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) $(>:S=.C)
 	}
     } 
-    else 
-    {
-	actions C++
-	{
-	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
-	}
-    }
-
-    if $(RELOCATE)
+    else if $(RELOCATE)
     {
 	actions C++
 	{
 	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) $(>)
+	}
+    }
+    else
+    {
+	actions C++
+	{
+	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
 	}
     }
 
