@@ -23,6 +23,15 @@ struct _list {
 	char	*string;	/* private copy */
 } ;
 
+typedef struct _lol LOL;
+
+# define LOL_MAX 9
+
+struct _lol {
+	int	count;
+	LIST	*list[ LOL_MAX ];
+} ;
+
 LIST	*list_append();
 LIST 	*list_copy();
 LIST 	*list_new();
@@ -33,3 +42,9 @@ LIST	*list_sublist();
 # define list_next( l ) ((l)->next)
 
 # define L0 ((LIST *)0)
+
+void	lol_init();
+void	lol_add();
+void	lol_free();
+LIST	*lol_get();
+void	lol_print();

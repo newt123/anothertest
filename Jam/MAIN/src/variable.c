@@ -110,17 +110,16 @@ char **e;
  */
 
 LIST *
-var_list( ilist, targets, sources )
+var_list( ilist, lol )
 LIST	*ilist;
-LIST	*targets;
-LIST	*sources;
+LOL	*lol;
 {
 	LIST *olist = 0;
 
 	while( ilist )
 	{
 	    char *s = ilist->string;
-	    olist = var_expand( olist, s, s + strlen(s), targets, sources, 1 );
+	    olist = var_expand( olist, s, s + strlen(s), lol, 1 );
 	    ilist = list_next( ilist );
 	}
 
@@ -135,11 +134,10 @@ LIST	*sources;
  */
 
 int
-var_string( in, out, targets, sources )
+var_string( in, out, lol )
 char	*in;
 char	*out;
-LIST	*targets;
-LIST	*sources;
+LOL	*lol;
 {
 	char 	*out0 = out;
 
@@ -171,7 +169,7 @@ LIST	*sources;
 	    {
 		LIST	*l;
 
-		l = var_expand( L0, lastword, out, targets, sources, 0 );
+		l = var_expand( L0, lastword, out, lol, 0 );
 
 		out = lastword;
 

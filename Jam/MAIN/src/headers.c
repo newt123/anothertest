@@ -47,7 +47,7 @@ TARGET *t;
 	LIST	*hdrscan;
 	LIST	*hdrrule;
 	LIST	*headlist = 0;
-	PARSE	p[1];
+	PARSE	p[3];
 	regexp	*re[ MAXINC ];
 	int	rec = 0;
 	char	*fname = t->boundname ? t->boundname : t->name;
@@ -70,17 +70,24 @@ TARGET *t;
 	/* Doctor up call to HDRRULE rule */
 	/* Call headers1() to get LIST of included files. */
 
-	p->llist = list_new( L0, t->name );
-	p->rlist = headers1( headlist, fname, rec, re );
-	p->string = hdrrule->string;
+	p[0].string = hdrrule->string;
+	p[0].left = &p[1];
+	p[1].llist = list_new( L0, t->name );
+	p[1].left = &p[2];
+	p[2].llist = headers1( headlist, fname, rec, re );
+	p[2].left = 0;
 
-	if( p->rlist )
-	    compile_rule( p, L0, L0 );
+	if( p[2].llist )
+	{
+	    LOL lol0;
+	    lol_init( &lol0 );
+	    compile_rule( p, &lol0 );
+	}
 
 	/* Clean up */
 
-	list_free( p->llist );
-	list_free( p->rlist );
+	list_free( p[1].llist );
+	list_free( p[2].llist );
 
 	while( rec )
 	    free( (char *)re[--rec] );

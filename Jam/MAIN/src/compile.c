@@ -135,12 +135,11 @@ compile_builtins()
  */
 
 void
-compile_foreach( parse, targets, sources )
+compile_foreach( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	LIST	*nv = var_list( parse->llist, targets, sources );
+	LIST	*nv = var_list( parse->llist, args );
 	LIST	*l;
 
 	/* Call var_set to reset $(parse->string) for each val. */
@@ -151,7 +150,7 @@ LIST		*sources;
 
 	    var_set( parse->string, val, VAR_SET );
 
-	    (*parse->left->func)( parse->left, targets, sources );
+	    (*parse->left->func)( parse->left, args );
 	}
 
 	list_free( nv );
@@ -166,17 +165,16 @@ LIST		*sources;
  */
 
 void
-compile_if( parse, targets, sources )
+compile_if( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	PARSE	*then = parse->right;
 
-	if( evaluate_if( parse->left, targets, sources ) )
-	    (*then->left->func)( then->left, targets, sources );
+	if( evaluate_if( parse->left, args ) )
+	    (*then->left->func)( then->left, args );
 	else if( then->right )
-	    (*then->right->func)( then->right, targets, sources );
+	    (*then->right->func)( then->right, args );
 }
 
 /*
@@ -188,10 +186,9 @@ LIST		*sources;
  */
 
 static int
-evaluate_if( parse, targets, sources )
+evaluate_if( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	int	status;
 
@@ -202,17 +199,17 @@ LIST		*sources;
 	    switch( parse->num )
 	    {
 	    case COND_NOT:
-		status = !evaluate_if( parse->left, targets, sources );
+		status = !evaluate_if( parse->left, args );
 		break;
 
 	    case COND_AND:
-		status = evaluate_if( parse->left, targets, sources ) &&
-			 evaluate_if( parse->right, targets, sources );
+		status = evaluate_if( parse->left, args ) &&
+			 evaluate_if( parse->right, args );
 		break;
 
 	    case COND_OR:
-		status = evaluate_if( parse->left, targets, sources ) ||
-			 evaluate_if( parse->right, targets, sources );
+		status = evaluate_if( parse->left, args ) ||
+			 evaluate_if( parse->right, args );
 		break;
 	    }
 	}
@@ -222,8 +219,8 @@ LIST		*sources;
 	    /* Expand targets and sources */
 
 	    LIST *nt, *ns;
-	    nt = var_list( parse->llist, targets, sources );
-	    ns = var_list( parse->rlist, targets, sources );
+	    nt = var_list( parse->llist, args );
+	    ns = var_list( parse->rlist, args );
 
 	    /* "a in b" make sure each of a is equal to something in b. */
 	    /* Otherwise, step through pairwise comparison. */
@@ -300,13 +297,11 @@ LIST		*sources;
  */
 
 void
-compile_include( parse, targets, sources )
+compile_include( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	LIST	*nt = var_list( parse->llist, targets, sources );
-	TARGET	*t;
+	LIST	*nt = var_list( parse->llist, args );
 
 	if( DEBUG_COMPILE )
 	{
@@ -342,10 +337,9 @@ LIST		*sources;
  */
 
 void
-compile_local( parse, targets, sources )
+compile_local( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	LIST *l;
 	SETTINGS *s = 0;
@@ -368,7 +362,7 @@ LIST		*sources;
 	pushsettings( s );
 
 	if( parse->left )
-	    (*parse->left->func)( parse->left, targets, sources );
+	    (*parse->left->func)( parse->left, args );
 
 	popsettings( s );
 
@@ -379,30 +373,35 @@ LIST		*sources;
  * compile_rule() - compile a single user defined rule
  *
  *	parse->string	name of user defined rule
- *	parse->llist	target of rule
- *	parse->rlist	sources of rule
+ *	parse->left	parameters (list of lists) to rule, recursing left
  */
 
 void
-compile_rule( parse, targets, sources )
+compile_rule( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	LIST 	*nt = var_list( parse->llist, targets, sources );
-	LIST 	*ns = var_list( parse->rlist, targets, sources );
 	RULE	*rule = bindrule( parse->string );
+	LOL	nargs[1];
+	PARSE	*p;
+
+	/* Build up the list of arg lists */
+
+	lol_init( nargs );
+
+	for( p = parse->left; p; p = p->left )
+	    lol_add( nargs, var_list( p->llist, args ) );
 
 	if( DEBUG_COMPILE )
 	{
 	    debug_compile( 1, parse->string );
-	    list_print( nt );
-	    printf( " : " );
-	    list_print( ns );
+	    lol_print( nargs );
 	    printf( "\n" );
 	}
 
-	if( !nt )
+	/* Check traditional targets $(<) and sources $(>) */
+
+	if( !lol_get( nargs, 0 ) )
 	    printf( "warning: no targets on rule %s %s\n",
 		    rule->name, parse->llist ? parse->llist->string : "" );
 
@@ -423,8 +422,8 @@ LIST		*sources;
 	    memset( (char *)action, '\0', sizeof( *action ) );
 
 	    action->rule = rule;
-	    action->targets = targetlist( (TARGETS *)0, nt );
-	    action->sources = targetlist( (TARGETS *)0, ns );
+	    action->targets = targetlist( (TARGETS *)0, lol_get( nargs, 0 ) );
+	    action->sources = targetlist( (TARGETS *)0, lol_get( nargs, 1 ) );
 
 	    /* Append this action to the actions of each target */
 
@@ -435,10 +434,9 @@ LIST		*sources;
 	/* Now recursively compile any parse tree associated with this rule */
 
 	if( rule->procedure )
-	    (*rule->procedure->func)( rule->procedure, nt, ns );
+	    (*rule->procedure->func)( rule->procedure, nargs );
 
-	list_free( nt );
-	list_free( ns );
+	lol_free( nargs );
 
 	if( DEBUG_COMPILE )
 	    debug_compile( -1, 0 );
@@ -452,16 +450,15 @@ LIST		*sources;
  */
 
 void
-compile_rules( parse, targets, sources )
+compile_rules( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	if( parse->left )
-	    (*parse->left->func)( parse->left, targets, sources );
+	    (*parse->left->func)( parse->left, args );
 
 	if( parse->right )
-	    (*parse->right->func)( parse->right, targets, sources );
+	    (*parse->right->func)( parse->right, args );
 }
 
 /*
@@ -473,13 +470,12 @@ LIST		*sources;
  */
 
 void
-compile_set( parse, targets, sources )
+compile_set( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	LIST	*nt = var_list( parse->llist, targets, sources );
-	LIST	*ns = var_list( parse->rlist, targets, sources );
+	LIST	*nt = var_list( parse->llist, args );
+	LIST	*ns = var_list( parse->rlist, args );
 	LIST	*l;
 	int	setflag;
 	char	*trace = "";
@@ -523,10 +519,9 @@ LIST		*sources;
  */
 
 void
-compile_setcomp( parse, targets, sources )
+compile_setcomp( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	RULE	*rule = bindrule( parse->string );
 
@@ -555,10 +550,9 @@ LIST		*sources;
  */
 
 void
-compile_setexec( parse, targets, sources )
+compile_setexec( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	RULE	*rule = bindrule( parse->string );
 	
@@ -581,19 +575,18 @@ LIST		*sources;
  */
 
 void
-compile_settings( parse, targets, sources )
+compile_settings( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	LIST	*nt = var_list( parse->left->llist, targets, sources );
-	LIST	*ns = var_list( parse->left->rlist, targets, sources );
-	LIST	*ts;
+	LIST	*nt = var_list( parse->left->llist, args );
+	LIST	*ns = var_list( parse->left->rlist, args );
+	LIST	*targets, *ts;
 	int	append = parse->num == ASSIGN_APPEND;
 
 	/* Reset targets */
 
-	targets = var_list( parse->llist, targets, sources );
+	targets = var_list( parse->llist, args );
 
 	if( DEBUG_COMPILE )
 	{
@@ -639,14 +632,13 @@ LIST		*sources;
  */
 
 void
-compile_switch( parse, targets, sources )
+compile_switch( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
 	LIST	*nt;
 
-	nt = var_list( parse->llist, targets, sources );
+	nt = var_list( parse->llist, args );
 
 	if( DEBUG_COMPILE )
 	{
@@ -663,7 +655,7 @@ LIST		*sources;
 	    {
 		/* Get & exec parse tree for this case */
 		parse = parse->left->left;
-		(*parse->func)( parse, targets, sources );
+		(*parse->func)( parse, args );
 		break;
 	    }
 	}
@@ -682,13 +674,14 @@ LIST		*sources;
  */
 
 static void
-builtin_depends( parse, targets, sources )
+builtin_depends( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
+	LIST *targets = lol_get( args, 0 );
+	LIST *sources = lol_get( args, 1 );
+	int which = parse->num;
 	LIST *l;
-	int  which = parse->num;
 
 	for( l = targets; l; l = list_next( l ) )
 	{
@@ -705,12 +698,11 @@ LIST		*sources;
  */
 
 static void
-builtin_echo( parse, targets, sources )
+builtin_echo( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	list_print( targets );
+	list_print( lol_get( args, 0 ) );
 	printf( "\n" );
 }
 
@@ -722,12 +714,11 @@ LIST		*sources;
  */
 
 static void
-builtin_exit( parse, targets, sources )
+builtin_exit( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	list_print( targets );
+	list_print( lol_get( args, 0 ) );
 	printf( "\n" );
 	exit( EXITBAD ); /* yeech */
 }
@@ -740,14 +731,13 @@ LIST		*sources;
  */
 
 static void
-builtin_flags( parse, targets, sources )
+builtin_flags( parse, args )
 PARSE		*parse;
-LIST		*targets;
-LIST		*sources;
+LOL		*args;
 {
-	LIST *l;
+	LIST *l = lol_get( args, 0 );
 
-	for( l = targets; l; l = list_next( l ) )
+	for( ; l; l = list_next( l ) )
 	    bindtarget( l->string )->flags |= parse->num;
 }
 

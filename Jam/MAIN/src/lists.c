@@ -30,7 +30,7 @@
  * properly be appended to the end of a list.
  *
  * To avoid massive allocation, list_free() just tacks the whole freed
- * chain onto freelist and list_new() looks on freelist first for an 
+ * chain onto freelist and list_new() looks on freelist first for an
  * available list struct.  list_free() does not free the strings in the 
  * chain: it lazily lets list_new() do so.
  *
@@ -170,4 +170,54 @@ LIST	*l;
 {
 	for( ; l; l = list_next( l ) )
 	    printf( "%s ", l->string );
+}
+
+void
+lol_init( lol )
+LOL	*lol;
+{
+	lol->count = 0;
+}
+
+void
+lol_add( lol, l )
+LOL	*lol;
+LIST	*l;
+{
+	if( lol->count < LOL_MAX )
+	    lol->list[ lol->count++ ] = l;
+}
+
+void
+lol_free( lol )
+LOL	*lol;
+{
+	int i;
+
+	for( i = 0; i < lol->count; i++ )
+	    list_free( lol->list[i] );
+
+	lol->count = 0;
+}
+
+LIST *
+lol_get( lol, i )
+LOL	*lol;
+int	i;
+{
+	return i < lol->count ? lol->list[i] : 0;
+}
+
+void
+lol_print( lol )
+LOL	*lol;
+{
+	int i;
+
+	for( i = 0; i < lol->count; i++ )
+	{
+	    if( i )
+		printf( " : " );
+	    list_print( lol->list[i] );
+	}
 }

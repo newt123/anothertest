@@ -45,12 +45,11 @@ static void	var_mods();
  */
 
 LIST *
-var_expand( l, in, end, targets, sources, cancopyin )
+var_expand( l, in, end, lol, cancopyin )
 LIST	*l;
 char	*in;
 char	*end;
-LIST	*targets;
-LIST	*sources;
+LOL	*lol;
 int	cancopyin;
 {
 	char out_buf[ MAXSYM ];
@@ -66,11 +65,16 @@ int	cancopyin;
 
 	if( in[0] == '$' && in[1] == '(' && in[3] == ')' && !in[4] )
 	{
-	    if( in[2] == '<' )
-		return list_copy( l, targets );
+	    switch( in[2] )
+	    {
+	    case '1':
+	    case '<':
+		return list_copy( l, lol_get( lol, 0 ) );
 
-	    if( in[2] == '>' )
-		return list_copy( l, sources );
+	    case '2':
+	    case '>':
+		return list_copy( l, lol_get( lol, 1 ) );
+	    }
 	}
 
 	/* Just try simple copy of in to out. */
@@ -158,9 +162,9 @@ int	cancopyin;
 	    /* Recursively expand variable name & rest of input */
 
 	    if( out < ov )
-		variables = var_expand( L0, out, ov, targets, sources, 0 );
+		variables = var_expand( L0, out, ov, lol, 0 );
 	    if( in < end )
-		remainder = var_expand( L0, in, end, targets, sources, 0 );
+		remainder = var_expand( L0, in, end, lol, 0 );
 
 	    /* Now produce the result chain */
 
@@ -200,14 +204,24 @@ int	cancopyin;
 		    *bracket = '\0';
 		}
 
-		/* Get variable value, specially handling $(<) and $(>) */
+		/* Get variable value, specially handling $(<), $(>), $(n) */
 		
 		if( varname[0] == '<' && !varname[1] )
-		    value = targets;
+		{
+		    value = lol_get( lol, 0 );
+		}
 		else if( varname[0] == '>' && !varname[1] )
-		    value = sources;
+		{
+		    value = lol_get( lol, 1 );
+		}
+		else if( varname[0] >= '1' && varname[0] <= '9' && !varname[1] )
+		{
+		    value = lol_get( lol, varname[0] - '1' );
+		}
 		else 
+		{
 		    value = var_get( varname );
+		}
 
 		/* The fast path: $(x) - just copy the variable value. */
 

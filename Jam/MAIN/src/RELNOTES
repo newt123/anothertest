@@ -22,6 +22,12 @@ Changes since 2.1
     Variables local to the current context may be declared at the top
     of a block (just after a {) with "local var ... ;"
 
+    Rules may be invoked with more than just targets and sources, i.e.
+    there may be more than one : in a rule invocation.  These parameters 
+    are called $(1), $(2), $(3), etc, and $(<) and $(>) are synonymous 
+    with $(1) and $(2).  Actions can still only take two sets parameters,
+    i.e. $(<) and $(>).
+
 Release notes for Jam 2.1.
 
 1.  Release info:

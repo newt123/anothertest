@@ -48,11 +48,13 @@ LIST	*shell;
 	CMD *cmd = (CMD *)malloc( sizeof( CMD ) );
 
 	cmd->rule = rule;
-	cmd->targets = targets;
-	cmd->sources = sources;
 	cmd->shell = shell;
 
-	len = var_string( rule->actions, cmd->buf, targets, sources );
+	lol_init( &cmd->args );
+	lol_add( &cmd->args, targets );
+	lol_add( &cmd->args, sources );
+
+	len = var_string( rule->actions, cmd->buf, &cmd->args );
 	
 	if( len > MAXCMD )
 	{
@@ -77,9 +79,7 @@ void
 cmd_free( cmd )
 CMD	*cmd;
 {
-	list_free( cmd->sources );
-	list_free( cmd->targets );
+	lol_free( &cmd->args );
 	list_free( cmd->shell );
-
 	free( (char *)cmd );
 }

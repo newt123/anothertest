@@ -28,9 +28,8 @@ struct _cmd
 	CMD	*next;
 	CMD	*tail;		/* valid on in head */
 	RULE	*rule;		/* rule->actions contains shell script */
-	LIST	*targets;	/* LIST for $(<) */
-	LIST	*sources;	/* LIST for $(>) */
 	LIST	*shell;		/* $(SHELL) value */
+	LOL	args;		/* LISTs for $(<), $(>) */
 	char	buf[ MAXCMD ];	/* actual commands */
 } ;
 

@@ -274,7 +274,7 @@ TARGET	*t;
 	    if( cmd->rule->flags & RULE_QUIETLY ? DEBUG_MAKEQ : DEBUG_MAKE )
 	    {
 		printf( "%s ", cmd->rule->name );
-		list_print( cmd->targets );
+		list_print( lol_get( &cmd->args, 0 ) );
 		printf( "\n" );
 	    }
 
@@ -356,7 +356,7 @@ int	status;
 	if( status == EXEC_CMD_FAIL && DEBUG_MAKE )
 	{
 	    printf( "...failed %s ", cmd->rule->name );
-	    list_print( cmd->targets );
+	    list_print( lol_get( &cmd->args, 0 ) );
 	    printf( "...\n" );
 	}
 
@@ -364,7 +364,7 @@ int	status;
 	/* is not "precious", remove the targets */
 
 	if( status != EXEC_CMD_OK && !( cmd->rule->flags & RULE_TOGETHER ) )
-	    make1remove( cmd->targets );
+	    make1remove( lol_get( &cmd->args, 0 ) );
 
 	t->status = status;
 	t->cmds = (char *)cmd_next( cmd );
@@ -483,16 +483,23 @@ LIST	*sources;
 	int onesize;
 	int onediff;
 	int chunk = 0;
-	LIST *somes;
 	char buf[ MAXCMD ];
+	LOL lol;
 
-	somes = list_sublist( sources, 0, 1 );
-	onesize = var_string( cmd, buf, targets, somes );
-	list_free( somes );
+	/* XXX -- egregious manipulation of lol */
+	/* a) we set items directly, b) we don't free it */
 
-	somes = list_sublist( sources, 0, 2 );
-	onediff = var_string( cmd, buf, targets, somes ) - onesize;
-	list_free( somes );
+	lol_init( &lol );
+	lol.count = 2;
+	lol.list[0] = targets;
+
+	lol.list[1] = list_sublist( sources, 0, 1 );
+	onesize = var_string( cmd, buf, &lol );
+	list_free( lol.list[1] );
+
+	lol.list[1] = list_sublist( sources, 0, 2 );
+	onediff = var_string( cmd, buf, &lol ) - onesize;
+	list_free( lol.list[1] );
 
 	if( onediff > 0 )
 	    chunk = 3 * ( MAXCMD - onesize ) / 5 / onediff + 1;
