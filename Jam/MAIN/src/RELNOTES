@@ -32,8 +32,8 @@ Changes since 2.1
     This is a compromise between the normal -d1 behavior (where commands
     were never seen) and -d2 (where commands are always seen).
 
-    The NT command executor now handles multiple line actions, by sending
-    the actions one line at time to the DOS shell.
+    The NT command executor now handles multiple line actions, by writing
+    multi-line actions to a batch file and executing that.
 
     Jam now exits non-zero if it doesn't have a total success.  A parse
     error, sources that can't be found, and targets that can't be built
@@ -132,6 +132,11 @@ Changes since 2.1
     New variable modifier :P reliably gets to parent directory of either
     a file or directory.  Previously, :D was used, but on VMS :D of a 
     directory name is just the directory name.
+
+    VMS support is much, much better now.  The path name manipulation
+    routines (in pathvms.c) were more or less rewritten, and they now
+    handle the vagaries of combining directory and file names
+    properly.
 
 Release notes for Jam 2.1.
 
