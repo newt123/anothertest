@@ -180,8 +180,11 @@ if $(UNIX)
 	{
 	AR		default = wlib ;
 	CC		default = cc ;
+	CCFLAGS		default = -Q ;	# quiet
 	C++		default = $(CC) ;
+	C++FLAGS	default = -Q ;	# quiet
 	LINK		default = $(CC) ;
+	LINKFLAGS	default = -Q ;	# quiet
 	NOARSCAN	default = true ;
 	RANLIB		default = "" ;
 	}
