@@ -111,14 +111,10 @@ int	anyhow;
 	    make0( t, T_BIND_UNBOUND, (time_t)0, 0, counts, anyhow );
 	}
 
-	if( DEBUG_MAKEQ )
+	if( DEBUG_MAKE )
 	{
 	    if( counts->targets )
 		printf( "...found %d target(s)...\n", counts->targets );
-	}
-
-	if( DEBUG_MAKE )
-	{
 	    if( counts->temp )
 		printf( "...using %d temp target(s)...\n", counts->temp );
 	    if( counts->updating )
