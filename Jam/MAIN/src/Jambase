@@ -141,6 +141,7 @@ if $(UNIX)
 {
 	AR		default = ar ru ;
 	AS		default = as ;
+	AWK		default = awk ;
 	ASFLAGS		default = ;
 	BINDIR		default = /usr/local/bin ;
 	C++		default = gcc ;
@@ -841,7 +842,7 @@ if $(UNIX)
 
     actions Shell
     {
-	awk '
+	$(AWK) '
 		NR == 1 { print "$(SHELLHEADER)" }
 		NR == 1 && /^[#:]/ { next }
 		/^##/ { next }
