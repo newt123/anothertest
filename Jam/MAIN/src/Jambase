@@ -201,6 +201,7 @@ else if $(NT)
     	CP		default = copy ;
 	DOT		default	= . ;
 	DOTDOT		default	= .. ;
+	MKDIR		default = mkdir ;
     	MV		default = move ;
 	OS			= NT ;		# replace Windows_NT
     	RM		default = del/f/q ;
@@ -219,13 +220,36 @@ else if $(NT)
 	CCFLAGS		default = -v -w-  ;
 	C++		default = bcc32 ;
 	C++FLAGS	default = -v -w- ;
-	RW		default = $(BCCROOT)\\lib\\rw ;
-	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
 	NOLIBSCAN	default = true ;
+    }
+    else if $(MSVC)
+    {
+	ECHO "Compiler is Microsoft Visual C++ 16 bit" ;
+
+	AR		default = lib /nologo ;
+	CC		default = cl /nologo ;
+	CCFLAGS		default = /D \"WIN\" ;
+	C++		default = $(CC) ;
+	C++FLAGS	default = $(CCLFAGS) ;
+	LINK		default = $(CC) ;
+	LINKFLAGS	default = $(CCFLAGS) ;
+	LINKLIBS	default = 
+				#$(MSVC)\\lib\\advapi32.lib
+				#$(MSVC)\\lib\\libcmt.lib
+				$(MSVC)\\lib\\mlibce.lib
+				#$(MSVC)\\lib\\slibce.lib
+				$(MSVC)\\lib\\oldnames.lib
+				#$(MSVC)\\lib\\kernel32.lib 
+				;
+	LINKLIBS	default = ;
+	NOLIBSCAN	default = true ;
+	OPTIM		default =  ;
+	STDHDRS		default = $(MSVC)\\include ;
+	UNDEFFLAG	default = "/u _" ;
     }
     else if $(MSVCNT)
     {
@@ -237,8 +261,6 @@ else if $(NT)
 	C++		default = $(CC) ;
 	C++FLAGS	default = $(CCLFAGS) ;
 	CRELIB		default = true ;
-	RW		default = $(MSVCNT)\\lib\\rw ;
-	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
 	LINKLIBS	default = $(MSVCNT)\\lib\\advapi32.lib
@@ -259,8 +281,6 @@ else if $(NT)
 	CCFLAGS		default = /D \"NT\" ;
 	C++		default = $(CC) ;
 	C++FLAGS	default = $(CCLFAGS) ;
-	RW		default = $(Mstools)\\lib\\rw ;
-	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
 	LINKLIBS	default = $(Mstools)\\lib\\advapi32.lib
@@ -274,7 +294,7 @@ else if $(NT)
     }
     else
     {
-	EXIT On NT, set BCCROOT, MSVCNT, or Mstools to the root of the
+	EXIT On NT, set BCCROOT, MSVCNT, MSVC, or Mstools to the root of the
 		Borland or Microsoft directories. ;
     }
 
@@ -1130,6 +1150,28 @@ else if $(NT)
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o$(<) $(>)
         }
     }
+    else if $(MSVC) 
+    {
+	actions updated together piecemeal Archive
+	{
+	$(AR) $(<) -+$(>) ;
+	}
+
+	actions Cc
+	{
+	$(CC) /c $(CCFLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) $(>)
+	}
+
+	actions C++
+	{
+	$(C++) /c $(C++FLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /Tp$(>)
+	}
+
+	actions Link
+	{
+	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	}
+    }
     else if $(MSVCNT) || $(Mstools)
     {
 	actions updated together piecemeal Archive
@@ -1176,6 +1218,11 @@ else if $(NT)
     actions File
     {
 	copy $(>) $(<)
+    }
+
+    actions MkDir1
+    {
+	$(MKDIR) $(<)
     }
 
     actions quietly updated piecemeal together RmTemps
