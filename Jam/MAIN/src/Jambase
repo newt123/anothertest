@@ -167,7 +167,7 @@ case NCR :	RANLIB default = "" ;
 		INSTALL default = "" ;
 case PTX :	RANLIB default = "" ;
 case QNX :	INSTALL default = "" ;
-case SCO :	RANLIB default = "" ;
+case SCO :	RANLIB default = "" ; RELOCATE = true ;
 case SINIX :	RANLIB default = "" ; RELOCATE = true ;
 case SOLARIS :	RANLIB default = "" ;
 		INSTALL default = "install" ;
@@ -1274,9 +1274,25 @@ if $(UNIX)
 	}
     }
 
+    if $(RELOCATE)
+    {
+	actions C++
+	{
+	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) $(>)
+	}
+    }
+
     actions Cc
     {
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
+    }
+
+    if $(RELOCATE)
+    {
+	actions Cc
+	{
+	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) $(>)
+	}
     }
 
     actions CcMv
