@@ -281,7 +281,8 @@ HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 # Base dependencies - first for "bootstrap" kinds of rules
 #
 
-DEPENDS all : first shell files lib exe ;
+DEPENDS all : shell files lib exe ;
+DEPENDS all shell files lib exe : first ;
 NOTFILE all first shell files lib exe dirs clean uninstall ;
 ALWAYS clean uninstall ;
 

@@ -5,6 +5,7 @@ FreeBSD in jam.h.
 Install -c in Jambase - FreeBSD does move without -c.
 && for File in Jambase.
 Clean for File rule in Jambase.
+'first' is dependency of all pseudo-targets
 
 Release notes for Jam 2.0.
 
