@@ -105,7 +105,7 @@ actions Shar
 }
 
 ALLSOURCE = 
-	    README Build.com CHANGES Jambase Jamfile Jamfile.5
+	    README RELNOTES Build.com Jambase Jamfile Jamfile.5
 	    Jamfile.ps Makefile Paper.ps Porting command.c command.h
 	    compile.c compile.h execcmd.h execnt.c execunix.c execvms.c
 	    expand.c expand.h filent.c filesys.h fileunix.c filevms.c
