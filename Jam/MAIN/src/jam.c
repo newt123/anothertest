@@ -15,6 +15,7 @@
 # include "jam.h"
 # include "option.h"
 # include "make.h"
+# include "patchlevel.h"
 
 /*
  * jam.c - make redux
@@ -88,6 +89,7 @@
  *
  * 05/04/94 (seiwald) - async multiprocess (-j) support
  * 02/08/95 (seiwald) - -n implies -d2.
+ * 02/22/95 (seiwald) - -v for version info.
  */
 
 struct globs globs = {
@@ -102,7 +104,7 @@ static char *othersyms[] = { OTHERSYMS, 0 } ;
 extern char **environ;
 
 char *usage = 
-	"jam -na -j<jobs> -f<Jambase> -d<debuglevel> -t<target>... target...";
+	"jam -anv -j<jobs> -f<Jambase> -d<debuglevel> -t<target>... target...";
 
 main( argc, argv )
 char	**argv;
@@ -115,13 +117,24 @@ char	**argv;
 
 	argc--, argv++;
 
-	if( ( n = getoptions( argc, argv, "d:j:f:t:na", optv ) ) < 0 )
+	if( ( n = getoptions( argc, argv, "d:j:f:t:anv", optv ) ) < 0 )
 	{
 		printf( "usage: %s\n", usage );
 		exit( EXITBAD );
 	}
 
 	argc -= n, argv += n;
+
+	/* Version info. */
+
+	if( ( s = getoptval( optv, 'v', 0 ) ) )
+	{
+	    printf( "Jam - make(1) redux.  " );
+	    printf( "Version %s.%s.  ", VERSION, PATCHLEVEL );
+	    printf( "Copyright 1993, 1995 Christopher Seiwald.\n" );
+
+	    return EXITOK;
+	}
 
 	/* Pick up interesting options */
 
