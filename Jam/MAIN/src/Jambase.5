@@ -132,7 +132,8 @@ rule invoked on \fItargets\fR.  Used internally by \fBObject\fR.
 Sets the setuid bit on \fIimage\fR after linking.
 .RP "Shell image : source ;"
 Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR.
-Dependent of \fIshell\fR.
+Ensures that the first line of the script is $(SHELLHEADER) (default
+\fI#!/bin/sh\fR).  Dependent of \fIshell\fR.
 .RP "Undefines image : symbols ;"
 Tries to convince the loader that symbols need to be "undefined" for
 the linking of \fIimage\fR.

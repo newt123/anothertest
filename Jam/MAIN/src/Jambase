@@ -19,6 +19,7 @@
 # 		     - Rule names downshifted.
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
 # 10/14/94 (seiwald) - (Crude) support for .s, .C, .cc, .cpp, and .f files.
+# 01/08/94 (seiwald) - Shell now handled with awk, not sed
 
 # Rules defined by this file:
 #
@@ -48,7 +49,7 @@
 # Objects sources ;			compile sources
 # RmTemps target : sources ;		remove temp sources after target made
 # Setuid image ;			mark an executable Setuid
-# Shell exe : source ;			install a shell executable
+# Shell exe : source ;			make a shell executable
 # Undefines image : symbols ;		save undef's for linking
 # UserObject object : source ;		handle unknown suffixes for Object
 # Yacc source.c : source.y ; 		.y -> .c
@@ -533,10 +534,13 @@ rule Shell
 
 actions Shell
 {
-	( 
-	echo "$(SHELLHEADER)"
-	sed '1d;/^##/d' $(>)
-	) > $(<)
+	awk '
+		NR == 1 { print "$(SHELLHEADER)" }
+		NR == 1 && /^[#:]/ { next }
+		/^##/ { next }
+		{ print }
+	' < $(>) > $(<)
+
 	chmod $(SHELLMODE) $(<)
 }
 
@@ -556,6 +560,11 @@ rule InstallLib
 	    Install $(i:D=$(LIBDIR)) : $(i) ;
 	    INSTALLMODE on $(i:D=$(LIBDIR)) = $(FILEMODE) ;
 	}
+}
+
+rule InstallLibDir
+{
+	INSTALLLIBDIR = $(<) ;
 }
 
 rule InstallMan
