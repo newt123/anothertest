@@ -209,6 +209,19 @@ int	anyhow;
 	}
 
 	/* Step 3b: determine fate: rebuild target or what? */
+	/* 
+	    In English:
+		If can't find or make child, can't make target.
+		If children changed, make target.
+		If target still unbound (i.e. NOTFILE), make it.
+		If target missing, make it.
+		If children newer, make target.
+		If temp's children newer, make temp.
+		If deliberately touched, make it.
+		If up-to-date temp file present, use it.
+	*/
+
+
 	/* If children newer than target or */
 	/* If target doesn't exist, rebuild.  */
 
@@ -217,6 +230,10 @@ int	anyhow;
 	    fate = T_FATE_CANTMAKE;
 	}
 	else if( fate > T_FATE_STABLE )
+	{
+	    fate = T_FATE_UPDATE;
+	}
+	else if( t->binding == T_BIND_UNBOUND )
 	{
 	    fate = T_FATE_UPDATE;
 	}
@@ -232,13 +249,13 @@ int	anyhow;
 	{
 	    fate = T_FATE_OUTDATED;
 	}
-	else if( t->binding == T_BIND_EXISTS && t->flags & T_FLAG_TEMP )
-	{
-	    fate = T_FATE_ISTMP;
-	}
 	else if( t->flags & T_FLAG_TOUCHED || anyhow )
 	{
 	    fate = T_FATE_TOUCHED;
+	}
+	else if( t->binding == T_BIND_EXISTS && t->flags & T_FLAG_TEMP )
+	{
+	    fate = T_FATE_ISTMP;
 	}
 
 	/* Step 3c: handle missing files */
