@@ -1,39 +1,111 @@
-Release notes for Jam 2.1.
+Release notes for Jammin 2.1.
 
-Nasty little bug in compile.c w.r.t setting variables fixed: if the first
-two variable names (or target names for on target) were the same, the 
-variable value got trashed.
+1.  Release info:
+	Jammin 2.1
+	January 1, 1996
+	VERSION 2.1
+	PATCHLEVEL 0
 
-Failed actions now delete the targets.
-InstallFIle an alias for InstallLib.
-NOUPDATE immune to -a (anyhow) flag, so jam -a works on MkDir.
-wording for 'actions existing' in jam.1
-linux in jam.h
-Semicolon typo in filent.c.
-FreeBSD in jam.h.
-Install -c in Jambase - FreeBSD does move without -c.
-&& for File in Jambase.
-Clean for File rule in Jambase.
-'first' is dependency of all pseudo-targets
-allow for OS to be Windows_NT
-NOSCANLIB and other BCC changes for NT (lauraw).
-NEXT support from karthy@dannug.dk (Karsten Thygesen
-DECC support. zinser@axp614.gsi.de Martin P.J. Zinser
-AIX now uses fork instead of vfork
-SPLITPATH now set up for UNIX (:), NT (;), VMS (,)
-SubDir now computes TOP.
-filent.c no longer skips first dir entry.
-Support for Mstools.
-Support for string table archives under msc.
-C++ support in msc.
-warning for NT if root variables not set.
-Jamgram.h included after scan.h so YYSTYPE is defined on Linux.
-SCO ("M_XENIX") now supported.
-Solaris install doesn't take a -c.
-Solaris AR now hardwired into /usr/ccs/bin/ar
-$(JAM) variable now set to 2.0.
-No longer says "-1 targets" after interrupt.
+	N.B. As of this release, this package is named "Jammin" to
+	avoid conflict with JYACC's JAM product.  The command name
+	and manual pages remain unchanged.
 
+2.  Porting
+
+	Linux is now supported.
+
+	FreeBSD is now supported.
+
+	SCO ("M_XENIX") now supported.
+
+	NCR now supported.
+
+	NEXT support from karthy@dannug.dk (Karsten Thygesen)
+
+	DECC support from zinser@axp614.gsi.de (Martin P.J. Zinser)
+
+	I have changes for OS/2, but no way to test them.  Volunteers?
+	I have VMS multiprocess support, but no way to test it.  Volunteers?
+
+2.1.  NT Support fixes.
+
+	The NT support is considerably more real than it was in 2.0.
+	Filent.c had its syntax error corrected, it no longer skips the
+	first entry when scanning directories, and it handles string
+	tables in archives (for long object file names).
+
+	The Jambase was changed a bit to support the various C/C++
+	compilers on NT, although it has only been thorougly tested
+	with MSVC20.
+
+	You still need to set MSVCNT or BCCROOT to the root of the 
+	the compiler's directory tree, and you'll get an error if you
+	don't set it (rather than getting a pile of mysterious errors).
+
+2.2.  Other porting fixes.
+
+	SPLITPATH now set up for UNIX (:), NT (;), VMS (,)
+
+	Jambase support for Solaris works better now: the location of
+	AR is hardwired to /usr/ccs/bin/ar and it knowns "install"
+	doesn't take -c.  Solaris -- how the mighty have fallen.
+
+	To handle Linux's wacko yacc, jamgram.h is now included after
+	scan.h so that YYSTYPE is define.
+
+4.  Changes from Jam 1.0 to Jam 2.0
+
+4.1.  Documentation changes
+
+4.2.  Jambase Changes (see Jamfile.5)
+
+	SubDir now computes the root directory for the source tree, if
+	the variable naming the root directory isn't set in the environment.
+	It counts the number of directory elements leading from the root
+	to the current directory (as passed to SubDir) and uses that many
+	"../"'s to identify the root.  This means that to use SubDir you
+	no longer have to have anything special set in the environment.
+
+	InstallFile is now an alias for InstallLib.
+
+	'first' is now dependency of all pseudo-targets (all, files, 
+	exe, lib, shell), so that jamming any of these pseudo-targets
+	also builds any dependencies of 'first'.
+
+	The File rule definition in the Jambase was missing an &.
+
+	The File rule now calls the Clean rule, so that installed files
+	get cleaned.
+
+4.3.  Jam changes (see jam.1)
+
+	Targets marked with NOUPDATE are now immune to the -a (anyhow) 
+	flag.  Previously, the MkDir rule would try to recreate directories
+	that already exist when jam was invoked with -a.
+
+	A new variable, $(JAM), joins the small list of built-in variables.
+	It it set to the release of jam, currently "2.1".
+
+	If an actions fails, jam now deletes the target(s).  It won't
+	delete libraries or other targets that are composites.  This is
+	now consistent with jam's behavior on interrupts (it deletes the
+	targets).
+
+	Jam had a nasty bug when setting multiple variables to the same
+	value:  if the first two variable names were the same, the variable
+	value got trashed.  This also affected "on target" variables if
+	the first two targets were the same.  For example:
+
+		FOO on bar.c bar.c foo.c = a b c ;
+
+	This would mangle the value of FOO for bar.c and foo.c.  This has
+	been fixed.
+
+	Jam would generate bogus numbers when reporting the number of
+	targets updated after an interrupt.  It now is more careful about
+	counting.
+
+
 Release notes for Jam 2.0.
 
 1.  Release info:
