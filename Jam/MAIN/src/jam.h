@@ -46,7 +46,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "VMS=true","OS=VMS"
 # endif 
 
-# define MAXCMD	1024 /* longest command - related to quotas */ /* dwd 14-dec-1996 */
+# define MAXLINE 1024 /* longest command - related to quotas */ /* dwd 14-dec-1996 */
 # define SPLITPATH ','
 # define EXITOK 1
 # define EXITBAD 0
@@ -69,14 +69,14 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "NT=true","OS=NT","OSPLAT=PPC"
 # else
 # ifdef _ALPHA_
-# define OTHERSYMS "NT=true","OS=NT","OSPLAT=AXP"
+# define OTHERSYMS "NT=true","OS=NT","OSPLAT=ALPHA"
 # else 
 # define OTHERSYMS "NT=true","OS=NT","OSPLAT=X86"
 # endif /* _ALPHA_ */
 # endif /* _PPC_ */
 
 # define SPLITPATH ';'
-# define MAXCMD	996	/* longest command */
+# define MAXLINE 996	/* longest command */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -95,7 +95,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "OS2=true","OS=OS2"
 # define SPLITPATH ';'
-# define MAXCMD	996	/* longest command */
+# define MAXLINE 996	/* longest command */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -116,7 +116,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "UNIX=true","OS=QNX"
 # define SPLITPATH ':'
-# define MAXCMD	996	/* longest command */
+# define MAXLINE 996	/* longest command */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -237,7 +237,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "UNIX=true","OS=UNKNOWN"
 # endif
 
-# define MAXCMD	10240	/* longest command */
+# define MAXLINE 10240	/* longest command */
 # define SPLITPATH ':'
 # define EXITOK 0
 # define EXITBAD 1
@@ -259,6 +259,8 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define MAXJOBS 64	/* silently enforce -j limit */
 # define MAXARGC 32	/* words in $(JAMSHELL) */
+
+# define CMDBUF 10240	/* size of command blocks */
 
 /* Jam private definitions below. */
 

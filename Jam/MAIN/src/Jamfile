@@ -3,6 +3,16 @@
 #
 # There are no user-serviceable parts in this file.
 #
+# Some sections have been hidden because their targets are in
+# managed files, and overwriting them unecessarily causes
+# problems. To reveal them:
+#
+#	- set DO_GRAMMAR if you want make new jamgram.* files
+#
+#	- set DO_JAMBASE if you want jam to make new jambase.c
+#
+# 	- set DO_INSTALL if you want to install jam in $(BINDIR)
+#	  and the man pages in $(MANDIR)
 
 # Put executables in platform-specific  subdirectory.
 # If $(OSVER) isn't set, second value is used.
@@ -30,6 +40,10 @@ else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; }
 else if $(MAC)	{ code = execmac.c filemac.c pathmac.c ; }
 else 		{ code = execunix.c fileunix.c pathunix.c ; }
 
+if $(DO_GRAMMAR) { code += jamgram.y ; }
+else             { code += jamgram.c ; }
+
+
 if $(OS) = NT { CCFLAGS += /DNT ; }
 if $(OS) = MVS { CCFLAGS += -DMVS ; }
 if $(OS)$(OSVER) = AIX41 { CCFLAGS += -D_AIX41 ; }
@@ -46,11 +60,15 @@ Main		mkjambase : mkjambase.c ;
 
 Main 		jam : jam.c jambase.c ;
 LinkLibraries 	jam : libjam.a ;
-GenFile 	jambase.c : mkjambase Jambase ;
+
+if $(DO_JAMBASE)
+{
+    GenFile 	jambase.c : mkjambase Jambase ;
+}
 
 Library         libjam.a : 
 		    command.c compile.c $(code) expand.c
-		    glob.c hash.c headers.c jamgram.y
+		    glob.c hash.c headers.c 
 		    lists.c make.c make1.c newstr.c option.c parse.c
 		    regexp.c rules.c scan.c search.c timestamp.c
 		    variable.c ;
@@ -61,7 +79,7 @@ Library         libjam.a :
 # On NT, you're on your own.
 #
 
-if $(UNIX)
+if $(UNIX) && $(DO_INSTALL)
 {
 	InstallBin $(BINDIR) : jam ;
 	InstallMan $(MANDIR) : jam.1 Jambase.5 Jamfile.5 ;
@@ -69,7 +87,7 @@ if $(UNIX)
 
 #### --- cut
 
-if $(UNIX)
+if $(UNIX) && $(DO_GRAMMAR)
 {
 	GenFile jamgram.y jamgramtab.h : yyacc jamgram.yy ;
 }

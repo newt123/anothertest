@@ -457,8 +457,8 @@ ACTIONS	*a0;
 	    boundvars = make1settings( rule->bindlist );
 	    pushsettings( boundvars );
 
-	    /* If rule is to be cut into (at most) MAXCMD pieces, estimate */
-	    /* bytes per $(>) element and aim for using MAXCMD minus a */
+	    /* If rule is to be cut into (at most) MAXLINE pieces, estimate */
+	    /* bytes per $(>) element and aim for using MAXLINE minus a */
 	    /* fudgefactor. */
 
 	    if( rule->flags & RULE_PIECEMEAL )
@@ -468,8 +468,8 @@ ACTIONS	*a0;
 
 	    if( chunk < 0 )
 	    {
-		printf( "fatal error: %s command too long (max %d)\n", 
-			rule->name, MAXCMD );
+		printf( "fatal error: %s command line too long (max %d)\n", 
+			rule->name, MAXLINE );
 		exit( EXITBAD );
 	    }
 
@@ -521,7 +521,7 @@ LIST	*sources;
 	int onesize;
 	int twosize;
 	int chunk = 0;
-	char buf[ MAXCMD ];
+	char buf[ MAXLINE ];
 	LOL lol;
 
 	/* XXX -- egregious manipulation of lol */
@@ -532,21 +532,21 @@ LIST	*sources;
 	lol.list[0] = targets;
 
 	lol.list[1] = list_sublist( sources, 0, 1 );
-	onesize = var_string( cmd, buf, MAXCMD, &lol );
+	onesize = var_string( cmd, buf, MAXLINE, &lol );
 	list_free( lol.list[1] );
 
 	if( onesize < 0 )
 	    return -1;
 
 	lol.list[1] = list_sublist( sources, 0, 2 );
-	twosize = var_string( cmd, buf, MAXCMD, &lol );
+	twosize = var_string( cmd, buf, MAXLINE, &lol );
 	list_free( lol.list[1] );
 
 	if( twosize < 0 )
 	    return -1;
 
 	if( twosize > onesize )
-	    chunk = 3 * ( MAXCMD - onesize ) / 5 / ( twosize - onesize ) + 1;
+	    chunk = 3 * ( MAXLINE - onesize ) / 5 / ( twosize - onesize ) + 1;
 
 	return chunk;
 }

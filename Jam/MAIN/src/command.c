@@ -54,12 +54,12 @@ LIST	*shell;
 	lol_add( &cmd->args, targets );
 	lol_add( &cmd->args, sources );
 
-	len = var_string( rule->actions, cmd->buf, MAXCMD, &cmd->args );
+	len = var_string( rule->actions, cmd->buf, CMDBUF, &cmd->args );
 	
 	if( len < 0 )
 	{
-	    printf( "fatal error: %s command too long (max %d)\n", 
-		rule->name, MAXCMD );
+	    printf( "fatal error: %s command block too long (max %d)\n", 
+		rule->name, CMDBUF );
 	    exit( EXITBAD );
 	}
 
