@@ -1308,10 +1308,7 @@ if $(UNIX)
 
     actions Link bind NEEDLIBS
     {
-	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) 
-	then :
-	else $(RM) $(<) && exit 1
-	fi
+	$(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) 
     }
 
     actions MkDir1
@@ -1360,7 +1357,7 @@ else if $(NT) || $(OS2)
 
 	actions Link bind NEEDLIBS
 	{
-	$(LINK) -e$(<) $(LINKFLAGS) $(UNDEFS) -L$(LINKLIBS) $(NEEDLIBS) $(>) || $(RM) $(<)
+	$(LINK) -e$(<) $(LINKFLAGS) $(UNDEFS) -L$(LINKLIBS) $(NEEDLIBS) $(>)
 	}
 
 	actions updated together piecemeal Archive
