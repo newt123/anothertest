@@ -28,6 +28,7 @@
 # 01/10/95 (seiwald) - All entries sorted.
 # 01/10/95 (seiwald) - NT support moved in, with LauraW's help.
 # 02/06/95 (seiwald) - ObjectC++Flags and SubDirC++Flags added.
+# 02/07/95 (seiwald) - Iron out when HDRSEARCH uses "" or SEARCH_SOURCE.
 
 # Special targets defined in this file:
 #
@@ -251,7 +252,7 @@ else if $(VMS)
 	RM		default = delete ;
 	SHELLMODE	default = (w:er) ;
 	SLASH		default = . ;
-	STDHDRS		default = "" decc$library_include ;
+	STDHDRS		default = decc$library_include ;
 	SUFLIB		default = .olb ;
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
@@ -537,9 +538,22 @@ rule Object
 	# with the scanned file as the target and the found headers
 	# as the sources.  HDRSEARCH is just grist for HdrRule.
 
+	# HDRLOCAL is where cc first looks for #include "foo.h" files.
+	# If the source file is in a distant directory, look there.
+	# Else, look in "" (the current directory).
+
+	if $(SEARCH_SOURCE)
+	{
+	    HDRLOCAL = $(SEARCH_SOURCE) ;
+	}
+	else
+	{
+	    HDRLOCAL = "" ;
+	}
+
 	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
-	HDRSEARCH on $(>) = $(STDHDRS) $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
+	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(HDRLOCAL) $(STDHDRS) ;
 
 	# if source is not .c, generate .c with specific rule
 
