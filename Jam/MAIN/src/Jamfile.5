@@ -524,7 +524,22 @@ ObjectCcFlags w.c : -DW_CODE ;
 .XE
 .PP
 This compiles two different programs, w and uptime, from the same
-source file with different C compiler flags.
+source file with different C compiler flags.  Another use of 
+\fIMainFromObjects\fR is when there are no objects at all, and
+everything is to be loaded from libraries.
+.XB
+MainFromObjects testprog ;
+LinkLibraries testprog : libprog.a ;
+Library libprog.a : main.c util.c ;
+.XE
+This generates a link command that looks like this:
+.BB
+cc -o testprog libprog.a
+.BE
+.PP
+Linking purely from libraries is something that doesn't work everywhere:
+it depends on the symbol "main" being undefined when the linker encounters
+the library that contains the definition of "main".  
 .SS Variables
 .PP
 The following variables control the compiling of source files.
@@ -944,7 +959,7 @@ Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR.
 Ensures that the first line of the script is $(SHELLHEADER) (default
 \fI#!/bin/sh\fR).  Dependent of \fIshell\fR.
 .RP "Undefines image : symbols ;"
-Tries to convince the loader that symbols need to be "undefined" for
+Tries to convince the linker that symbols need to be "undefined" for
 the linking of \fIimage\fR.
 .RP "UserObject object : source ;"
 Complains that the suffix on \fIsource\fR is unknown.  This rule is called
