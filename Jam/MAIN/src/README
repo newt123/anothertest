@@ -54,13 +54,13 @@ INFORMATION GUIDE
     Jamfile.ps
 
     Paper.ps    The 1994 UNIX Application Development Symposium paper 
-		on jam (reflects Release 1 - see RELNOTES).
+		on jam (reflects Release 1 - see RELNOTES for diffs).
 
     RELNOTES	Release 2.0 release notes.
 
     Porting	Notes on porting jam to wildcat platforms.
 
-    README	This file: installation instructions.
+    README	This file.  Includes installation instructions.
 
     jam.c	Contains jam's main() as well as an introduction to the 
 		code, for serious hackers.

@@ -376,8 +376,14 @@ rule Install
 	DEPENDS install : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
+
+	# depend upon and create the directory
+
 	DEPENDS $(<) : $(<:D) ;
 	MkDir $(<:D) ;
+
+	# Arrange for jam uninstall
+
 	Clean uninstall : $(<) ;
 }
 
