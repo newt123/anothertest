@@ -169,6 +169,7 @@ case SINIX :	RANLIB default = "" ; RELOCATE = true ;
 case SOLARIS :	RANLIB default = "" ;
 		INSTALL default = "install" ;
 		AR default = "/usr/ccs/bin/ar ru" ;
+case UNIXWARE :	RANLIB default = "" ; RELOCATE = true ;
 }
 
 if $(OS) = SUNOS && $(TZ)
@@ -278,7 +279,7 @@ else if $(NT)
 	CC		default = cl /nologo ;
 	CCFLAGS		default = /D \"WIN\" ;
 	C++		default = $(CC) ;
-	C++FLAGS	default = $(CCLFAGS) ;
+	C++FLAGS	default = $(CCFLAGS) ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
 	LINKLIBS	default = 

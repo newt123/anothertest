@@ -63,7 +63,12 @@ int unlink( char *f ); 	/* In filevms.c */
 # include <string.h>
 # include <time.h>
 
-# define OTHERSYMS "NT=true","OS=NT"
+# ifdef _ALPHA_
+# define OTHERSYMS "NT=true","OS=NT","OSVER=ALPHA"
+# else 
+# define OTHERSYMS "NT=true","OS=NT","OSVER=X86"
+# endif /* _ALPHA_ */
+
 # define SPLITPATH ';'
 # define MAXCMD	996	/* longest command */
 # define EXITOK 0
@@ -189,6 +194,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif
 # ifdef ultrix
 # define OTHERSYMS "UNIX=true","OS=ULTRIX"
+# endif
+# ifdef __USLC__
+# define OTHERSYMS "UNIX=true","OS=UNIXWARE"
 # endif
 # ifndef OTHERSYMS
 # define OTHERSYMS "UNIX=true","OS=UNKNOWN"
