@@ -7,11 +7,12 @@
 #
 
 if $(NT) 	{ code = execnt.c filent.c pathunix.c ; } 
-if $(OS2)	{ code = execnt.c fileos2.c pathunix.c ; } 
+else if $(OS2)	{ code = execnt.c fileos2.c pathunix.c ; } 
 else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; } 
 else 		{ code = execunix.c fileunix.c pathunix.c ; }
 
 if $(OS) = SOLARIS { CCFLAGS += -Dsolaris ; }
+if $(OS) = NT { CCFLAGS += /DNT ; }
 
 #
 # The guts of the Jamfile: how to build Jam

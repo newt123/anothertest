@@ -130,7 +130,7 @@ char *jambase[] = {
 "ECHO \"Compiler is Microsoft Visual C++\" ;\n",
 "AR		default = lib /nologo ;\n",
 "CC		default = cl /nologo ;\n",
-"CCFLAGS		default = /D \\\"NT\\\" ;\n",
+"CCFLAGS		default = /I$(MSVCNT)\\\\include ;\n",
 "C++		default = $(CC) ;\n",
 "C++FLAGS	default = $(CCFLAGS) ;\n",
 "CRELIB		default = true ;\n",

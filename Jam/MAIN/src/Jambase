@@ -294,7 +294,7 @@ else if $(NT)
 
 	AR		default = lib /nologo ;
 	CC		default = cl /nologo ;
-	CCFLAGS		default = /D \"NT\" ;
+	CCFLAGS		default = /I$(MSVCNT)\\include ;
 	C++		default = $(CC) ;
 	C++FLAGS	default = $(CCFLAGS) ;
 	CRELIB		default = true ;
