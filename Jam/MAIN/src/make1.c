@@ -495,7 +495,7 @@ LIST	*sources;
 	list_free( somes );
 
 	if( onediff > 0 )
-	    chunk = 3 * ( MAXCMD - onesize ) / 4 / onediff + 1;
+	    chunk = 3 * ( MAXCMD - onesize ) / 5 / onediff + 1;
 
 	return chunk;
 }

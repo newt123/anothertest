@@ -57,7 +57,7 @@ LIST	*shell;
 	if( len > MAXCMD )
 	{
 	    /* Can't do much here - we just blew our buffer! */
-	    printf( "fatal error: command too long\n" );
+	    printf( "fatal error: command too long (%d>%d)\n", len, MAXCMD );
 	    exit( EXITBAD );
 	}
 
