@@ -67,7 +67,7 @@ struct _action {
 	RULE	*rule;
 	TARGETS	*targets;
 	TARGETS	*sources;		/* aka $(>) */
-	char	progress;		/* see TARGET progress */
+	char	running;		/* has been started */
 	char	status;			/* see TARGET status */
 } ;
 
@@ -140,8 +140,9 @@ struct _target {
 
 # define	T_MAKE_INIT	0	/* make1(target) not yet called */
 # define	T_MAKE_ONSTACK	1	/* make1(target) on stack */
-# define	T_MAKE_RUNNING	2	/* make1(target) in execcmd() */
-# define	T_MAKE_DONE	3	/* make1(target) done */
+# define	T_MAKE_ACTIVE	2	/* make1(target) in make1b() */
+# define	T_MAKE_RUNNING	3	/* make1(target) running commands */
+# define	T_MAKE_DONE	4	/* make1(target) done */
 
 	char	status;			/* execcmd() result */
 

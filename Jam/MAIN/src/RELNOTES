@@ -32,6 +32,7 @@ SCO ("M_XENIX") now supported.
 Solaris install doesn't take a -c.
 Solaris AR now hardwired into /usr/ccs/bin/ar
 $(JAM) variable now set to 2.0.
+No longer says "-1 targets" after interrupt.
 
 Release notes for Jam 2.0.
 

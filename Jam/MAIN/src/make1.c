@@ -72,6 +72,7 @@ static struct {
 	int	failed;
 	int	skipped;
 	int	total;
+	int	made;
 } counts[1] ;
 
 /*
@@ -95,18 +96,16 @@ TARGET *t;
 	while( execwait() )
 	    ;
 
-	if( DEBUG_MAKE )
-	{
-	    int failed = counts->failed - counts->skipped;
-	    int made = counts->total - counts->failed;
+	/* Talk about it */
 
-	    if( failed )
-		printf( "...failed updating %d target(s)...\n", failed );
-	    if( counts->skipped )
-		printf( "...skipped %d target(s)...\n", counts->skipped );
-	    if( made )
-		printf( "...updated %d target(s)...\n", made );
-	}
+	if( DEBUG_MAKE && counts->failed )
+	    printf( "...failed updating %d target(s)...\n", counts->failed );
+
+	if( DEBUG_MAKE && counts->skipped )
+	    printf( "...skipped %d target(s)...\n", counts->skipped );
+
+	if( DEBUG_MAKE && counts->made )
+	    printf( "...updated %d target(s)...\n", counts->made );
 }
 
 /*
@@ -125,9 +124,12 @@ TARGET	*parent;
 	/* or this target is in the make1c() quagmire, arrange for the */
 	/* parent to be notified when this target is built. */
 
-	if( t->progress == T_MAKE_INIT || t->progress == T_MAKE_RUNNING )
-	    if( parent )
+	if( parent )
+	    switch( t->progress )
 	{
+	case T_MAKE_INIT:
+	case T_MAKE_ACTIVE:
+	case T_MAKE_RUNNING:
 	    t->parents = targetentry( t->parents, parent );
 	    parent->asynccnt++;
 	}
@@ -138,7 +140,7 @@ TARGET	*parent;
 	/* Asynccnt counts the dependents preventing this target from */
 	/* proceeding to make1b() for actual building.  We start off with */
 	/* a count of 1 to prevent anything from happening until we can */
-	/* call all dependent.  This 1 is accounted for when we call */
+	/* call all dependents.  This 1 is accounted for when we call */
 	/* make1b() ourselves, below. */
 
 	t->asynccnt = 1;
@@ -152,7 +154,7 @@ TARGET	*parent;
 	    for( c = t->deps[i]; c && !intr; c = c->next )
 		make1a( c->target, t );
 
-	t->progress = T_MAKE_RUNNING;
+	t->progress = T_MAKE_ACTIVE;
 
 	/* Now that all dependents have bumped asynccnt, we now allow */
 	/* decrement our reference to asynccnt. */ 
@@ -193,20 +195,14 @@ TARGET	*t;
 	/* If actions on deps have failed, bail. */
 	/* Otherwise, execute all actions to make target */
 
-	if( t->status == EXEC_CMD_FAIL )
+	if( t->status == EXEC_CMD_FAIL && t->actions )
 	{
-	    if( t->actions )
-	    {
-		printf( "...skipped %s for lack of %s...\n", t->name, failed );
-		++counts->skipped;
-		++counts->total;
-	    }
+	    ++counts->skipped;
+	    printf( "...skipped %s for lack of %s...\n", t->name, failed );
 	}
-	else if( t->status == EXEC_CMD_INTR )
-	{
-	    /* sokay */
-	}
-	else switch( t->fate )	/* EXEC_CMD_OK */
+
+	if( t->status == EXEC_CMD_OK )
+	    switch( t->fate )
 	{
 	case T_FATE_INIT:
 	case T_FATE_MAKING:
@@ -229,14 +225,21 @@ TARGET	*t;
 	case T_FATE_MISSING:
 	case T_FATE_OUTDATED:
 	case T_FATE_UPDATE:
-	    /* Set "on target" vars, execute actions, unset vars */
+	    /* Set "on target" vars, build actions, unset vars */
+	    /* Set "progress" so that make1c() counts this target among */
+	    /* the successes/failures. */
 
-	    if( t->actions && !( ++counts->total % 100 ) && DEBUG_MAKE )
-		printf( "...on %dth target...\n", counts->total );
+	    if( t->actions )
+	    {
+		if( DEBUG_MAKE && !( ++counts->total % 100 ) )
+		    printf( "...on %dth target...\n", counts->total );
 
-	    pushsettings( t->settings );
-	    t->cmds = (char *)make1cmds( t->actions );
-	    popsettings( t->settings );
+		pushsettings( t->settings );
+		t->cmds = (char *)make1cmds( t->actions );
+		popsettings( t->settings );
+
+		t->progress = T_MAKE_RUNNING;
+	    }
 
 	    break;
 	}
@@ -297,8 +300,6 @@ TARGET	*t;
 	    TARGETS	*c;
 	    ACTIONS	*actions;
 
-	    t->progress = T_MAKE_DONE;
-
 	    /* Collect status from actions, and distribute it as well */
 
 	    for( actions = t->actions; actions; actions = actions->next )
@@ -309,12 +310,22 @@ TARGET	*t;
 		if( t->status > actions->action->status )
 		    actions->action->status = t->status;
 
-	    /* Tally failure */
+	    /* Tally success/failure for those we tried to update. */
 
-	    if( t->status != EXEC_CMD_OK && t->actions )
-		counts->failed++;
-		
+	    if( t->progress == T_MAKE_RUNNING )
+		switch( t->status )
+	    {
+	    case EXEC_CMD_OK:
+		++counts->made;
+		break;
+	    case EXEC_CMD_FAIL:
+		++counts->failed;
+		break;
+	    }
+
 	    /* Tell parents dependent has been built */
+
+	    t->progress = T_MAKE_DONE;
 
 	    for( c = t->parents; c; c = c->next )
 		make1b( c->target );
@@ -396,10 +407,10 @@ ACTIONS	*a0;
 	    /* Only do rules with commands to execute. */
 	    /* If this action has already been executed, use saved status */
 
-	    if( !rule->actions || a0->action->progress != T_MAKE_INIT )
+	    if( !rule->actions || a0->action->running )
 		continue;
 
-	    a0->action->progress = T_MAKE_RUNNING;
+	    a0->action->running = 1;
 	    
 	    /* Make LISTS of targets and sources */
 	    /* If `execute together` has been specified for this rule, tack */
@@ -410,11 +421,10 @@ ACTIONS	*a0;
 
 	    if( rule->flags & RULE_TOGETHER )
 		for( a1 = a0->next; a1; a1 = a1->next )
-		    if( a1->action->rule == rule && 
-			a1->action->progress == T_MAKE_INIT )
+		    if( a1->action->rule == rule && !a1->action->running )
 	    {
 		ns = make1list( ns, a1->action->sources, rule->flags );
-		a1->action->progress = T_MAKE_RUNNING;
+		a1->action->running = 1;
 	    }
 
 	    /* If doing only updated (or existing) sources, but none have */
