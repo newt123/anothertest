@@ -21,6 +21,7 @@
  * 01/03/96 (seiwald) - SINIX (nixdorf) added.
  * 03/13/96 (seiwald) - Jambase now compiled in; remove JAMBASE variable.
  * 04/29/96 (seiwald) - AIX now has 31 and 42 OSVERs.
+ * 11/21/96 (peterk)  - added BeOS with MW CW mwcc
  */
 
 # ifdef VMS
@@ -149,6 +150,12 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "UNIX=true","OS=AIX","OSVER=32"
 # endif
 # endif
+
+# ifdef __BEOS__
+# define OTHERSYMS "UNIX=true","OS=BEOS"
+# define unix
+# endif
+
 # ifdef __bsdi__
 # define OTHERSYMS "UNIX=true","OS=BSDI"
 # endif

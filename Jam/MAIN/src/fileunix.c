@@ -41,7 +41,7 @@ struct ar_hdr		/* archive file member header - printable ascii */
 };
 
 # else
-# ifndef __QNX__
+# if !defined( __QNX__ ) && !defined( __BEOS__ )
 # include <ar.h>
 # endif /* QNX */
 # endif /* MVS */
@@ -67,6 +67,7 @@ struct ar_hdr		/* archive file member header - printable ascii */
  * 12/19/94 (mikem) - solaris string table insanity support
  * 02/14/95 (seiwald) - parse and build /xxx properly
  * 05/03/96 (seiwald) - split into pathunix.c
+ * 11/21/96 (peterk) - BEOS does not have Unix-style archives
  */
 
 /*
@@ -160,7 +161,7 @@ file_archscan( archive, func )
 char *archive;
 void (*func)();
 {
-# ifndef __QNX__
+# if !defined( __QNX__ ) && !defined( __BEOS__ )
 	struct ar_hdr ar_hdr;
 	char buf[ MAXJPATH ];
 	long offset;

@@ -34,6 +34,7 @@
 # 02/14/95 (seiwald) - MkDir and entourage.
 # 04/30/95 (seiwald) - Use install -c flag so that it copies, not moves.
 # 07/10/95 (taylor) - Support for Microsoft C++.
+# 11/21/96 (peterk) - Support for BeOS
 
 # Special targets defined in this file:
 #
@@ -194,6 +195,25 @@ if $(UNIX)
 	LINKFLAGS	default = -Q ;	# quiet
 	NOARSCAN	default = true ;
 	RANLIB		default = "" ;
+	}
+	else if $(OS) = BEOS 
+	{
+	AR		default = mwld -xml -o ;
+	BINDIR		default = /boot/bin ;
+	CC		default = mwcc ;
+	CCFLAGS		default = -nosyspath ;
+	C++		default = $(CC) ;
+	C++FLAGS	default = -nosyspath ;
+	FORTRAN		default = "" ;
+	LIBDIR		default = /boot/develop/libraries ;
+	LINK		default = $(CC) ;
+	LEX		default = "" ;
+	MANDIR		default = /boot/documentation/"Shell Tools"/HTML ;
+	NOARSCAN	default = true ;
+	RANLIB		default = "" ;	
+	STDHDRS		default = /boot/develop/headers/posix ;
+	YACC		default = "" ;
+	YACCFILES	default = "" ;
 	}
 
 	AR		default = ar ru ;
@@ -1239,11 +1259,18 @@ rule makeRelPath
 
 if $(UNIX)
 {
-    if $(OS) = QNX
+    if $(OS) = QNX 
     {
 	actions together piecemeal Archive
 	{
 	$(AR) $(<) +-$(>) 
+	}
+    }
+    else if $(OS) = BEOS
+    {
+	actions together Archive
+	{
+	$(AR) $(<) $(>)
 	}
     }
     else
