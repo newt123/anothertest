@@ -12,6 +12,7 @@
 # include "variable.h"
 # include "regexp.h"
 # include "headers.h"
+# include "newstr.h"
 
 /*
  * headers.c - handle #includes in source files
