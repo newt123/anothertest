@@ -2,7 +2,7 @@
 
 CC = cc
 TARGET = -o jam0
-OPTIM = -O
+CFLAGS = 
 
 # Special flavors - uncomment appropriate lines
 
@@ -24,11 +24,15 @@ OPTIM = -O
 #TARGET = /Fejam0
 #LINKLIBS = $(Lib)/kernel32.lib $(Lib)/libc.lib
 
-# Use FATFS if building on a DOS FAT file system
-#CFLAGS = $(CFLAGS) -DFATFS
+SOURCES = \
+	command.c compile.c execnt.c execunix.c execvms.c expand.c \
+	filent.c fileos2.c fileunix.c filevms.c glob.c hash.c \
+	headers.c jam.c jambase.c jamgram.c lists.c make.c make1.c \
+	newstr.c option.c parse.c pathunix.c pathvms.c regexp.c \
+	rules.c scan.c search.c timestamp.c variable.c
 
 install: jam0
-	jam0 -f Jambase install
+	jam0 install
 
 jam0:
-	$(CC) $(TARGET) $(OPTIM) $(CFLAGS) *.c $(LINKLIBS)
+	$(CC) $(TARGET) $(CFLAGS) $(SOURCES) $(LINKLIBS)
