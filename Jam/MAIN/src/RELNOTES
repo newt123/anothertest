@@ -13,6 +13,9 @@ Changes since 2.1
     installing.  The plain Jambase can still be referenced explicitly 
     with -f.
 
+    The syntax "if $(A) in $(B)" is now supported.  It is true of all
+    elements of $(A) can be found in $(B), _or_ if $(A) is empty.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

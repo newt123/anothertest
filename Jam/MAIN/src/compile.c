@@ -220,34 +220,48 @@ LIST		*sources;
 	    /* Handle one of the comparison operators */
 	    /* Expand targets and sources */
 
-	    LIST *nt, *ns, *s, *t;
-	    t = nt = var_list( parse->llist, targets, sources );
-	    s = ns = var_list( parse->rlist, targets, sources );
+	    LIST *nt, *ns;
+	    nt = var_list( parse->llist, targets, sources );
+	    ns = var_list( parse->rlist, targets, sources );
 
-	    status = 0;
+	    /* "a in b" make sure each of a is equal to something in b. */
+	    /* Otherwise, step through pairwise comparison. */
 
-	    if( DEBUG_IF )
+	    if( parse->num == COND_IN )
 	    {
-		debug_compile( 0, "if" );
-		list_print( nt );
-		printf( "(%d)", status );
-		list_print( ns );
-		printf( "\n" );
-	    }
+		LIST *s, *t;
 
-	    while( !status && ( t || s ) )
+		/* Try each t until failure. */
+
+		for( status = 1, t = nt; status && t; t = list_next( t ) )
+		{
+		    int stat1;
+
+		    /* Try each s until success */
+
+		    for( stat1 = 0, s = ns; !stat1 && s; s = list_next( s ) )
+			stat1 = !strcmp( t->string, s->string );
+
+		    status = stat1;
+		}
+	    }
+	    else
 	    {
-		char *st = t ? t->string : "";
-		char *ss = s ? s->string : "";
+		LIST *s = ns, *t = nt;
 
-		status = strcmp( st, ss );
+		status = 0;
 
-		t = t ? list_next( t ) : t;
-		s = s ? list_next( s ) : s;
+		while( !status && ( t || s ) )
+		{
+		    char *st = t ? t->string : "";
+		    char *ss = s ? s->string : "";
+
+		    status = strcmp( st, ss );
+
+		    t = t ? list_next( t ) : t;
+		    s = s ? list_next( s ) : s;
+		}
 	    }
-
-	    list_free( nt );
-	    list_free( ns );
 
 	    switch( parse->num )
 	    {
@@ -258,7 +272,21 @@ LIST		*sources;
 	    case COND_LESSEQ:	status = status <= 0; break;
 	    case COND_MORE:	status = status > 0; break;
 	    case COND_MOREEQ:	status = status >= 0; break;
+	    case COND_IN:	/* status = status */ break;
 	    }
+
+	    if( DEBUG_IF )
+	    {
+		debug_compile( 0, "if" );
+		list_print( nt );
+		printf( "(%d)", status );
+		list_print( ns );
+		printf( "\n" );
+	    }
+
+	    list_free( nt );
+	    list_free( ns );
+
 	}
 
 	return status;

@@ -51,3 +51,4 @@ void compile_switch();
 # define COND_LESSEQ	7	/* arg <= arg */
 # define COND_MORE	8	/* arg > arg  */
 # define COND_MOREEQ	9	/* arg >= arg */
+# define COND_IN	10	/* arg in arg */
