@@ -41,7 +41,7 @@ static struct
 	int	pid;
 	void	(*func)();
 	void 	*closure;
-} cmdtab[ PMAX ];
+} cmdtab[ PMAX ] = {0};
 
 /*
  * onintr() - bump intr to note command interruption
