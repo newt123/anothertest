@@ -22,7 +22,7 @@ FEATURES
    ->	Jam's language is expressive, making Jamfiles (c.f. Makefiles) 
 	compact.  Here's a sample:
 
-	    MAIN smail : main.c map.c resolve.c deliver.c
+	    Main smail : main.c map.c resolve.c deliver.c
 			 misc.c parser.y alias.c pw.c headers.c
 			 scanner.l getpath.c str.c ;
 
