@@ -86,8 +86,12 @@ Release notes for Jam 2.0.
 
 	    The names of the default rules defined in Jambase have been
 	    lowercased and un-abbreviated, to be more imake(1) like.
+
 	    The Jambase has been reorganized and sorted, with VMS and
 	    NT support moved in from their own files.
+
+	    The Jambase has been relocated on UNIX from /usr/local/lib/jam
+	    to /usr/local/lib.
 
 5.3.  Jam changes (see jam.1)
 

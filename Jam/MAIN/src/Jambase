@@ -7,7 +7,7 @@
 #
 
 #
-# JAMBASE - jam ruleset providing make(1)-like functionality
+# JAMBASE - jam 2.0 ruleset providing make(1)-like functionality
 #
 # Supports UNIX, NT, and VMS.
 #

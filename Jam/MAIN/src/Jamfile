@@ -38,7 +38,7 @@ Library         libjam.a :
 if $(UNIX)
 {
 	InstallBin $(BINDIR) : jam ;
-	InstallLib $(LIBDIR)/jam : Jambase ;
+	InstallLib $(LIBDIR) : Jambase ;
 	InstallMan $(MANDIR) : jam.1 Jamfile.5 ;
 }
 

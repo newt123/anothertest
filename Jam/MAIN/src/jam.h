@@ -12,6 +12,7 @@
  * 05/04/94 (seiwald) - new globs.jobs (-j jobs)
  * 11/01/94 (wingerd) - let us define path of Jambase at compile time.
  * 12/30/94 (wingerd) - changed command buffer size for NT (MS-DOS shell).
+ * 02/22/95 (seiwald) - Jambase now in /usr/local/lib.
  */
 
 # ifdef VMS
@@ -129,7 +130,7 @@
 # endif
 
 # ifndef JAMBASE
-# define JAMBASE "/usr/local/lib/jam/Jambase"
+# define JAMBASE "/usr/local/lib/Jambase"
 # endif
 # define MAXCMD	10240	/* longest command */
 # define EXITOK 0
