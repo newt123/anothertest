@@ -22,6 +22,7 @@
 	{ "ignore", IGNORE },
 	{ "in", IN },
 	{ "include", INCLUDE },
+	{ "local", LOCAL },
 	{ "on", ON },
 	{ "piecemeal", PIECEMEAL },
 	{ "quietly", QUIETLY },
