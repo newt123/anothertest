@@ -236,6 +236,7 @@ if $(UNIX)
 	SUFEXE		default = "" ;
 	UNDEFFLAG	default = "-u _" ;
 	YACC		default = yacc -d ;
+	YACCFILES	default = y.tab ;
 }
 else if $(NT)
 {
@@ -1346,8 +1347,8 @@ if $(UNIX)
     {
 	$(YACC) $(>) &&
 	{
-	    $(MV) y.tab.c $(<[1])
-	    $(MV) y.tab.h $(<[2])
+	    $(MV) $(YACCFILES).c $(<[1])
+	    $(MV) $(YACCFILES).h $(<[2])
 	}
     }
 }
@@ -1555,8 +1556,8 @@ else if $(VMS)
     actions Yacc1
     {
 	$(YACC) $(>)
-	$(MV) y.tab.c $(<[1])
-	$(MV) y.tab.h $(<[2])
+	$(MV) $(YACCFILES).c $(<[1])
+	$(MV) $(YACCFILES).h $(<[2])
     }
 }
 
