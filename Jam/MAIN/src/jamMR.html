@@ -208,6 +208,8 @@ Jam/MR 2.2
 <P>
        Jam/MR has several simple flow-of-control statements:
 <PRE>
+	      local <i>vars</I> ;
+
               include <I>file</I> ;
 
               for <I>var</I> in <I>list</I> { <I>statements</I> }
@@ -223,6 +225,12 @@ Jam/MR 2.2
 	 	 [ else { <I>statements</I> } ]
 </PRE>
 <UL>
+<LI>
+       The local statement instantiates new <i>vars</I> inside
+       the current {} block. Variables of the same name outside
+       of the {} block are unaffected and inaccessible. 
+       local must be the first statement in the block.
+       <P>
 <LI>
        The include statement causes <b>jam</b> to read
        the named <i>file</i>.   The  file
@@ -269,25 +277,34 @@ Jam/MR 2.2
 <TABLE> 
 <TR><TD>
               <CODE><I>a</I></CODE>
-<TD>		true if <I>a</I> is a non-zero-length string
+<TD>		true if any <I>a</I> element is a non-zero-length string
 <TR><TD>
               <CODE><I>a</I> = <I>b</I></CODE> 
-<TD>		strings equal
+<TD>		list <I>a</I> matches list <I>b</I> string-for-string
 <TR><TD>
               <CODE><I>a</I> != <I>b</I>     </CODE>
-<TD>		strings not equal
+<TD>		list <I>a</I> does not match list <I>b</I>
 <TR><TD>
               <CODE><I>a</I> &lt; <I>b</I> </CODE>
-<TD>		string less than
+<TD>		<I>a[i]</I> string is less than <I>b[i]</I>
+                string, where <i>i</i> is first mismatched element
+		in lists <I>a</I> and <I>b</I>
 <TR><TD>
               <CODE><I>a</I> &lt;= <I>b</I>     </CODE>
-<TD>		string less than or equal to
+<TD>		every <I>a</I> string is less than or equal to
+		its <I>b</I> counterpart
 <TR><TD>
               <CODE><I>a</I> &gt; <I>b</I> </CODE>
-<TD>		string greater than
+<TD>		<I>a[i]</I> string is greater than <I>b[i]</I>
+		string, where <i>i</i> is first mismatched element
 <TR><TD>
               <CODE><I>a</I> &gt;= <I>b</I>     </CODE>
-<TD>		string greater than or equal to
+<TD>		every <I>a</I> string is greater than or equal to
+		its <I>b</I> counterpart
+<TR><TD>      
+              <CODE><I>a</I> in <I>b</I>     </CODE>
+<TD>		true if all elements of <I>a</I> can be found
+                in <I>b</I>, or if <I>a</I> has no elements
 <TR><TD>
               <CODE>! <I>cond</I>       </CODE>
 <TD>		condition not true
@@ -302,10 +319,6 @@ Jam/MR 2.2
 <TD>		precedence grouping
 </TABLE>
 </CENTER>
-<P>
-       In comparisons, the arguments may (through variable expansion) be more than one token, but  only  the  first  token
-       takes part in the comparison.  If, through variable expansion, the argument is zero tokens, a  single  token  of  a
-       zero-length string is used instead.
 <P>
 </UL>
 <H3> Variables
@@ -433,7 +446,7 @@ Jam/MR 2.2
        <TD>Select filename base.
 <TR><TD>
        :S      
-       <TD>Select filename suffix.
+       <TD>Select (last) filename suffix.
 <TR><TD>
        :M      
        <TD>Select archive member name.
@@ -647,6 +660,30 @@ Jam/MR 2.2
        where  the  included  file name is literally in the source
        file.  It can't handle languages  that  allow  including
        files using variable names (as the Jam/MR language itself does).
+<P>
+<H4> Platform Identifier Variables
+</H4>
+<P>
+	A number of Jam/MR built-in variables can be used to 
+	identify runtime platform:
+	<CENTER>
+	<TABLE>
+	<TR><TD>UNIX<TD>true on Unix platforms
+	<TR><TD>NT<TD>true on NT platforms
+	<TR><TD>VMS<TD>true on VMS platforms
+	<TR><TD>MAC<TD>true on MAC platforms
+	<TR><TD>OS2<TD>true on OS2 platforms
+	<TR><TD>OS<TD>OS identifier string 
+	<TR><TD>OSVER<TD>OS version, when applicable
+	<TR><TD>OSPLAT<TD>Underlying architecture, when applicable
+	<TR><TD>JAMVERSION<TD><b>jam</b> version, currently "2.2"
+	</TABLE>
+	</CENTER>
+<P>
+<H4> JAMDATE Variable
+</H4>
+	Initialized to time and date at <b>jam</b> startup.
+
 <P>
 <H4> JAMSHELL Variable
 </H4>

@@ -249,15 +249,11 @@ Handling Directory Trees
 	To use the SubDir* rules, you must:
 <P>
 <OL>
-       <LI>     Set an environment variable pointing  to  the  root
-              directory  of the source tree.  The root variable's
-              name is left up to you, but in these  examples
-              we use TOP.
+       <LI>     Preface the Jamfile in each directory with an invocation 
+       of the SubDir rule.
 <P>
        <LI>     Place  at  the  root  of the tree a file named Jamrules.  
-       (This file can alternately be named by  the
-              variable  $(xxxRULES), where xxx is the name of the
-              root variable).  This file could be empty,  but  in
+	      This file could be empty,  but  in
               practice  it contains user-provided rules and variable 
 	      definitions that  are  shared  throughout  the
               tree.   Examples  of  such  definitions are library
@@ -265,8 +261,10 @@ Handling Directory Trees
               compiler  flags,  etc.  This file is good candidate
               for automatic customizing with autoconf(GNU).
 <P>
-       <LI>     Preface the Jamfile in each directory with an invocation 
-       of the SubDir rule.
+	<LI> 	Optionally, set an environment variable pointing
+		to the root directory of the srouce tree. The
+		variable's name is left up to you, but in these
+		examples, we use TOP.
 </OL>
 <P>
 <H4>
@@ -297,6 +295,10 @@ Handling Directory Trees
        <OL>
        <LI>The SubDir rule causes <b>jam</b> to read
 	   in the $(TOP)/Jamrules file. 
+           (The Jamrules file can alternately be named by  the
+              variable  $(xxxRULES), where xxx is the name of the
+              root variable, e.g., $(TOPRULES)).  
+	      <P>
 	   The Jamrules file can contain variable definitions
 	   and rule definitions specific to your codeline.
 	   It allows you to completely customize your build 
@@ -310,6 +312,16 @@ Handling Directory Trees
 	   uniquely identify the source files in this
 	   directory and assign locations to the targets
 	   built from files in this directory.
+	   <P>
+	   When you have set a root variable, e.g., $(TOP),
+	   SubDir constructs path names rooted with $(TOP),
+	   e.g., $(TOP)/src/util.
+	   Otherwise, SubDir constructs relative pathnames
+	   to the root directory, computed from the number
+	   of arguments to the first SubDir rule, e.g.,
+	   ../../src/util. In either case, the SubDir
+	   rule constructs the path names that locate source
+	   files.
 	   You'll see how this is useful later.
 	<P>
        </UL>
@@ -338,7 +350,6 @@ Handling Directory Trees
        and build that subtree.  For example:
 <PRE>
        # This is $(TOP)/Jamfile, top level Jamfile for mondo project.
-       # $(TOP) points to root of mondo tree (set in environment).
 
        SubInclude TOP src ;
        SubInclude TOP man ;
@@ -752,7 +763,7 @@ Compiling
 	<P>
        In  addition to calling the compile rules, Object sets up
        a bunch of variables specific to  the  source  and  target
-       files.  
+       files.  (See Variables Used in Compiling, below.)
 <P>
 <H4>
    Cc, C++, Yacc, Lex, Fortran, As, etc. Rules
