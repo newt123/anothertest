@@ -219,6 +219,8 @@ if $(UNIX)
 	MV		default = mv -f ;
 	OPTIM		default = -O ;
 	RANLIB		default = ranlib ;
+	RCP		default = rcp ;
+	RSH		default = rsh ;
 	RM		default = rm -f ;
 	SHELLHEADER	default = "#!/bin/sh" ;
 	SHELLMODE	default = 755 ;
@@ -232,6 +234,7 @@ if $(UNIX)
 }
 else if $(NT)
 {
+	AWK		default = awk ;
 	CHMOD		default = chmod ;
     	CP		default = copy ;
 	DOT		default	= . ;
@@ -241,7 +244,9 @@ else if $(NT)
 	MKDIR		default = mkdir ;
 	MV		default = mv -f ;
 	OS			= NT ;		# replace Windows_NT
-    	RM		default = del/f/q ;
+	RCP		default = rcp ;
+	RSH		default = rsh ;
+    	RM		default = del /f/q ;
     	SLASH		default = \\ ;
     	SUFLIB		default = .lib ;
     	SUFOBJ		default = .obj ;
@@ -292,7 +297,8 @@ else if $(NT)
     {
 	ECHO "Compiler is Microsoft Visual C++" ;
 
-	AR		default = lib /nologo ;
+	AR		default = lib ;
+	AS		default = masm386 ;
 	CC		default = cl /nologo ;
 	CCFLAGS		default = ;
 	C++		default = $(CC) ;
@@ -681,7 +687,7 @@ rule MainFromObjects
 
 	DEPENDS exe : $(_t) ;
 	DEPENDS $(_t) : $(_s) ;
-	LOCATE on $(_t) = $(LOCATE_TARGET) ;
+	LOCATE on $(_t) $(<) = $(LOCATE_TARGET) ;
 
 	Clean clean : $(_t) ;
 
@@ -773,6 +779,7 @@ rule Object
 
 	switch $(>:S)
 	{
+	    case .asm : As $(<) : $(>) ;
 	    case .c :	Cc $(<) : $(>) ;
 	    case .C :	C++ $(<) : $(>) ;
 	    case .cc :	C++ $(<) : $(>) ;
@@ -1346,6 +1353,11 @@ else if $(NT) || $(OS2)
 	actions together quietly CreLib
 	{
 	if not exist $(<) $(AR) /out:$(<) $(>[1])
+	}
+
+	actions As
+	{
+	$(AS) /Ml /p /v /w2 $(>) $(<) ,nul,nul;
 	}
 
 	actions Cc
