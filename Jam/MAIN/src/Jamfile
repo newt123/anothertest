@@ -14,35 +14,6 @@ case NT :	code = nt ;
 case * :	code = unix ;
 }
 
-#
-# Ugly support for the .yy file: yyacc is a preprocessor to yacc.
-# From gram.yy it makes gram.y and gramtab.h.
-#
-
-rule UserObject
-{
-    if $(>:S) = .yy 
-    {
-	if $(UNIX)
-	{
-	    DEPENDS $(<:S=.y) $(<:B)tab.h : $(>) ;
-	    YYacc $(<:S=.y) $(<:B)tab.h : $(>) ;
-	    LOCATE on $(<:S=.y) $(<:B)tab.h = $(LOCATE_TARGET) ;
-	    Clean clean : $(<:S=.y) $(<:B)tab.h ;
-	}
-	Yacc $(<:S=.c) : $(<:S=.y) ;
-	Cc $(<) : $(<:S=.c) ; 
-    }
-    else
-    {
-	EXIT $(>) unknown suffix ;
-    }
-}
-
-actions YYacc
-{
-	sh yyacc $(>) $(<)
-}
 
 #
 # The guts of the Jamfile: how to build Jam
@@ -53,7 +24,7 @@ LinkLibraries 	jam : libjam.a ;
 
 Library         libjam.a : 
 		    command.c compile.c exec$(code).c expand.c
-		    file$(code).c glob.c hash.c headers.c jamgram.yy
+		    file$(code).c glob.c hash.c headers.c jamgram.y
 		    lists.c make.c make1.c newstr.c option.c parse.c
 		    regexp.c rules.c scan.c search.c timestamp.c
 		    variable.c ;
@@ -66,7 +37,60 @@ Library         libjam.a :
 
 if $(UNIX)
 {
-	InstallBin /usr/local/bin : jam ;
-	InstallLib /usr/local/lib/jam : Jambase ;
-	InstallMan /usr/local/man : jam.1 Jamfile.5 ;
+	InstallBin $(BINDIR) : jam ;
+	InstallLib $(LIBDIR)/jam : Jambase ;
+	InstallMan $(MANDIR) : jam.1 Jamfile.5 ;
 }
+
+#### --- cut
+
+rule YYacc
+{
+	DEPENDS $(<) : $(>) ;
+	LOCATE on $(<) = $(LOCATE_TARGET) ;
+	Clean clean : $(<) ;
+}
+
+actions YYacc
+{
+	sh yyacc $(>) $(<)
+}
+
+YYacc jamgram.y jamgramtab.h : jamgram.yy ;
+
+rule TempCopy
+{
+	DEPENDS $(<) : $(>) ;
+}
+
+actions TempCopy
+{
+	cp $(>) $(<)
+}
+
+rule Shar
+{
+	DEPENDS $(<) : $(>) ;
+	TempCopy Paper.ps : ../doc/jam.ps ;
+	RmTemps $(<) : Paper.ps ;
+}
+
+actions Shar
+{
+	mv Jamfile Jamfile.sav
+	sed '/--- cut/,$d' Jamfile.sav > Jamfile
+	shar -l97 -o $(<) $(>) 
+	mv Jamfile.sav Jamfile
+}
+
+Shar SHAR :
+	    README Build.com CHANGES Jambase Jamfile Jamfile.5 Makefile
+	    Paper.ps Porting command.c command.h compile.c compile.h
+	    execcmd.h execnt.c execunix.c execvms.c expand.c expand.h
+	    filent.c filesys.h fileunix.c filevms.c glob.c hash.c
+	    hash.h headers.c headers.h jam.1 jam.c jam.h jamgram.c
+	    jamgram.h jamgram.y jamgramtab.h lists.c lists.h make.c
+	    make.h make1.c newstr.c newstr.h option.c option.h parse.c
+	    parse.h patchlevel.h regexp.c regexp.h rules.c rules.h
+	    scan.c scan.h search.c search.h timestamp.c timestamp.h
+	    variable.c variable.h ;

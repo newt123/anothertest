@@ -42,11 +42,6 @@ Notes on porting Jam - revised 1/11/95
 
 4) Yacc troubles
 
-    The generated files jamgram.y and jamgramtab.h are distributed for
-    places without a sufficiently working sh/awk/sed to run yyacc.
-    yyacc is a yacc preprocessor that handles quoted tokens instead
-    of yacc's symbolic ones.
-
     The generated files jamgram.h and jamgram.c are distributed for the 
     poor souls without yacc.
 

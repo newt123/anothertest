@@ -46,8 +46,8 @@ INFORMATION GUIDE
 
     Jamfile.5	Easy reading on creating a Jamfile and using jam.
 
-    Paper.ps    UNIX Application Development Symposium paper on 
-		jam (the syntax has since been extended - see CHANGES).
+    Paper.ps    The 1994 UNIX Application Development Symposium paper 
+		on jam (reflects Release 1 - see CHANGES).
 
     CHANGES	Changes from Release 1 to Release 2.
 
@@ -91,18 +91,6 @@ INSTALLING
     The Makefile (UNIX, NT) and build.com (VMS) are for bootstrapping.
     Once jam is built, it can rebuild itself.
 
-SEE ALSO
-
-    Aside from source files, there is:
-
-	Build.com	VMS command script
-	CHANGES		Changes from Release 1 to Release 2
-	Makefile	a bootstrap makefile
-	Porting		notes on porting jam
-	Jamfile.5	Manual for writing a Jamfile
-	Paper.ps	UNIX Application Development Symposium paper
-	jam.1		jam man page
-	yyacc		a yacc pre-preprocessor
 
 Comments to the author!
 
