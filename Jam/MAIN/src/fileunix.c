@@ -1,18 +1,26 @@
 /*
  * Copyright 1993 Christopher Seiwald.
+ *
+ * 12/19/94 (mikem) - solaris string table insanity support
  */
-
-# ifndef VMS
 
 # include "jam.h"
 # include "filesys.h"
+
+# ifdef unix
 
 # if defined(_SEQUENT_) || defined(__DGUX__)
 # define PORTAR 1
 # endif
 
 # include <dirent.h>
+
+# if defined (COHERENT) && defined (_I386)
+# include <arcoff.h>
+# else
 # include <ar.h>
+# endif	/* COHERENT */
+  
 
 /*
  * fileunix.c - manipulate file names and scan directories on UNIX
@@ -33,6 +41,9 @@
  * and file_archscan() indicate that a timestamp is being provided with the
  * file.   If file_dirscan() or file_archscan() do not provide the file's
  * timestamp, interested parties may later call file_time().
+ *
+ * 12/26/93 (seiwald) - handle dir/.suffix properly in file_build()
+ * 04/08/94 (seiwald) - Coherent/386 support added.
  */
 
 /*
@@ -127,7 +138,7 @@ char		*file;
 	    file += f->f_dir.len;
 	}
 
-	if( f->f_dir.len && f->f_base.len )
+	if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
 	    *file++ = '/';
 
 	if( f->f_base.len )
@@ -232,6 +243,7 @@ void (*func)();
 	struct ar_hdr ar_hdr;
 	char buf[ MAXPATH ];
 	long offset;
+	char    *string_table = 0;
 	int fd;
 
 	if( ( fd = open( archive, O_RDONLY, 0 ) ) < 0 )
@@ -252,19 +264,54 @@ void (*func)();
 	while( read( fd, &ar_hdr, SARHDR ) == SARHDR &&
 	       !memcmp( ar_hdr.ar_fmag, ARFMAG, SARFMAG ) )
 	{
-	    char    lar_name[16];
+	    char    lar_name[256];
 	    long    lar_date;
 	    long    lar_size;
+	    long    lar_offset;
 	    char *c;
+	    char    *src, *dest;
 
 	    strncpy( lar_name, ar_hdr.ar_name, sizeof(ar_hdr.ar_name) );
-	    c = lar_name + sizeof( lar_name );
-	    while( *--c == ' ' || *c == '/' )
-		    ;
-	    *++c = '\0';
 
 	    sscanf( ar_hdr.ar_date, "%ld", &lar_date );
 	    sscanf( ar_hdr.ar_size, "%ld", &lar_size );
+
+	    if (ar_hdr.ar_name[0] == '/')
+	    {
+		if (ar_hdr.ar_name[1] == '/')
+		{
+		    /* this is the "string table" entry of the symbol table,
+		    ** which holds strings of filenames that are longer than
+		    ** 15 characters (ie. don't fit into a ar_name
+		    */
+
+		    string_table = malloc(lar_size);
+		    lseek(fd, offset + SARHDR, 0);
+		    if (read(fd, string_table, lar_size) != lar_size)
+			printf("error reading string table\n");
+		}
+		else if (ar_hdr.ar_name[1] != ' ')
+		{
+		    /* Long filenames are recognized by "/nnnn" where nnnn is
+		    ** the offset of the string in the string table represented
+		    ** in ASCII decimals.
+		    */
+		    dest = lar_name;
+		    lar_offset = atoi(lar_name + 1);
+		    src = &string_table[lar_offset];
+		    while (*src != '/')
+			*dest++ = *src++;
+		    *dest = '/';
+		}
+	    }
+
+	    c = lar_name - 1;
+	    while( *++c != ' ' && *c != '/' )
+		;
+	    *c = '\0';
+
+	    if ( DEBUG_BINDSCAN )
+		printf( "archive name %s found\n", lar_name );
 
 	    sprintf( buf, "%s(%s)", archive, lar_name );
 
@@ -273,6 +320,9 @@ void (*func)();
 	    offset += SARHDR + ( ( lar_size + 1 ) & ~1 );
 	    lseek( fd, offset, 0 );
 	}
+
+	if (string_table)
+	    free(string_table);
 
 	close( fd );
 }
@@ -336,4 +386,5 @@ void (*func)();
 
 # endif /* AIAMAG - RS6000 AIX */
 
-# endif /* UNIX */
+# endif /* unix */
+
