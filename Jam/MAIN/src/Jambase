@@ -18,7 +18,7 @@
 # 09/19/94 (seiwald) - LinkLibraries and Undefs now append
 # 		     - Rule names downshifted.
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
-# 10/14/94 (seiwald) - (Crude) support for .s, .C, and .f files.
+# 10/14/94 (seiwald) - (Crude) support for .s, .C, .cc, .cpp, and .f files.
 
 # Rules defined by this file:
 #
@@ -326,6 +326,7 @@ rule Object
 	    case .c : 	Cc $(<) : $(>) ;
 	    case .C :	c++ $(<) : $(>) ;
 	    case .cc :	c++ $(<) : $(>) ;
+	    case .cpp :	c++ $(<) : $(>) ;
 	    case .f :	Fortran $(<) : $(>) ;
 	    case .l :	Cc $(<) : $(<:S=.c) ;
 			Lex $(<:S=.c) : $(>) ;
