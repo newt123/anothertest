@@ -26,6 +26,7 @@
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/19/95 (seiwald) - split DONTKNOW into CANTFIND/CANTMAKE.
  * 02/02/95 (seiwald) - new LAURA modifier on targets.
+ * 02/14/95 (seiwald) - new NOUPDATE modifier on targets.
  */
 
 typedef struct _rule RULE;
@@ -101,13 +102,14 @@ struct _target {
 # define 	T_FLAG_NOTFILE 	0x04	/* NOTFILE applied */
 # define	T_FLAG_TOUCHED	0x08	/* ALWAYS applied or -t target */
 # define	T_FLAG_LAURA	0x10	/* LAURA applied */
+# define	T_FLAG_NOUPDATE	0x20	/* NOUPDATE applied */
 
 	char	binding;		/* how target relates to real file */
 
 # define 	T_BIND_UNBOUND	0	/* a disembodied name */
-# define 	T_BIND_TEMP	1	/* a present temporary */
-# define 	T_BIND_EXISTS	2	/* name names a real file */
-# define 	T_BIND_MISSING	3	/* couldn't find real file */
+# define 	T_BIND_MISSING	1	/* couldn't find real file */
+# define 	T_BIND_PARENTS	2	/* using parent's timestamp */
+# define 	T_BIND_EXISTS	3	/* real file, timestamp valid */
 
 	TARGETS	*deps[2];		/* dependencies */
 

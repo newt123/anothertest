@@ -178,7 +178,7 @@ $(>) includes only targets marked for updating.
 .SS "Built-in Rules"
 .PP
 .B Jam
-has eight built-in rules, none of which have updating actions:
+has ten built-in rules, none of which have updating actions:
 .PP
 .RS
 .IP "ALWAYS \fI<targets>\fR"
@@ -209,6 +209,9 @@ Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
 .IP "NOTFILE \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as not being files (see \fBBinding,\fR below).
+.IP "NOUPDATE \fI<targets>\fR"
+.br
+Prevents \fI<targets>\fR from being rebuilt if they already exist.
 .IP "TEMPORARY \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as temporary (see \fBBinding,\fR below).
@@ -434,23 +437,34 @@ do not apply: the target is located at the actual path of the
 target.  If a target is marked as not being a file (using the built-in
 rule NOTFILE), it is left unbound to a file name.
 .PP
-A target is marked for updating if it cannot be found, if its
-filesystem modification time is older than any of its sources, or if
-any of its sources are marked for updating.  If a target is missing,
-and no updating actions are associated with the target, and the target
-has not been marked with the built-in rule NOCARE, then
-.B jam
-emits a warning.  If a target is missing and it has been marked as
-temporary (with the built-in rule TEMPORARY), then its parent's
-modification time is used when comparing against sources.  If a target
-is marked as not being a file (using the built-in rule NOTFILE), it is
-marked for updating only if any of its sources is marked for updating.
-If a target has been marked with the built-in rule LAURA, it is only
-updated only if it cannot be found or its leaf sources are newer.  Leaf
-sources are those dependents of the target that have no dependents
-themselves.  Finally, if a target has been marked with the built-in
-rule ALWAYS, it is always updated (assuming it is in the dependency
-graph).
+A target is marked for updating if it is missing, if its filesystem
+modification time is older than any of its sources, or if any of its
+sources are marked for updating.  If a target is missing and has no
+updating actions, \fBjam\fR emits a warning and skips other targets
+that depend on the missing target.  This basic behavior can be modified
+applying (usually one of) the following six built-in rules to the
+target:
+.RS
+.IP \n(bu
+If a target has been marked with ALWAYS, it is always updated 
+(assuming it is in the dependency graph).
+.IP \n(bu
+If a target has been marked with LAURA, it is only updated only if it
+is missing or if its leaf sources are newer.  Leaf sources are those
+dependents of the target that have no dependents themselves.
+.IP \n(bu
+If a target has been marked with NOCARE, it is ignored if it is missing.
+.IP \n(bu
+If a target has been marked with TEMPORARY and it is missing, then its
+parent's modification time is used when comparing against sources.
+.IP \n(bu
+If a target has been marked with NOTFILE, it is marked for updating
+only if any of its sources is marked for updating (timestamps are not
+compared).
+.IP \n(bu
+If a target has been marked with NOUPDATE, it is only updated if it is
+missing.
+.RE
 .PP
 If a target is a source file that includes header files,
 .B jam

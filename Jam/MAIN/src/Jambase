@@ -30,6 +30,7 @@
 # 02/06/95 (seiwald) - ObjectC++Flags and SubDirC++Flags added.
 # 02/07/95 (seiwald) - Iron out when HDRSEARCH uses "" or SEARCH_SOURCE.
 # 02/08/95 (seiwald) - SubDir works on VMS.
+# 02/14/95 (seiwald) - MkDir and entourage.
 
 # Special targets defined in this file:
 #
@@ -38,7 +39,8 @@
 # shell		- parent of all Shell targets 
 # files		- parent of all File targets
 # lib		- parent of all Library targets
-# exe		- parent of all Main target
+# exe		- parent of all Main targets
+# dirs		- parent of all MkDir targets
 # clean		- removes all Shell, File, Library, and Main targets
 # uninstall	- removes all Install targets
 #	
@@ -65,6 +67,7 @@
 # LinkLibraries images : libraries ;	bag libraries onto Mains
 # Main image : source ;			link executable from compiled sources
 # MainFromObjects image : objects ;	link executable from objects
+# MkDir dir ;				make a directory, if not there
 # Object object : source ;		compile object from source
 # ObjectCcFlags source : flags ;	add compiler flags for object
 # ObjectC++Flags source : flags ;	add compiler flags for object
@@ -105,6 +108,7 @@
 #	EXIT - blurt out targets and exit
 #	INCLUDES - marks sources as headers for target (a codependency)
 #	NOCARE - don't panic if the target can't be built
+#	NOUPDATE - create the target if needed but never update it 
 #	NOTFILE - ignore the timestamp of the target (it's not a file)
 #	TEMPORARY - target need not be present if sources haven't changed
 #
@@ -275,7 +279,7 @@ HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 #
 
 DEPENDS all : first shell files lib exe ;
-NOTFILE all first shell files lib exe clean uninstall ;
+NOTFILE all first shell files lib exe dirs clean uninstall ;
 ALWAYS clean uninstall ;
 
 #
@@ -371,6 +375,8 @@ rule Install
 	DEPENDS install : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
+	DEPENDS $(<) : $(<:D) ;
+	MkDir $(<:D) ;
 	Clean uninstall : $(<) ;
 }
 
@@ -526,6 +532,36 @@ rule MainFromObjects
 	Clean clean : $(T) ;
 
 	Link $(T) : $(S) ;
+}
+
+rule MkDir
+{
+	# Cheesy gate to prevent multiple invocations on same dir
+
+	if ! $($(<)-mkdir) 
+	{
+	    $(<)-mkdir = true ;
+
+	    MkDir1 $(<) ;
+
+	    # If dir exists, don't update it
+
+	    NOUPDATE $(<) ;
+
+	    # Arrange for jam dirs
+
+	    Depends dirs : $(<) ;
+
+	    # Recursively make parent directories.
+
+	    s = $(<:D) ;
+
+	    if $(s) && $(s) != $(<)
+	    {
+		Depends $(<) : $(s) ;
+		MkDir $(s) ;
+	    }
+	}
 }
 
 rule Object
@@ -847,6 +883,11 @@ if $(UNIX)
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
     }
 
+    actions CcMv
+    {
+	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
+    }
+
     actions piecemeal together existing Clean
     {
 	$(RM) $(>)
@@ -880,7 +921,6 @@ if $(UNIX)
     {
 	actions Install
 	{
-	[ -d "$(<:D)" ] || $(MKDIR) $(<:D)
 	$(CP) $(>) $(<) &&
 	$(CHMOD) $(INSTALLMODE) $(<)
 	}
@@ -899,9 +939,9 @@ if $(UNIX)
 	fi
     }
 
-    actions CcMv
+    actions MkDir1
     {
-	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
+	$(MKDIR) $(<)
     }
 
     actions together Ranlib
@@ -1025,6 +1065,11 @@ else if $(VMS)
     {
 	$(LINK)/exe=$(<) $(LINKFLAGS) $(>[1]) ,$(>[2-]) ,$(NEEDLIBS)/lib ,$(LINKLIBS)
 	set file/prot=$(EXEMODE) $(<)
+    }
+
+    actions MkDir1
+    {
+	create/dir $(<)
     }
 
     actions quietly updated piecemeal together RmTemps

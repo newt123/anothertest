@@ -31,6 +31,7 @@
  *			that headers aren't seen as dependents on themselves.
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  * 02/02/95 (seiwald) - propagate leaf source time for new Laura rule.
+ * 02/14/95 (seiwald) - NOUPDATE rule means don't update existing target.
  */
 
 # include "jam.h"
@@ -179,7 +180,7 @@ int	anyhow;
 	if( t->binding == T_BIND_MISSING && t->flags & T_FLAG_TEMP && parent )
 	{
 	    t->time = parent;
-	    t->binding = t->time ? T_BIND_TEMP : T_BIND_MISSING;
+	    t->binding = t->time ? T_BIND_PARENTS : T_BIND_MISSING;
 	}
 
 	/* Step 2c: If its a file, search for headers. */
@@ -220,6 +221,14 @@ int	anyhow;
 	    fate = max( fate, c->target->hfate );
 	}
 
+	/* If a NOUPDATE file exists, make dependents eternally old. */
+
+	if( t->flags & T_FLAG_NOUPDATE )
+	{
+	    last = 0;
+	    t->time = 0;
+	}
+
 	/* Step 3b: determine fate: rebuild target or what? */
 
 	/* 
@@ -249,7 +258,7 @@ int	anyhow;
 	{
 	    fate = T_FATE_OUTDATED;
 	}
-	else if( t->binding == T_BIND_TEMP && last > t->time )
+	else if( t->binding == T_BIND_PARENTS && last > t->time )
 	{
 	    fate = T_FATE_OUTDATED;
 	}

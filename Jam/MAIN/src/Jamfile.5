@@ -219,6 +219,25 @@ The difference between \fIShell\fR and \fIInstallShell\fR is not much: they
 both copy the source to the target.  The former also makes
 sure the script begins with the magic string "#!/bin/sh"; the latter uses
 \fBinstall\fR(1) for the copy.
+.SS MkDir Rule
+.PP
+All the \fIInstall\fR rules invoke the \fIMkDir\fR rule to create the
+directory for the target file.  \fIMkDir\fR recursively invokes itself
+on its parent directory, to make sure the whole path gets created.
+\fIMkDir\fR marks directories with the built-in rule \fINOUPDATE\fR,
+which tells \fBjam\fR not to update a target once it exists.  In that
+way, the contents of the install directory can depend on the existence
+of the install directory itself, and thus the directory will be made 
+before its contents are installed.  You can call \fIMkDir\fR directly.
+.XB
+File /usr/local/bin/junky : junky ;
+DEPENDS /usr/local/bin/junky : /usr/local/bin ;
+MkDir /usr/local/bin ;
+.XE
+.PP
+This says that /usr/local/bin must be created before /usr/local/bin/junky
+can be built.  Needless to say, \fBjam\fR can't do much if you don't have
+permissions to create directories along the path.
 .SS Variables
 .PP
 The following variables control the installation rules:
@@ -230,6 +249,7 @@ $(INSTALL)         The install program; uses cp if not set (install)
 $(FILEMODE)        generic permissions for InstallLib, InstallMan (644)
 $(EXEMODE)         generic permissions for InstallBin (711)
 $(SHELLMODE)       generic permissions for InstallShell (755)
+$(MKDIR)           Program for creating a directory (mkdir)
 .BE
 .PP
 The directory variables are just defined for convenience: they must
@@ -758,6 +778,7 @@ shell           - parent of all Shell targets
 files           - parent of all File targets
 lib             - parent of all Library targets
 exe             - parent of all Main target
+dirs            - parent of all MkDir targets
 clean           - removes all Shell, File, Library, and Main targets
 uninstall       - removes all Install targets
 .BE
@@ -765,10 +786,10 @@ uninstall       - removes all Install targets
 \fBJambase\fR marks all of these targets with \fBjam\fR's \fINOTFILE\fR
 attribute, meaning that they aren't to be found in the filesystem.  You
 can build selected components by giving \fIshell\fR, \fIfiles\fR,
-\fIlib\fR, or \fIexe\fR as targets on the command line.  You can remove
-the files that \fBjam\fR built giving \fIclean\fR and \fIuninstall\fR
-as targets.  And you can arrange for \fBjam\fR to run initialization
-commands by putting actions on the target \fIfirst\fR.
+\fIlib\fR, \fIexe\fR, or \fIdirs\fR as targets on the command line.
+You can remove the files that \fBjam\fR built giving \fIclean\fR and
+\fIuninstall\fR as targets.  And you can arrange for \fBjam\fR to run
+initialization commands by putting actions on the target \fIfirst\fR.
 .XB
 actions Initialize 
 {

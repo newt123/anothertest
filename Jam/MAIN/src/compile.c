@@ -51,6 +51,7 @@
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/22/95 (seiwald) - Exit rule.
  * 02/02/95 (seiwald) - Always rule; Laura rule.
+ * 02/14/95 (seiwald) - NoUpdate rule.
  */
 
 static int evaluate_if();
@@ -104,6 +105,10 @@ compile_builtins()
     bindrule( "NotFile" )->procedure = 
     bindrule( "NOTFILE" )->procedure = 
 	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOTFILE );
+
+    bindrule( "NoUpdate" )->procedure = 
+    bindrule( "NOUPDATE" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOUPDATE );
 
     bindrule( "Temporary" )->procedure = 
     bindrule( "TEMPORARY" )->procedure = 

@@ -2,8 +2,6 @@
  * Copyright 1993, 1995 Christopher Seiwald.
  *
  * This file is part of Jam - see jam.c for Copyright information.
- *
- * 12/19/94 (mikem) - solaris string table insanity support
  */
 
 # include "jam.h"
@@ -46,6 +44,8 @@
  *
  * 12/26/93 (seiwald) - handle dir/.suffix properly in file_build()
  * 04/08/94 (seiwald) - Coherent/386 support added.
+ * 12/19/94 (mikem) - solaris string table insanity support
+ * 02/14/95 (seiwald) - parse and build /xxx properly
  */
 
 /*
@@ -72,11 +72,12 @@ FILENAME	*f;
 	}
 
 	/* Look for dir/ */
+	/* Special case for / - dirname is /, not "" */
 
 	if( p = strrchr( file, '/' ) )
 	{
 	    f->f_dir.ptr = file;
-	    f->f_dir.len = p - file;
+	    f->f_dir.len = p == file ? 1 : p - file;
 	    file = p + 1;
 	}
 
@@ -140,8 +141,11 @@ char		*file;
 	    file += f->f_dir.len;
 	}
 
-	if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
-	    *file++ = '/';
+	/* Special case for dir / : don't add another / */
+
+	if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == '/' ) )
+	    if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
+		*file++ = '/';
 
 	if( f->f_base.len )
 	{
@@ -188,6 +192,11 @@ void	(*func)();
 	f.f_dir.len = strlen(dir);
 
 	dir = *dir ? dir : ".";
+
+	/* Special case / : enter it */
+
+	if( f.f_dir.len == 1 && f.f_dir.ptr[0] == '/' )
+	    (*func)( dir, 0 /* not stat()'ed */, (time_t)0 );
 
 	/* Now enter contents of directory */
 
