@@ -123,6 +123,7 @@
 #	$(VMS) - true on VMS
 #	$(NT) - true on NT
 #	$(OS) - name of OS - varies wildly
+#	$(JAM) - version number (2.0)
 #
 # Special variables used by jam:
 #	SEARCH - where to find something (used during binding and actions)

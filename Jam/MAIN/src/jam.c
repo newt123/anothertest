@@ -118,7 +118,7 @@ struct globs globs = {
 
 /* Symbols to be defined as true for use in Jambase */
 
-static char *othersyms[] = { OTHERSYMS, 0 } ;
+static char *othersyms[] = { OTHERSYMS, JAMVERSYM, 0 } ;
 extern char **environ;
 
 char *usage = 
