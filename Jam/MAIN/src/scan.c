@@ -216,6 +216,7 @@ yylex()
 {
 	int c;
 	char buf[10240];
+	char *b = buf;
 
 	if( !incp )
 	    goto eof;
@@ -224,10 +225,61 @@ yylex()
 
 	c = yychar();
 
-	/* Eat white space */
-
-	for( ;; )
+	if( scanmode == SCAN_STRING )
 	{
+	    /* If scanning for a string (action's {}'s), look for the */
+	    /* closing brace.  We handle matching braces, if they match! */
+
+	    int nest = 1;
+
+	    while( c != EOF && b < buf + sizeof( buf ) )
+	    {
+		    if( c == '{' )
+			nest++;
+
+		    if( c == '}' && !--nest )
+			break;
+
+		    *b++ = c;
+
+		    c = yychar();
+	    }
+
+	    /* We ate the ending brace -- regurgitate it. */
+
+	    yyprev();
+
+	    /* Check obvious errors. */
+
+	    if( b == buf + sizeof( buf ) )
+	    {
+		yyerror( "action block too big" );
+		goto eof;
+	    }
+
+	    if( nest )
+	    {
+		yyerror( "unmatched {} in action block" );
+		goto eof;
+	    }
+
+	    *b = 0;
+	    yylval.type = STRING;
+	    yylval.string = newstr( buf );
+
+	}
+	else
+	{
+	    char *b = buf;
+	    int inquote = 0;
+	    int literal = 0;
+	    int hasquote = 0;
+	    struct keyword *k;
+		
+	    /* Eat white space */
+
+	    for( ;; )
+	    {
 		/* Skip past white space */
 
 		while( c != EOF && isspace( c ) )
@@ -239,116 +291,71 @@ yylex()
 			break;
 		while( ( c = yychar() ) != EOF && c != '\n' )
 			;
-	}
+	    }
 
-	/* c now points to the first character of a token. */
+	    /* c now points to the first character of a token. */
 
-	if( c == EOF )
-	{
-	    goto eof;
-	} 
-	else if( c == '{' && scanmode == SCAN_STRING )
-	{
-		/* look for closing { */
+	    if( c == EOF )
+		goto eof;
 
-		char *b = buf;
-		int nest = 1;
+	    /* look for white space to delimit word */
+	    /* "'s get stripped but preserve white space */
 
-		while( ( c = yychar() ) != EOF && b < buf + sizeof( buf ) )
+	    while( b < buf + sizeof( buf ) )
+	    {
+		if( literal )
+		    *b++ = c, literal = 0;
+		else if( c == '\\' )
+		    literal++;
+		else if( c == '"' )
+		    inquote = !inquote, hasquote++;
+		else
+		    *b++ = c;
+
+		if( ( c = yychar() ) == EOF || !inquote && isspace( c ) )
+		    break;
+	    }
+
+	    /* Check obvious errors. */
+
+	    if( b == buf + sizeof( buf ) )
+	    {
+		yyerror( "string too big" );
+		goto eof;
+	    }
+
+	    if( inquote )
+	    {
+		yyerror( "unmatched \" in string" );
+		goto eof;
+	    }
+
+	    /* We looked ahead a character - back up. */
+
+	    yyprev();
+
+	    /* scan token table */
+	    /* don't scan if it's "anything", $anything, */
+	    /* or an alphabetic when were looking for punctuation */
+
+	    *b = 0;
+	    yylval.type = ARG;
+
+	    if( !hasquote && 
+		*buf != '$' && 
+		!( isalpha( *buf ) && scanmode == SCAN_PUNCT ) )
+	    {
+		for( k = keywords; k->word; k++ )
+		    if( *buf == *k->word && !strcmp( k->word, buf ) )
 		{
-			if( c == '{' )
-				nest++;
-			else if( c == '}' )
-				nest--;
-			if( !nest )
-			    break;
-			*b++ = c;
+		    yylval.type = k->type;
+		    yylval.string = k->word;	/* used by symdump */
+		    break;
 		}
+	    }
 
-		/* Check obvious errors. */
-
-		if( b == buf + sizeof( buf ) )
-		{
-		    yyerror( "action block too big" );
-		    goto eof;
-		}
-
-		if( nest )
-		{
-		    yyerror( "unmatched {} in action block" );
-		    goto eof;
-		}
-
-		*b = 0;
-		yylval.type = STRING;
+	    if( yylval.type == ARG )
 		yylval.string = newstr( buf );
-	}
-	else 
-	{
-		/* look for white space to delimit word */
-		/* "'s get stripped but preserve white space */
-
-		char *b = buf;
-		int inquote = 0;
-		int literal = 0;
-		int hasquote = 0;
-		struct keyword *k;
-
-		while( b < buf + sizeof( buf ) )
-		{
-		    if( literal )
-			*b++ = c, literal = 0;
-		    else if( c == '\\' )
-			literal++;
-		    else if( c == '"' )
-			inquote = !inquote, hasquote++;
-		    else
-			*b++ = c;
-
-		    if( ( c = yychar() ) == EOF || !inquote && isspace( c ) )
-			break;
-		}
-
-		/* Check obvious errors. */
-
-		if( b == buf + sizeof( buf ) )
-		{
-		    yyerror( "string too big" );
-		    goto eof;
-		}
-
-		if( inquote )
-		{
-		    yyerror( "unmatched \" in string" );
-		    goto eof;
-		}
-
-		/* We looked ahead a character - back up. */
-
-		yyprev();
-
-		/* scan token table */
-		/* don't scan if it's "anything", $anything, */
-		/* or an alphabetic when were looking for punctuation */
-
-		*b = 0;
-		yylval.type = ARG;
-
-		if( !hasquote && 
-		    *buf != '$' && 
-		    !( isalpha( *buf ) && scanmode == SCAN_PUNCT ) )
-		{
-		    for( k = keywords; k->word; k++ )
-			if( *buf == *k->word && !strcmp( k->word, buf ) )
-		    {
-			yylval.type = k->type;
-			yylval.string = k->word;	/* used by symdump */
-			break;
-		    }
-		}
-
-		if( yylval.type == ARG )
-		    yylval.string = newstr( buf );
 	}
 
 	if( DEBUG_SCAN )

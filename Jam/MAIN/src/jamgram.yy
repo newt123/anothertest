@@ -97,7 +97,9 @@ rule0	: /* empty */
 		{ $$.parse = prules( $1.parse, $2.parse ); }
 	;
 
-rule	: `include` args `;`
+rule	: `{` rules `}`
+		{ $$.parse = $2.parse; }
+	| `include` args `;`
 		{ $$.parse = pincl( $2.list ); }
 	| ARG lol `;`
 		{ $$.parse = prule( $1.string, $2.parse ); }
@@ -117,13 +119,12 @@ rule	: `include` args `;`
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, $7.parse ) ); }
 	| `rule` ARG rule
 		{ $$.parse = psetc( $2.string, $3.parse ); }
-	| `actions` eflags ARG 
+	| `actions` eflags ARG `{`
 		{ yymode( SCAN_STRING ); }
 	  STRING 
-		{ $$.parse = psete( $3.string, $5.string, $2.number );
-		  yymode( SCAN_NORMAL ); }
-	| `{` rules `}`
-		{ $$.parse = $2.parse; }
+		{ yymode( SCAN_NORMAL ); }
+	  `}`
+		{ $$.parse = psete( $3.string, $6.string, $2.number ); }
 	;
 
 /*
