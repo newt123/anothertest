@@ -72,8 +72,8 @@ The \fILibrary\fR rule compiles one or more source files, archives the
 resulting object files into a library, and then deletes the object
 files.
 .XB
-Library libstring.a : strcmp.c strcpy.c strlen.c ; Library libtree.a :
-treemake.c treetrav.c ;
+Library libstring.a : strcmp.c strcpy.c strlen.c ; 
+Library libtree.a : treemake.c treetrav.c ;
 .XE
 .PP
 This compiles five source files, archives three of the object files
@@ -225,15 +225,13 @@ All the \fIInstall\fR rules invoke the \fIMkDir\fR rule to create the
 directory for the target file.  \fIMkDir\fR recursively invokes itself
 on its parent directory, to make sure the whole path gets created.
 \fIMkDir\fR marks directories with the built-in rule \fINOUPDATE\fR,
-which tells \fBjam\fR not to update a target once it exists, and once
-the target exists to pretend it is eternally old.  In that way, the
-contents of the install directory can depend on the existence of the
-install directory itself, and thus the directory will be made before
-its contents are installed.  You can call \fIMkDir\fR directly.
+which tells \fBjam\fR not to update a target once it exists.  In that
+way, the contents of the install directory can depend on the existence
+of the install directory itself, and thus the directory will be made
+before its contents are installed.  You can call \fIMkDir\fR directly.
 .XB
 File /usr/local/bin/junky : junky ; 
-DEPENDS /usr/local/bin/junky :
-/usr/local/bin ;
+DEPENDS /usr/local/bin/junky : /usr/local/bin ; 
 MkDir /usr/local/bin ;
 .XE
 .PP
@@ -407,7 +405,7 @@ SubInclude TOP util ;
 .XE
 .PP
 The \fB:\fR at the end of TOP makes the value of $(TOP) look like a
-device name, which \fBjam\fR respects as a directory name and uses it
+device name, which \fBjam\fR respects as a directory name and will use
 when trying to access files.  TOP must then be defined from DCL:
 .BB
 $ define/job/translation=concealed TOP DK100:[USERS.JONES.SRC.]
@@ -823,7 +821,8 @@ arise when one source file includes another: the object built from the
 source file depends both on the original and included source file, but
 the two sources files don't depend on each other.
 .XB
-DEPENDS foo.o : foo.c ; INCLUDES foo.c : foo.h ;
+DEPENDS foo.o : foo.c ; 
+INCLUDES foo.c : foo.h ;
 .XE
 .PP
 Both "foo.c" and "foo.h" become dependents of "foo.o" in this example.
@@ -841,7 +840,7 @@ The \fIALWAYS\fR rule causes its targets to be always updated.  This is
 used for the \fIclean\fR and \fIuninstall\fR targets, as they have no
 dependents and would otherwise appear never to need building.  It is
 best applied to targets that are also \fINOTFILE\fR targets, but it
-can be used to force a file to be updated as well.
+can also be used to force a real file to be updated as well.
 .PP
 The \fINOCARE\fR rule causes \fBjam\fR to ignore its targets if they
 can't be found and have no updating actions, and thus can't be built.
@@ -885,7 +884,7 @@ The \fIEXIT\fR rule does the same and then does a brutal, fatal exit of
 .PP
 These two variables control the binding of target names to real files:
 they indicate what path name is to be prepended to the target name to
-get to the real file.  $(SEARCH) provides a list of directories, along
+get to the real file.  $(SEARCH) provides a list of directories along
 which \fBjam\fR scans looking for a target.  $(LOCATE) overrides 
 $(SEARCH), indicating the directory where the target must be.  Normally,
 $(SEARCH) is used for existing targets which $(LOCATE) is use for targets
@@ -949,7 +948,7 @@ On UNIX \fBjam\fR can build targets in parallel, as long as the
 dependencies among files are properly spelled out and actions don't
 create fixed named files in the current directory.  (If either of those
 two provisions are violated, \fBjam\fR can trip over itself when
-building in parallel what just happens to build OK sequentially.)
+building in parallel things which just happen to build OK sequentially.)
 When building in parallel, \fBjam\fR simply forks off more than
 one shell at a time.
 .PP
@@ -959,11 +958,11 @@ environment.  To build in parallel across multiple hosts, you need to
 write your own shell that provides access to the multiple hosts.
 You then reset $(JAMSHELL) to reference it.
 .PP
-Just as \fBjam\fR treats expands a \fB%\fR to the rule's action block,
-it expands a \fB!\fR to the multi-process slot number.  The slot number
-varies between 1 and the number of concurrent jobs permitted by the
-\fB-j\fR flag given on the command line.  Armed with this, it is possible
-to write a multiple host shell.
+Just as \fBjam\fR expands a \fB%\fR to be the text of the rule's action
+block, it expands a \fB!\fR to be the multi-process slot number.  The slot
+number varies between 1 and the number of concurrent jobs permitted by
+the \fB-j\fR flag given on the command line.  Armed with this, it is
+possible to write a multiple host shell.
 .XB
 #!/bin/sh
 
@@ -1265,13 +1264,5 @@ YACC (default \fIyacc -d\fR)
 .IP
 The \fByacc\fR(1) command and flags.
 
-.SH BUGS
-.PP
-Because libraries are passed unbound to the \fBLink\fR rule as
-$(NEEDLIBS), they cannot be located with $(LOCATE), because
-$(LOCATE) only changes the bound file name.
-.PP
-There's no \fByacc\fR(1) on VMS, so the guts of the rules are commented
-out.
 .SH SEE ALSO
 \fBjam\fR(1)
