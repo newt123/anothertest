@@ -273,12 +273,15 @@ time_t	*time;
 	/* This is called on OS2, not NT.  */
 	/* NT fills in the time in the dirscan. */
 
+# ifdef __OS2__
+
 	struct stat statbuf;
 
 	if( stat( filename, &statbuf ) < 0 )
 	    return -1;
 
 	*time = statbuf.st_mtime;
+# endif
 
 	return 0;
 }
