@@ -1,6 +1,9 @@
-Jam - make(1) redux
+Jam - make(1) redux 
 
-Jam is a make-like program.
+This is Release 2 of Jam, a make-like program.
+
+Differences from Release 1 are in CHANGES.
+Easy reading instructions for using Jam are in Jamfile.5.
 
 FEATURES
 
@@ -57,8 +60,6 @@ INSTALLING
 	    * requires editing build.com
 
     See the "Porting" file for info on more wildcat ports.
-
-    See the manual page "Jamfile.5" for using jam.
 
 SEE ALSO
 
