@@ -123,6 +123,9 @@ Changes since 2.1
     continues to return the <>'s, but now setting grist can either
     include them (the new way) or not (the old way).  (2.1.16)
 
+    New variable modifiers :U and :L upshift and downshift (respectively)
+    the value of a variable.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

@@ -301,6 +301,11 @@ int	cancopyin;
  * var_edit() - copy input target name to output, performing : modifiers
  */
 
+typedef struct {
+	int	downshift;	/* :L -- downshift result */
+	int	upshift;	/* :U -- upshift result */
+} VAR_ACTS ;
+	
 static void
 var_edit( in, mods, out )
 char	*in;
@@ -308,6 +313,7 @@ char	*mods;
 char	*out;
 {
 	FILENAME old, new;
+	VAR_ACTS acts;
 
 	/* Parse apart original filename, putting parts into "old" */
 
@@ -315,7 +321,7 @@ char	*out;
 
 	/* Parse apart modifiers, putting them into "new" */
 
-	var_mods( mods, &new );
+	var_mods( mods, &new, &acts );
 
 	/* Replace any old with new */
 
@@ -340,6 +346,19 @@ char	*out;
 	/* Put filename back together */
 
 	file_build( &old, out );
+
+	/* Handle upshifting, downshifting now */
+
+	if( acts.upshift )
+	{
+	    for( ; *out; ++out )
+		*out = toupper( *out );
+	}
+	else if( acts.downshift )
+	{
+	    for( ; *out; ++out )
+		*out = tolower( *out );
+	}
 }
 
 
@@ -379,18 +398,37 @@ char	*out;
  */
 
 static void
-var_mods( mods, f )
+var_mods( mods, f, acts )
 char		*mods;
 FILENAME	*f;
+VAR_ACTS	*acts;
 {
 	char *flags = "GRDBSM";
 	int havezeroed = 0;
 	memset( (char *)f, 0, sizeof( *f ) );
+	memset( (char *)acts, 0, sizeof( *acts ) );
 
 	while( *mods )
 	{
 	    char *fl;
 	    struct filepart *fp;
+
+	    /* First take care of :U or :L (upshift, downshift) */
+
+	    if( *mods == 'L' )
+	    {
+		acts->downshift = 1;
+		++mods;
+		continue;
+	    }
+	    else if( *mods == 'U' )
+	    {
+		acts->upshift = 1;
+		++mods;
+		continue;
+	    }
+
+	    /* Now handle the file component flags */
 
 	    if( !( fl = strchr( flags, *mods++ ) ) )
 		break;	/* should complain, but so what... */
