@@ -25,6 +25,7 @@
  * 06/01/94 (seiwald) - new 'actions existing' does existing sources
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/19/95 (seiwald) - split DONTKNOW into CANTFIND/CANTMAKE.
+ * 02/02/95 (seiwald) - new LAURA modifier on targets.
  */
 
 typedef struct _rule RULE;
@@ -99,6 +100,7 @@ struct _target {
 # define 	T_FLAG_NOCARE 	0x02	/* NOCARE applied */
 # define 	T_FLAG_NOTFILE 	0x04	/* NOTFILE applied */
 # define	T_FLAG_TOUCHED	0x08	/* ALWAYS applied or -t target */
+# define	T_FLAG_LAURA	0x10	/* LAURA applied */
 
 	char	binding;		/* how target relates to real file */
 
@@ -113,7 +115,9 @@ struct _target {
 # define	T_DEPS_INCLUDES	1	/* due to INCLUDES */
 
 	time_t	time;			/* update time */
+	time_t	leaf;			/* update time of leaf sources */
 	time_t	htime;			/* header's time */
+	time_t	hleaf;			/* update time of leaf headers */
 
 	char	fate;			/* make0()'s diagnosis */
 	char	hfate;			/* collected fate for headers */

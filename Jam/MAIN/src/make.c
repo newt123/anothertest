@@ -30,6 +30,7 @@
  * 12/20/94 (seiwald) - make0() headers after determining fate of target, so 
  *			that headers aren't seen as dependents on themselves.
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
+ * 02/02/95 (seiwald) - propagate leaf source time for new Laura rule.
  */
 
 # include "jam.h"
@@ -131,7 +132,7 @@ int	anyhow;
 {
 	TARGETS	*c;
 	int	fate, hfate;
-	time_t	last, hlast;
+	time_t	last, leaf, hlast, hleaf;
 	char	*flag = "";
 
 	if( DEBUG_MAKEPROG )
@@ -194,14 +195,25 @@ int	anyhow;
 	 * Step 3: recursively make0() dependents 
 	 */
 
-	/* Step 3a: recursively make0() dependents */
-
 	last = 0;
+	leaf = 0;
 	fate = T_FATE_STABLE;
 
 	for( c = t->deps[ T_DEPS_DEPENDS ]; c; c = c->next )
 	{
 	    make0( c->target, t->time, depth + 1, counts, anyhow );
+	    leaf = max( leaf, c->target->leaf );
+	    leaf = max( leaf, c->target->hleaf );
+
+	    /* If Laura has been applied, we only heed the timestamps of */
+	    /* the leaf source nodes. */
+
+	    if( t->flags & T_FLAG_LAURA )
+	    {
+		last = leaf;
+		continue;
+	    }
+
 	    last = max( last, c->target->time );
 	    last = max( last, c->target->htime );
 	    fate = max( fate, c->target->fate );
@@ -209,6 +221,7 @@ int	anyhow;
 	}
 
 	/* Step 3b: determine fate: rebuild target or what? */
+
 	/* 
 	    In English:
 		If can't find or make child, can't make target.
@@ -219,10 +232,6 @@ int	anyhow;
 		If deliberately touched, make it.
 		If up-to-date temp file present, use it.
 	*/
-
-
-	/* If children newer than target or */
-	/* If target doesn't exist, rebuild.  */
 
 	if( fate >= T_FATE_CANTFIND )
 	{
@@ -256,8 +265,12 @@ int	anyhow;
 	/* Step 3c: handle missing files */
 	/* If it's missing and there are no actions to create it, boom. */
 	/* If we can't make a target we don't care about, 'sokay */
+	/* We could insist that there are updating actions for all missing */
+	/* files, but if they have dependents we just pretend it's NOTFILE. */
 
-	if( fate==T_FATE_MISSING && !t->actions && !t->deps[ T_DEPS_DEPENDS ] )
+	if( fate == T_FATE_MISSING && 
+		!t->actions && 
+		!t->deps[ T_DEPS_DEPENDS ] )
 	{
 	    if( t->flags & T_FLAG_NOCARE )
 	    {
@@ -266,13 +279,16 @@ int	anyhow;
 	    else
 	    {
 		printf( "don't know how to make %s\n", t->name );
+
 		fate = T_FATE_CANTFIND;
 	    }
 	}
 
 	/* Step 3d: propagate dependents' time & fate. */
+	/* Set leaf time to be our time only if this is a leaf. */
 
 	t->time = max( t->time, last );
+	t->leaf = leaf ? leaf : t->time ;
 	t->fate = fate;
 
 	/*
@@ -282,6 +298,7 @@ int	anyhow;
 	/* Step 4a: recursively make0() headers */
 
 	hlast = 0;
+	hleaf = 0;
 	hfate = T_FATE_STABLE;
 
 	for( c = t->deps[ T_DEPS_INCLUDES ]; c; c = c->next )
@@ -289,6 +306,8 @@ int	anyhow;
 	    make0( c->target, parent, depth + 1, counts, anyhow );
 	    hlast = max( hlast, c->target->time );
 	    hlast = max( hlast, c->target->htime );
+	    hleaf = max( hleaf, c->target->leaf );
+	    hleaf = max( hleaf, c->target->hleaf );
 	    hfate = max( hfate, c->target->fate );
 	    hfate = max( hfate, c->target->hfate );
 	}
@@ -296,6 +315,7 @@ int	anyhow;
 	/* Step 4b: propagate dependents' time & fate. */
 
 	t->htime = hlast;
+	t->hleaf = hleaf ? hleaf : t->htime;
 	t->hfate = hfate;
 
 	/* 
@@ -305,14 +325,14 @@ int	anyhow;
 	if( !( ++counts->targets % 1000 ) && DEBUG_MAKE )
 	    printf( "...patience...\n" );
 
-	if( fate > T_FATE_ISTMP && fate < T_FATE_CANTFIND && t->actions )
-	    counts->updating++;
-	else if( fate == T_FATE_ISTMP )
+	if( fate == T_FATE_ISTMP )
 	    counts->temp++;
 	else if( fate == T_FATE_CANTFIND )
 	    counts->cantfind++;
 	else if( fate == T_FATE_CANTMAKE && t->actions )
 	    counts->cantmake++;
+	else if( fate > T_FATE_STABLE && fate < T_FATE_CANTFIND && t->actions )
+	    counts->updating++;
 
 	if( !( t->flags & T_FLAG_NOTFILE ) && fate > T_FATE_STABLE )
 	    flag = "+";
