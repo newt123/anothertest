@@ -57,18 +57,20 @@ actions YYacc
 
 rule GenFile 
 {
-	Depends $(<) : $(>) ;
+	Depends $(<) : $(>[1]:S=$(SUFEXE)) $(>[2]) ;
+	GenFile1 $(<) : $(>[1]:S=$(SUFEXE)) $(>[2]) ;
 }
 
-actions GenFile 
+actions GenFile1
 {
-	$(>[1]) $(>[2]) $(<)
+	$(>) $(<)
 }
+
+GenFile jambase.c : mkjambase Jambase ;
 
 if $(UNIX)
 {
 	YYacc jamgram.y jamgramtab.h : jamgram.yy ;
-	GenFile jambase.c : mkjambase Jambase ;
 }
 
 rule TempCopy
@@ -160,4 +162,5 @@ actions Zip
 Ball SHAR : $(ALLSOURCE) ;
 Ball $(VERSION).tar : $(ALLSOURCE) ;
 Ball ZIP : $(ALLSOURCE) ;
+
 
