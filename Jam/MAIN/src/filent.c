@@ -10,6 +10,7 @@
 # ifdef NT
 
 # include <io.h>
+# include <sys/stat.h>
 
 /*
  * filent.c - scan directories and archives on NT
@@ -55,9 +56,11 @@ void	(*func)();
 
 	dir = *dir ? dir : ".";
 
- 	/* Special case \ : enter it */
+ 	/* Special case \ or d:\ : enter it */
  
  	if( f.f_dir.len == 1 && f.f_dir.ptr[0] == '\\' )
+ 	    (*func)( dir, 0 /* not stat()'ed */, (time_t)0 );
+ 	else if( f.f_dir.len == 3 && f.f_dir.ptr[1] == ':' )
  	    (*func)( dir, 0 /* not stat()'ed */, (time_t)0 );
 
 	/* Now enter contents of directory */
@@ -96,8 +99,14 @@ file_time( filename, time )
 char	*filename;
 time_t	*time;
 {
-	/* This is called on OS2, not NT.  */
-	/* NT fills in the time in the dirscan. */
+	/* On NT this is called only for C:/ */
+
+	struct stat statbuf;
+
+	if( stat( filename, &statbuf ) < 0 )
+	    return -1;
+
+	*time = statbuf.st_mtime;
 
 	return 0;
 }

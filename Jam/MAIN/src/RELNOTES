@@ -94,6 +94,11 @@ Changes since 2.1
     default (-d1): -dx turns on all levels up to x; -d+x turns on level x.
     So -d0 turns off everything and -d2 _just_ shows command text.
 
+    Fixed a few holes in the path handling on NT: it now knows that the
+    directory component of "D:\" is "D:\", just as on unix it knows that
+    the directory component of "/" is "/".  It also now successfully gets
+    the timestamp for "D:\" or just plain "\".
+
 Release notes for Jam 2.1.
 
 1.  Release info:

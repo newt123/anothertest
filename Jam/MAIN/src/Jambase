@@ -419,6 +419,7 @@ ALWAYS clean uninstall ;
 rule As
 {
 	DEPENDS $(<) : $(>) ;
+	ASFLAGS on $(<) += $(ASFLAGS) $(SUBDIRASFLAGS) ;
 }
 
 rule Bulk

@@ -74,12 +74,23 @@ FILENAME	*f;
 	}
 # endif
 
-	/* Special case for / - dirname is /, not "" */
-
 	if( p )
 	{
 	    f->f_dir.ptr = file;
-	    f->f_dir.len = p == file ? 1 : p - file;
+	    f->f_dir.len = p - file;
+	
+	    /* Special case for / - dirname is /, not "" */
+
+	    if( !f->f_dir.len )
+		f->f_dir.len = 1;
+
+# ifndef UNIX
+	    /* Special case for D:/ - dirname is D:/, not "D:" */
+
+	    if( f->f_dir.len == 2 && file[1] == ':' )
+		f->f_dir.len = 3;
+# endif
+
 	    file = p + 1;
 	}
 
@@ -164,8 +175,11 @@ char		*file;
 	    /* UNIX: Special case for dir \ : don't add another \ */
 	    /* NT:   Special case for dir / : don't add another / */
 
-	    if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == DELIM ) )
-		*file++ = DELIM;
+# ifndef UNIX
+	    if( !( f->f_dir.len == 3 && f->f_dir.ptr[1] == ':' ) )
+# endif
+		if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == DELIM ) )
+		    *file++ = DELIM;
 	}
 
 	if( f->f_base.len )
