@@ -66,23 +66,16 @@ run	: block
 	;
 
 /*
- * block - zero or more locals, then zero or more rules
- * rules - one or more rules
+ * block - one or more rules
  * rule - any one of jam's rules
  */
 
 block	: /* empty */
 		{ $$.parse = 0; }
-	| rules
-		{ $$.parse = $1.parse; }
+	| rule block
+		{ $$.parse = prules( $1.parse, $2.parse ); }
 	| `local` args `;` block
 		{ $$.parse = plocal( $2.list, $4.parse ); }
-	;
-
-rules	: rule
-		{ $$.parse = $1.parse; }
-	| rules rule
-		{ $$.parse = prules( $1.parse, $2.parse ); }
 	;
 
 rule	: `{` block `}`

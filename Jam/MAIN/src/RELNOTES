@@ -35,7 +35,7 @@ Release notes for Jam/MR 2.2
 
 	Rules may now have more fields than just $(<) and $(>).
 
-	Local variables inside a {} block are now supported.
+	Local variables are now supported.
 
 	The expression 'if $(A) in $(B)' is now supported.
 
