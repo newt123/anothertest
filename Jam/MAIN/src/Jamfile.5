@@ -816,7 +816,7 @@ the \fBJambase\fR is built.  A \fBJamfile\fR, or (more likely) a
 variables as well.
 .SS DEPENDS, INCLUDES Rules
 .PP
-These two rules build the dependency graph.  \fIDEPENDS\fR simply makes
+Two rules build the dependency graph.  \fIDEPENDS\fR simply makes
 its sources dependencies of its targets.  \fIINCLUDES\fR makes its
 sources dependencies of anything of which its targets are
 dependencies.  This reflects the dependencies that arise when one
@@ -824,18 +824,19 @@ source file includes another: the object built from the source file
 depends both on the original and included source file, but the two
 sources files don't depend on each other.
 .XB
-DEPENDS foo.o : foo.c ; INCLUDES foo.c : foo.h ;
+DEPENDS foo.o : foo.c ;
+INCLUDES foo.c : foo.h ;
 .XE
 .PP
 Both "foo.c" and "foo.h" become dependencies of "foo.o" in this example.
 .SS ALWAYS, LAURA, NOCARE, NOTFILE, NOUPDATE, TEMPORARY Rules
 .PP
-These six rules mark targets so that \fBjam\fR treats them differently
+Six rules mark targets so that \fBjam\fR treats them differently
 during its target binding and updating phase.  Normally, \fBjam\fR
 updates a target if it is missing, if its filesystem modification time
 is older than any of its dependencies (recursively), or if any of its
 dependencies are being updated.  This basic behavior can be changed by
-invoking the following rules with the target file as the rule's
+invoking the following rules with the target name as the rule's
 target:
 .PP
 The \fIALWAYS\fR rule causes its targets to be always updated.  This is
@@ -864,19 +865,19 @@ time of the target.  This has two effects:  first, once the target has
 been created it will never be updated; second, manually updating target
 will not cause other targets to be updated.  This rule is applied to
 directories by the \fIMkDir\fR rule, because \fIMkDir\fR only cares
-that the directory exists, not when it has last been updated.
+that the target directory exists, not when it has last been updated.
 .PP
 The \fITEMPORARY\fR rule allows for targets to be deleted after they
 are generated.  If \fBjam\fR sees that a temporary target is missing,
 it will use the target's parent's time when determining if the target
 needs updating.  Object files that are also archived in a library are
-marked as such, and they are deleted after they are archived.
+marked as such, so that they can be deleted after they are archived.
 .PP
 The \fILAURA\fR rule makes each of the targets depend only on its
 "leaf" dependencies.  This makes it immune to its dependencies being
-updated, as the "leaf" dependencies are those without dependencies or
-updating actions.  This allows a target to be updated only if original
-source files change.
+updated, as the "leaf" dependencies are those without their own
+dependencies and without updating actions.  This allows a target to be
+updated only if original source files change.
 .SS ECHO, EXIT Rules
 .PP
 These two rules help during the \fBJamfile\fR compiling phase.
