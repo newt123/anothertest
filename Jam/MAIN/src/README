@@ -4,7 +4,8 @@ jam - make(1) redux
     +\	Copyright 1993, 1995 Christopher Seiwald.
     \+/
 
-    This is Release 2 of jam, a make-like program.
+    This is Release 2.0 BETA of jam, a make-like program.
+    The next release will be Release 2.1.
 
     License is hereby granted to use this software and distribute it
     freely, as long as this copyright notice is retained and modifications 
@@ -53,9 +54,9 @@ INFORMATION GUIDE
     Jamfile.ps
 
     Paper.ps    The 1994 UNIX Application Development Symposium paper 
-		on jam (reflects Release 1 - see CHANGES).
+		on jam (reflects Release 1 - see RELNOTES).
 
-    CHANGES	Changes from Release 1 to Release 2.
+    RELNOTES	Release 2.0 BETA release notes.
 
     Porting	Notes on porting jam to wildcat platforms.
 
@@ -101,8 +102,8 @@ INSTALLING
 
 Comments to the author!
 
-November, 1993 - release 1
-January, 1995 - release 2
+November, 1993 - release 1.0
+March, 1995 - release 2.0 BETA
 
 Christopher Seiwald
 Seiwald@Tea.Org

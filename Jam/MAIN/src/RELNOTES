@@ -1,0 +1,198 @@
+Release notes for Jam 2.0 BETA.
+
+1.  Release info:
+	    Jam 2.0 BETA
+	    March 1, 1994
+	    VERSION 2
+	    PATCHLEVEL 3
+
+2.  Limitations/Bugs
+
+	    The new Windows/NT support has only been marginally tested.
+
+3.  Porting
+
+	    Windows/NT is now (crudely) supported, courtesy of Brett
+	    Taylor and Laura Wingerd.  You'll need to look in the file
+	    Jambase and see what variables are expected to be set.
+
+	    COHERENT/386 is now supported, courtesy of Fred Smith.
+
+	    Solaris archive string table for long archive names is now
+	    supported, thanks to Mike Matrigali.
+
+4.  Compatibility
+
+	    Jam 2.0 syntax is a superset of Jam 1.0 syntax, and thus it
+	    can interpret a Jam 1.0 Jambase.
+
+	    The Jam 2.0 Jambase is a superset of the Jam 1.0 Jambase,
+	    and thus it can include a Jamfile written for Jam 1.0.
+
+5.  Changes from Jam 1.0 to Jam 2.0
+
+5.1.  Documentation changes
+
+	    New Jamfile.5 manual page, with lots of examples and easy
+	    reading.  It replaces both the old "Examples" file as well
+	    as the old Jambase.5 manual page.
+
+	    jam.1 edited by Stephen W. Liddle and Diane Holt.
+
+5.2.  Jambase Changes (see Jamfile.5)
+
+5.2.1.  New rules:
+
+	    There are new rules to make handling subdirectories
+	    easier:  SubDir, SubInclude, SubDirCcFlags, SubDirHdrs.
+
+	    There are new rules to handle file-specific CCFLAGS and
+	    HDRS:  ObjectCcFlags and ObjectHdrs.
+
+	    Misc new rules: HardLink, InstallShell, MkDir.
+
+	    New rule "clean" that deletes exactly what jam has built,
+	    and "uninstall" that deletes exactly what was installed.
+
+	    New rules for handling suffixes .s, .f, .cc, .cpp, .C.
+
+5.2.2.  Old rules:
+
+	    The InstallBin, Lib, Man, and the new Shell rules now take
+	    the destination directory as the target and the files to be
+	    copied as sources.  These rules formerly took the files to
+	    be copied as targets, and used built-in destination
+	    directories of $(BINDIR), $(LIBDIR), $(MANDIR), and
+	    $(BINDIR).
+
+	    The InstallBin, Lib, Man, and Shell rules use the
+	    install(1) program now, instead of doing their own
+	    copying.
+
+	    The Cc rule now uses -o when possible, rather than moving
+	    the result.  Some platforms (Pyramid?) have a broken -o.
+
+	    Jambase rules taking libraries, objects, and executables
+	    now all ignore the suffixes provided and use the one
+	    defined in the Jambase for the platform.
+
+	    Stupid yyacc support moved out of Jambase and into Jamfile,
+	    as jam is its only likely user.
+
+	    Jambase now purturbs library sources with a "grist" of
+	    SOURCE_GRIST.
+
+5.2.3.  Misc:
+
+	    The names of the default rules defined in Jambase have been
+	    lowercased and un-abbreviated, to be more imake(1) like.
+	    The Jambase has been reorganized and sorted, with VMS and
+	    NT support moved in from their own files.
+
+5.3.  Jam changes (see jam.1)
+
+5.3.1.   Flags:
+
+	    New -a (anyhow) flag: means build everything.
+
+	    New -j<x> flag: run jobs in parallel.
+
+	    Old -t now rebuilds the touched target, rather that just
+	    the target's parents.
+
+	    -n now implies -d2, so that you see what's happening.  The
+	    debug level can be subsequently overridden.
+
+5.3.2.  Rules:
+
+	    New ALWAYS rule behaves like -t: always builds target.
+
+	    New EXIT rule makes it possible to raise a fatal error.
+
+	    New LAURA rule which say target depends only on the update
+	    times of the leaf sources.
+
+	    New NOUPDATE rule says built targets only if they don't
+	    exist.
+
+	    NOTIME has been renamed NOTFILE, to more accurately reflect
+	    its meaning (it says a target is not to be bound to a
+	    file).
+
+5.3.3.  Variables:
+
+	    New special variable JAMSHELL: path and argv template for
+	    command execution shell.
+
+	    Variables, both normal and target-specific, can have their
+	    value appended with the syntax "var += value" or "var on
+	    target += value".
+
+	    "?=" is now synonymous with "default =".
+
+	    Imported enviroment variable values are now split at blanks
+	    (:'s if the variable name ends in PATH), so that they
+	    become proper list values.
+
+5.3.4.  Misc:
+
+	    Files to be sourced with "include" are now bound first, so
+	    $(SEARCH) and $(LOCATE) affect them.  They still can't be
+	    built, though.
+
+	    New modifier on "actions": "existing" causes $(>) to expand
+	    only those files that currently exist.
+
+5.3.5.  Bug fixes:
+
+	    When scanning tokens known to be argument lists (such as
+	    the arguments to rule invocations and variable assignment),
+	    the parser now tells the scanner to ignore alphabetic
+	    keywords, as all such lists terminate with punctuation
+	    keywords (like : or ;).  This way, alphabetic keywords
+	    don't need to be quoted when they appear as arguments.
+
+	    The scanner has been fixed to handle oversized tokens,
+	    unterminated quotes, unterminated action blocks, and tokens
+	    abutting EOF (i.e. a token with no white space before
+	    EOF).
+
+	    The progress report "...on xth target..." used to count all
+	    targets, rather than just those with updating actions.
+	    Since the original pronouncement of targets to be udpated
+	    included only those with updating actions, the progress
+	    report has been changed to match.
+
+	    'If' conditionals now must be single arguments.
+	    Previously, they could be zero or more arguments, which
+	    didn't make much sense, and made things like 'foo == bar'
+	    true.  The comparison operator is '=', and '==' just looked
+	    like the second of three arguments in the unary "non-empty
+	    argument list" conditional.
+
+	    Header files indirectly including themselves were
+	    mistakenly reported as being dependent on themselves.
+	    Recursing through header file dependencies is now done
+	    after determining the fate of the target.
+
+	    The variable expansion support was expanding $(X)$(UNDEF)
+	    as if it were $(X).  It now expands to an empty list, like
+	    it should.
+
+	    The UNIX version of file_build() didn't handle
+	    "dir/.suffix" right.  Now it does.
+
+	    $(>) and $(<) wouldn't expand in action blocks if the
+	    targets were marked with NOTIME.  Now they expand
+	    properly.
+
+	    Malloc() return values are now checked.
+
+	    The variable expansion routine var_expand() is now a little
+	    faster, by taking a few often needed shortcuts.
+
+	    The VMS version of file_build() used the wrong length when
+	    re-rooting file names that already had directory
+	    compoents.  This was fixed.
+
+	    Various tracing adjustments were made.
