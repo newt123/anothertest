@@ -45,20 +45,33 @@ static void	var_mods();
  */
 
 LIST *
-var_expand( l, in, end, targets, sources )
+var_expand( l, in, end, targets, sources, copyin )
 LIST	*l;
 char	*in;
 char	*end;
 LIST	*targets;
 LIST	*sources;
+int	copyin;
 {
 	char out_buf[ MAXSYM ];
 	char *out = out_buf;
+	char *inp = in;
 	char *ov;		/* for temp copy of variable in outbuf */
 	int depth;
 
 	if( DEBUG_VAREXP )
 	    printf( "expand '%.*s'\n", end - in, in );
+
+	/* This gets alot of cases: $(<) and $(>) */
+
+	if( in[0] == '$' && in[1] == '(' && in[3] == ')' && !in[4] )
+	{
+	    if( in[2] == '<' )
+		return list_copy( l, targets );
+
+	    if( in[2] == '>' )
+		return list_copy( l, sources );
+	}
 
 	/* Just try simple copy of in to out. */
 
@@ -67,10 +80,15 @@ LIST	*sources;
 		goto expand;
 
 	/* No variables expanded - just add copy of input string to list. */
+	/* Copyin means the input was already a list item, and can be */
+	/* had with copystr().  Otherwise, we use the slower newstr(). */
 
 	*out = '\0';
 
-	return list_new( l, newstr( out_buf ) );
+	if( copyin )
+	    return list_new( l, copystr( inp ) );
+	else
+	    return list_new( l, newstr( out_buf ) );
 
     expand:
 	/*
@@ -138,9 +156,9 @@ LIST	*sources;
 	    /* Recursively expand variable name & rest of input */
 
 	    if( out < ov )
-		variables = var_expand( L0, out, ov, targets, sources );
+		variables = var_expand( L0, out, ov, targets, sources, 0 );
 	    if( in < end )
-		remainder = var_expand( L0, in, end, targets, sources );
+		remainder = var_expand( L0, in, end, targets, sources, 0 );
 
 	    /* Now produce the result chain */
 
@@ -182,9 +200,9 @@ LIST	*sources;
 
 		/* Get variable value, specially handling $(<) and $(>) */
 		
-		if( !strcmp( varname, "<" ) )
+		if( varname[0] == '<' && !varname[1] )
 		    value = targets;
-		else if( !strcmp( varname, ">" ) )
+		else if( varname[0] == '>' && !varname[1] )
 		    value = sources;
 		else 
 		    value = var_get( varname );

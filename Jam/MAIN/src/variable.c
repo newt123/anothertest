@@ -119,7 +119,7 @@ LIST	*sources;
 	while( ilist )
 	{
 	    char *s = ilist->string;
-	    olist = var_expand( olist, s, s + strlen(s), targets, sources );
+	    olist = var_expand( olist, s, s + strlen(s), targets, sources, 1 );
 	    ilist = list_next( ilist );
 	}
 
@@ -170,7 +170,7 @@ LIST	*sources;
 	    {
 		LIST	*l;
 
-		l = var_expand( L0, lastword, out, targets, sources );
+		l = var_expand( L0, lastword, out, targets, sources, 0 );
 
 		out = lastword;
 
