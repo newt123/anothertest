@@ -113,23 +113,18 @@ actions Groff
 }
 
 ALLSOURCE =
-	    README RELNOTES Build.com Jam.paper.ps Jambase Jamfile
-	    Jambase.5 Jambase.ps Jamfile.5 Jamfile.ps Makefile
+	    README RELNOTES Build.com Jambase Jamfile
+	    jamMR.html jam.1.html Jamfile.5.html Jambase.5.html Makefile
 	    Porting command.c command.h compile.c compile.h execcmd.h
 	    execunix.c execvms.c expand.c expand.h filent.c
 	    fileos2.c filesys.h fileunix.c filevms.c glob.c hash.c
-	    hash.h headers.c headers.h jam.1 jam.c jam.h jam.ps
+	    hash.h headers.c headers.h jam.c jam.h
 	    jambase.c jambase.h jamgram.c jamgram.h jamgram.y
 	    jamgramtab.h lists.c lists.h make.c make.h make1.c
 	    mkjambase.c newstr.c newstr.h option.c option.h parse.c
 	    parse.h patchlevel.h pathunix.c pathvms.c regexp.c
 	    regexp.h rules.c rules.h scan.c scan.h search.c search.h
 	    timestamp.c timestamp.h variable.c variable.h ;
-
-TempCopy Jam.paper.ps : ../doc/jam.paper.ps ;
-Groff jam.ps : jam.1 ;
-Groff Jamfile.ps : Jamfile.5 ;
-Groff Jambase.ps : Jambase.5 ;
 
 rule Ball
 {
@@ -145,8 +140,6 @@ rule Ball
 	}
 
 	PostBall $(<) ;
-
-	RmTemps $(<) : Jam.paper.ps ;
 }
 
 actions PreBall 
