@@ -1,6 +1,6 @@
 .TH JAMBASE 5 "30 August 1993"
 .SH NAME
-\fBJambase\fR \- \fBjam\fR(1) boilerplate
+\fBJambase\fR \- \fBJam\fR(1) boilerplate
 .SH FILES
 \fB/usr/local/lib/jam/Jambase\fR
 .br
@@ -8,7 +8,7 @@
 
 .SH DESCRIPTION
 .PP
-\fBJambase\fR contains a set of \fBjam\fR rule definitions that provide
+\fBJambase\fR contains a set of \fBJam\fR rule definitions that provide
 roughly \fBmake\fR(1)-like functionality.  \fBJam\fR reads
 \fBJambase\fR, which in turn includes the \fBJamfile\fR from the
 current directory.  This manual page lists the rules and variables
@@ -58,7 +58,7 @@ Makes \fItarget\fR a hard link to \fIsource\fR, if it isn't one already.
 Arranges the proper dependencies when the file \fIsource\fR 
 includes the files \fIheaders\fR through the "#include" C preprocessor
 directive.  The \fIObject\fR rule arranges for this rule to be called
-when \fBJam\fI does its header file scan of \fIsource\fR.
+when \fBJam\fR does its header file scan of \fIsource\fR.
 .RP "Install target : source ;"
 Copies \fIsource\fR into \fItarget\fR, using \fIinstall\fR(1).
 Used by the other \fIInstall\fR* rules.
@@ -200,9 +200,10 @@ Flags handed to the Fortran compiler for \fBFortran\fR.
 HDRPATTERN (default ^#[\\t ]*include[\\t ]*[<"](.*)[">].*$)
 .IP
 The \fBregexp\fR(3) pattern for finding header file includes in source
-files.  The \fBObject\fR rule sets the \fBjam\fR special variable
+files.  The \fBObject\fR rule sets the \fBJam\fR-special variable
 \fBHDRSCAN\fR to $(\fBHDRPATTERN\fR) for all of its sources.  The
-\fBObject\fR target depends on all header files found.
+corresponding target of the \fBObject\fR rule invocation depends on all
+header files found.
 .PP
 HDRS (no default)
 .IP
@@ -212,11 +213,11 @@ its sources.
 .PP
 JAMFILE (default \fIJamfile\fR)
 .IP
-The user provided file listing the sources to be built.
+The user-provided file listing the sources to be built.
 .PP
 JAMUSER (no default)
 .IP
-The user provided file listing additional rules.  Read just before 
+The user-provided file listing additional rules.  Read just before 
 $(JAMFILE).
 .PP
 LEX (default \fIlex\fR )
@@ -243,7 +244,7 @@ these libraries.
 LOCATE_TARGET (no default)
 .IP
 The directory for object modules and other intermediate files generated
-by \fBObject\fR.  This works by setting the \fBjam\fR special variable
+by \fBObject\fR.  This works by setting the \fBJam\fR-special variable
 \fBLOCATE\fR to the value of $(\fBLOCATE_TARGET\fR) for each of
 \fBObject\fR's targets.
 .PP
@@ -274,7 +275,7 @@ SEARCH_SOURCE (no default)
 The directory to find sources listed with \fBMain\fR, \fBLibrary\fR,
 \fBObject\fR, \fBBulk\fR, \fBFile\fR, \fBShell\fR, \fBInstallBin\fR,
 \fBInstallLib\fR, and \fBInstallMan\fR rules.  This works by setting
-the \fBjam\fR special variable \fBSEARCH\fR to the value of
+the \fBJam\fR-special variable \fBSEARCH\fR to the value of
 $(\fBSEARCH_SOURCE\fR) for each of the rules' sources.
 .PP
 SHELLHEADER (default \fI#!/bin/sh\fR)

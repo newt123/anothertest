@@ -27,7 +27,7 @@ Example:
 roughly \fBmake\fR(1)-like functionality.  \fBJam\fR reads
 \fBJambase\fR, which in turn includes the \fBJamfile\fR from the
 current directory.  This manual page gives examples for a \fBJamfile\fR,
-using the rules and variables defined in \fBJambase\fR.  
+using the rules and variables defined in the stock \fBJambase\fR.  
 .SH EXECUTABLES AND LIBRARIES
 .SS Main Rule
 .PP
@@ -115,7 +115,7 @@ Object b.o : foo.c ;
 Object c.o : foo.c ;
 .XE
 .PP
-This compiles foo.c (three times) into a.o, b.o, and c.o.  Later example
+This compiles foo.c (three times) into a.o, b.o, and c.o.  Later examples
 show how this is useful.
 .PP
 The \fIObject\fR rule looks at the suffix of the source file and calls
@@ -177,8 +177,8 @@ actions As
 Library libsys.a : alloca.s memcpy.s ;
 .XE
 .PP
-It should be mentioned that the \fB.s\fR suffix is already handled
-by \fIObject\fR.
+It should be mentioned that this example is contrived, in that the
+\fB.s\fR suffix is already handled by \fIObject\fR.
 .SS Variables
 .PP
 The following variables control the compiling of source files.
@@ -204,7 +204,7 @@ files.  $(STDHDRS) lists the header directories that the C compiler
 knows about:  it is not passed to the C compiler, but is used by
 \fIHdrRule\fR.
 .PP
-Note that these flags, if set as target specific variables, must be
+Note that these flags, if set as target-specific variables, must be
 set on the target - the object file - not the source file.
 .XB
 Library libximage.a : xtiff.c xjpeg.c xgif.c ;
@@ -217,8 +217,8 @@ CCFLAGS on xtiff.o = -DHAVE_TIFF ;
 $(CCFLAGS) and $(HDRS) can be manipulated directly, but there are two
 rules that allow these variables to be set by referring to the original
 source file name, rather than to the derived object file name.
-\fICcAddFlags\fR adds object specific flags to the $(CCFLAGS) variable,
-and \fICcAddHdrs\fR add object specific directories to the $(HDRS)
+\fICcAddFlags\fR adds object-specific flags to the $(CCFLAGS) variable,
+and \fICcAddHdrs\fR add object-specific directories to the $(HDRS)
 variable.
 .XB
 Main xviewer : viewer.c ;
@@ -228,13 +228,14 @@ CcAddHdrs viewer.c : /usr/include/X11 ;
 .SH HEADER FILE PROCESSING
 .PP
 One of the functions of the \fIObject\fR rule is to scan source files
-for (C style) header file inclusions.  To do so, it uses a special
-mechanism in \fBJam\fR for scanning a file and invoking a rule with the
-results of the scan, by setting the variables $(HDRSCAN) and $(HDRRULE)
-specifically for the source file.  The $(HDRSCAN) variable is set to an
-\fBegrep\fR(1) pattern that matches "#include" statements in C source
-files, and the $(HDRRULE) variable is set to the name of the rule that
-gets invoked as such:
+for (C style) header file inclusions.  To do so, it sets the
+Jam-special variables $(HDRSCAN) and $(HDRRULE) (specifically for the
+source file).  The presence of these variables triggers a special
+mechanism in \fBJam\fR for scanning a file for header file inclusions
+and invoking a rule with the results of the scan.  The $(HDRSCAN)
+variable is set to an \fBegrep\fR(1) pattern that matches "#include"
+statements in C source files, and the $(HDRRULE) variable is set to the
+name of the rule that gets invoked as such:
 .BB
 $(HDRRULE) source-file : included-files ;
 .BE
@@ -248,9 +249,10 @@ $(HDRSEARCH) to $(HDRS) and $(STDHDRS).
 .PP
 The header file scanning occurs during the "file binding" phase of
 \fBJam\fR, which means that the target-specific variables (for the
-source file) are in effect.  One of the \fIHdrRule\fR's jobs is to
-pass the values of $(HDRRULE), $(HDRSCAN), and $(HDRSEARCH) onto
-the included files, so that they will be scanned for any nested includes.
+source file) are in effect.  To accomodate nested includes, one of the
+\fIHdrRule\fR's jobs is to pass the values of $(HDRRULE), $(HDRSCAN),
+and $(HDRSEARCH) onto the included files, so that they will be scanned
+as well.
 .SS HdrRule Rule
 .PP
 \fIHdrRule\fR can be invoked directly, but it is most usable as the
@@ -369,8 +371,8 @@ In addition to their other duties, all rules listed above arrange for
 any generated target to be a dependency of the fake target "clean".
 The actions defined for "clean" are to remove all dependent targets
 (thus a "jam clean" removes all generated files).  To arrange this, all
-rules call the \fIClean\fR rule.  If a user provided rule creates
-targets, they can be included in a cleanup as well.
+rules call the \fIClean\fR rule.  If a user-provided rule creates
+targets, these targets can be included in the cleanup as well:
 .XB
 rule MakeHeader
 {
@@ -389,13 +391,13 @@ actions MakeHeader
 }
 .XE
 .PP
-The target "clean" is the one commonly used, but other targets for
-\fIClean\fR can be invented.  If a rule produces a type of intermediate
-files, a different \fIClean\fR target can be used to rid them.
+The target "clean" is the standard one for cleaning all files, but
+other targets for \fIClean\fR can be invented.  If a rule produces a
+type of intermediate files, a different \fIClean\fR target can be used
+to rid them.
 .XB
-rule M4
-{
-        # File depends on it's m4 source
+rule M4 {
+	# File depends on it's m4 source
 
         DEPENDS $(<) : $(>) ;
 
@@ -441,13 +443,12 @@ CcAddFlags w.c : -DW_CODE ;
 .SS RmTemps Rule
 .PP
 Some intermediate targets are meant to be temporary.  The \fIRmTemps\fR
-rule makes such targets with the \fBJam\fR TEMPORARY attribute, and then
+rule makes such targets with the TEMPORARY attribute, and then
 deletes them after they are used.  To delete them only after they have
 been used, the \fIRmTemps\fR rule must ...
-.SH USER PROVIDED JAM RULES
+.SH USER-PROVIDED JAM RULES
 .PP
-It is possible to put user provided rules and constructs directly into
-the \fBJamfile\fR, but to share them they should be placed in their
-own rule file.
-If the variable $(JAMUSER) is set to the name of this file,
+It is possible to put user-provided rules and constructs directly into
+the \fBJamfile\fR, but to share them they should be placed in their own
+rule file.  If the variable $(JAMUSER) is set to the name of this file,
 \fBJambase\fR(5) includes it just before reading the \fBJamfile\fR.
