@@ -9,20 +9,24 @@
 #
 # JAMBASE - jam ruleset providing make(1)-like functionality
 #
+# Supports UNIX and NT.
+#
 # 12/27/93 (seiwald) - purturb library sources with SOURCE_GRIST
 # 04/18/94 (seiwald) - use 'default =' when setting OS specific vars
-# 04/21/94 (seiwald) - do RmTemps together 
+# 04/21/94 (seiwald) - do RmTemps together
 # 05/05/94 (seiwald) - all supported C compilers support -o: relegate
 #		       RELOCATE as an option; set Ranlib to "" to disable it
 # 06/01/94 (seiwald) - new 'actions existing' to do existing sources
 # 08/25/94 (seiwald) - new ObjectCcFlags rule to append to per-target CCFLAGS
 # 08/29/94 (seiwald) - new ObjectHdrs rule to append to per-target HDRS
 # 09/19/94 (seiwald) - LinkLibraries and Undefs now append
-# 		     - Rule names downshifted.
+#		     - Rule names downshifted.
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
 # 10/14/94 (seiwald) - (Crude) support for .s, .C, .cc, .cpp, and .f files.
 # 01/08/94 (seiwald) - Shell now handled with awk, not sed
 # 01/09/94 (seiwald) - Install* now take dest directory as target
+# 01/10/94 (seiwald) - All entries sorted.
+# 01/10/94 (seiwald) - NT support moved in, with LauraW's help.
 
 # Rules defined by this file:
 #
@@ -59,7 +63,7 @@
 # Shell exe : source ;			make a shell executable
 # Undefines image : symbols ;		save undef's for linking
 # UserObject object : source ;		handle unknown suffixes for Object
-# Yacc source.c : source.y ; 		.y -> .c
+# Yacc source.c : source.y ;		.y -> .c
 #
 
 # Brief review of the jam language:
@@ -109,7 +113,7 @@
 # OS specific variable settings
 #
 
-switch $(OS) 
+switch $(OS)
 {
 case AIX :	LINKLIBS default = -lbsd ;
 case DGUX :	RANLIB default = "" ;
@@ -119,45 +123,91 @@ case PTX :	RANLIB default = "" ;
 case SOLARIS :	RANLIB default = "" ;
 }
 
-AR 		default = ar ru ;
-AS		default = as ;
-ASFLAGS		default = ;
-BINDIR		default = /usr/local/bin ;
-C++		default = gcc ;
-C++FLAGS	default = ;
-CC 		default = cc ;
-CCFLAGS 	default = ;
-CP		default = cp ;
-CHMOD 		default = chmod ;
-EXEMODE 	default = 711 ;
-FILEMODE 	default = 644 ;
-FORTRAN		default = f77 ;
-FORTRANFLAGS	default = ;
-HDRS 		default = ;
-INSTALL		default = install ;
-JAMFILE		default = Jamfile ;
-JAMRULES	default = ;
-LEX		default = lex ;
-LIBDIR		default = /usr/local/lib ;
-LINK 		default = $(CC) ;
-LINKFLAGS 	default = $(CCFLAGS) ;
-LINKLIBS 	default = ;
-LN		default = ln ;
-MANDIR		default = /usr/local/man ;
-MKDIR		default = mkdir ;
-MV 		default = mv -f ;
-OPTIM		default = -O ;
-RANLIB 		default = ranlib ;
-RM 		default = rm -f ;
-SHELLHEADER 	default = "#!/bin/sh" ;
-SHELLMODE 	default = 755 ;
-STDHDRS 	default = /usr/include ;
-SUFOBJ		default = .o ;
-SUFEXE		default = "" ;
-UNDEFFLAG	default = "-u _" ;
-YACC 		default = yacc -d ;
+if $(UNIX)
+{
+	AR		default = ar ru ;
+	AS		default = as ;
+	ASFLAGS		default = ;
+	BINDIR		default = /usr/local/bin ;
+	C++		default = gcc ;
+	C++FLAGS	default = ;
+	CC		default = cc ;
+	CCFLAGS		default = ;
+	CP		default = cp ;
+	CHMOD		default = chmod ;
+	EXEMODE		default = 711 ;
+	FILEMODE	default = 644 ;
+	FORTRAN		default = f77 ;
+	FORTRANFLAGS	default = ;
+	HDRS		default = ;
+	INSTALL		default = install ;
+	JAMFILE		default = Jamfile ;
+	JAMRULES	default = ;
+	LEX		default = lex ;
+	LIBDIR		default = /usr/local/lib ;
+	LINK		default = $(CC) ;
+	LINKFLAGS	default = $(CCFLAGS) ;
+	LINKLIBS	default = ;
+	LN		default = ln ;
+	MANDIR		default = /usr/local/man ;
+	MKDIR		default = mkdir ;
+	MV		default = mv -f ;
+	OPTIM		default = -O ;
+	RANLIB		default = ranlib ;
+	RM		default = rm -f ;
+	SHELLHEADER	default = "#!/bin/sh" ;
+	SHELLMODE	default = 755 ;
+	STDHDRS		default = /usr/include ;
+	SUFOBJ		default = .o ;
+	SUFEXE		default = "" ;
+	UNDEFFLAG	default = "-u _" ;
+	YACC		default = yacc -d ;
+}
+else if $(NT)
+{
+    if $(BCCROOT)
+    {
+	ECHO "Compiler is Borland C++" ;
 
-HDRPATTERN = "^#[ 	]*include[ 	]*[<\"](.*)[\">].*$" ;
+	AR		default = tlib ;
+	ARFLAGS		default = /C /P64 ;
+	CC		default = bcc32 ;
+	CCFLAGS		default = -v -w-  ;
+	MV		default = rename ;
+	RM		default = del ;
+	RW		default = $(BCCROOT)\\lib\\rw ;
+	RWLIBPATH	default = $(RW)\\lib ;
+	LINK		default = $(CC) ;
+	LINKFLAGS	default = $(CCFLAGS) ;
+	STDLIBPATH	default = $(BCCROOT)\\lib ;
+	STDHDRS		default = $(BCCROOT)\\include ;
+
+    }
+    else if $(MSVCNT)
+    {
+	ECHO "Compiler is Microsoft Visual C++" ;
+
+	AR		default = lib32 ;
+	CC		default = cl ;
+	CCFLAGS		default = /D \"NT\" ;
+	MV		default = rename ;
+	RM		default = del ;
+	RW		default = $(MSVCNT)\\lib\\rw ;
+	RWLIBPATH	default = $(RW)\\lib ;
+	LINK		default = $(CC) ;
+	LINKFLAGS	default = $(CCFLAGS) ;
+	LINKLIBS	default = $(MSVCNT)\\lib\\advapi32.lib
+				$(MSVCNT)\\lib\\libcmt.lib
+				$(MSVCNT)\\lib\\libc.lib
+				$(MSVCNT)\\lib\\oldnames.lib
+				$(MSVCNT)\\lib\\kernel32.lib ;
+	OPTIM		default =  ;
+	STDHDRS		default = $(MSVCNT)\\include ;
+	UNDEFFLAG	default = "/u _" ;
+    }
+}
+
+HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 
 #
 # Base dependencies - first for "bootstrap" kinds of rules
@@ -166,7 +216,7 @@ HDRPATTERN = "^#[ 	]*include[ 	]*[<\"](.*)[\">].*$" ;
 DEPENDS all : first shell files lib exe ;
 NOTFILE all first shell files lib exe ;
 
-# 
+#
 # Rules
 #
 
@@ -175,31 +225,29 @@ rule As
 	DEPENDS $(<) : $(>) ;
 }
 
-rule Bulk 
+rule Bulk
 {
-	for i in $(>) 
-	{ 
-	    File $(i:D=$(<)) : $(i) ; 
+	for i in $(>)
+	{
+	    File $(i:D=$(<)) : $(i) ;
 	}
 }
 
 rule Cc
 {
 	DEPENDS $(<) : $(>) ;
-	
-	if $(RELOCATE)
-	{
-	    "Cc -mv" $(<) : $(>) ;
-	}
-	else
-	{
-	    "Cc -o" $(<) : $(>) ;
-	}
-	
+
 	# Just to clarify here: this sets the per-target CCFLAGS to
 	# be the current value of (global) CCFLAGS and SUBDIRCCFLAGS.
-	
+
 	CCFLAGS on $(<) += $(CCFLAGS) $(SUBDIRCCFLAGS) ;
+
+	# If the compiler's -o flag doesn't work, relocate the .o
+
+	if $(RELOCATE)
+	{
+	    CcMv $(<) : $(>) ;
+	}
 }
 
 rule C++
@@ -229,23 +277,23 @@ rule HardLink
 rule HdrRule
 {
 	# HdrRule source : headers ;
-	
-	# N.B.  This rule is called during binding, potentially after 
-	# the fate of many targets has been determined, and must be 
-	# used with caution: don't add dependencies to unrelated 
+
+	# N.B.	This rule is called during binding, potentially after
+	# the fate of many targets has been determined, and must be
+	# used with caution: don't add dependencies to unrelated
 	# targets, and don't set variables on $(<).
-	
-	# Tell Jam that anything depending on $(<) also depends on $(>), 
+
+	# Tell Jam that anything depending on $(<) also depends on $(>),
 	# set SEARCH so Jam can find the headers, but then say we don't
-	# care if we can't actually find the headers (they may have been 
-	# within ifdefs), 
-	
+	# care if we can't actually find the headers (they may have been
+	# within ifdefs),
+
 	INCLUDES $(<) : $(>) ;
 	SEARCH on $(>) = $(HDRSEARCH) ;
 	NOCARE $(>) ;
-	
+
 	# Propagate on $(<) to $(>)
-	
+
 	HDRSEARCH on $(>) = $(HDRSEARCH) ;
 	HDRSCAN on $(>) = $(HDRSCAN) ;
 	HDRRULE on $(>) = $(HDRRULE) ;
@@ -269,7 +317,7 @@ rule InstallBin
 
 rule InstallLib
 {
-	for i in $(>) 
+	for i in $(>)
 	{
 	    Install $(i:R=$(<)) : $(i) ;
 	    INSTALLMODE on $(i:R=$(<)) = $(FILEMODE) ;
@@ -279,19 +327,19 @@ rule InstallLib
 rule InstallMan
 {
 	# Really this just strips the . from the suffix
-	
+
 	for i in $(>)
 	{
 	    switch $(i:S)
 	    {
-	    case .1 : S = 1 ; case .2 : S = 2 ; case .3 : S = 3 ; 
-	    case .4 : S = 4 ; case .5 : S = 5 ; case .6 : S = 6 ; 
-	    case .7 : S = 7 ; case .8 : S = 8 ; case .l : S = l ; 
+	    case .1 : S = 1 ; case .2 : S = 2 ; case .3 : S = 3 ;
+	    case .4 : S = 4 ; case .5 : S = 5 ; case .6 : S = 6 ;
+	    case .7 : S = 7 ; case .8 : S = 8 ; case .l : S = l ;
 	    case .n : S = n ; case .man : S = 1 ;
 	    }
-	
+
 	    D = $(i:D=man$(S):S=.$(S)) ;
-	
+
 	    Install $(D:R=$(<)) : $(i) ;
 	    INSTALLMODE on $(D:R=$(<)) = $(FILEMODE) ;
 	}
@@ -299,7 +347,7 @@ rule InstallMan
 
 rule InstallShell
 {
-	for i in $(>) 
+	for i in $(>)
 	{
 	    Install $(i:R=$(<)) : $(i) ;
 	    INSTALLMODE on $(i:R=$(<)) = $(SHELLMODE) ;
@@ -322,56 +370,56 @@ rule Library
 rule LibraryFromObjects
 {
 	# library depends on its member objects
-	
+
 	S = $(>) ;
-	
+
 	if $(SOURCE_GRIST)
 	{
 	    S = $(>:G=$(SOURCE_GRIST)) ;
 	}
-	
+
 	DEPENDS lib : $(<) ;
 	DEPENDS $(<) : $(<)($(S:BS)) ;
-	
+
 	Clean clean : $(<) ;
-	
+
 	# We wish we could locate the library and it's contents,
 	# but the reference to $(NEEDLIBS) in Main's actions
 	# get the unbound names.  Only $(<) and $(>) refer to
 	# bound file name in rule actions.  Sigh.
-	# 
+	#
 	# LOCATE on $(<) $(<)($(S:BS)) = $(LOCATE_TARGET) ;
-	
+
 	# each archive member object depends on real object
 	# each real object gets compiled from sources
-	
-	for i in $(S) 
+
+	for i in $(S)
 	{
-	    DEPENDS $(<)($(i:BS)) : $(i) ; 
+	    DEPENDS $(<)($(i:BS)) : $(i) ;
 	}
-	
+
 	# must call separate Archive rule so that 'updated' modifier
 	# on 'actions' refers to updated .o's.
 	# delete objects after archive is made
-	
+
 	Archive $(<) : $(S) ;
 	RmTemps $(<) : $(S) ;
-	
+
 	if $(RANLIB) { Ranlib $(<) ; }
 }
 
-rule LinkLibraries 
+rule LinkLibraries
 {
 	# make library dependencies of target
 	# set NEEDLIBS variable used by 'actions Main'
-	
+
 	T = $(<:S=$(SUFEXE)) ;
-	
+
 	DEPENDS $(T) : $(>) ;
 	NEEDLIBS on $(T) += $(>) ;
 }
 
-rule Main 
+rule Main
 {
 	MainFromObjects $(<) : $(>:S=$(SUFOBJ)) ;
 	Objects $(>) ;
@@ -380,63 +428,63 @@ rule Main
 rule MainFromObjects
 {
 	# make compiled sources a dependency of target
-	
+
 	S = $(>) ;
 	T = $(<:S=$(SUFEXE)) ;
-	
+
 	if $(SOURCE_GRIST)
 	{
 	    S = $(>:G=$(SOURCE_GRIST)) ;
 	}
-	
+
 	DEPENDS exe : $(T) ;
-	DEPENDS	$(T) : $(S) ;
+	DEPENDS $(T) : $(S) ;
 	LOCATE on $(T) = $(LOCATE_TARGET) ;
-	
+
 	Clean clean : $(T) ;
-	
+
 	Link $(T) : $(S) ;
 }
 
-rule Object 
+rule Object
 {
 	# locate object and search for source, if wanted
-	
+
 	Clean clean : $(<) ;
-	
+
 	LOCATE on $(<) = $(LOCATE_TARGET) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
-	
+
 	# Save HDRS for -I$(HDRS) on compile.
-	# We shouldn't need -I$(SEARCH_SOURCE) as cc can find headers 
-	# in the .c file's directory, but generated .c files (from 
-	# yacc, lex, etc) are located in $(LOCATE_TARGET), possibly 
+	# We shouldn't need -I$(SEARCH_SOURCE) as cc can find headers
+	# in the .c file's directory, but generated .c files (from
+	# yacc, lex, etc) are located in $(LOCATE_TARGET), possibly
 	# different from $(SEARCH_SOURCE).
-	
+
 	HDRS on $(<) = $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
-	
+
 	# handle #includes for source: Jam scans for headers with
 	# the regexp pattern $(HDRSCAN) and then invokes $(HDRRULE)
 	# with the scanned file as the target and the found headers
 	# as the sources.  HDRSEARCH is just grist for HdrRule.
-	
+
 	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
 	HDRSEARCH on $(>) = $(STDHDRS) $(HDRS) $(SUBDIRHDRS) $(SEARCH_SOURCE) ;
-	
+
 	# if source is not .c, generate .c with specific rule
-	
+
 	switch $(>:S)
 	{
-	    case .c : 	Cc $(<) : $(>) ;
+	    case .c :	Cc $(<) : $(>) ;
 	    case .C :	c++ $(<) : $(>) ;
 	    case .cc :	c++ $(<) : $(>) ;
-	    case .cpp :	c++ $(<) : $(>) ;
+	    case .cpp : c++ $(<) : $(>) ;
 	    case .f :	Fortran $(<) : $(>) ;
 	    case .l :	Cc $(<) : $(<:S=.c) ;
 			Lex $(<:S=.c) : $(>) ;
 	    case .s :	As $(<) : $(>) ;
-	    case .y : 	Cc $(<) : $(<:S=.c) ; 
+	    case .y :	Cc $(<) : $(<:S=.c) ;
 			Yacc $(<:S=.c) : $(>) ;
 	    case * :	UserObject $(<) : $(>) ;
 	}
@@ -445,38 +493,38 @@ rule Object
 rule ObjectCcFlags
 {
 	S = $(<:S=$(SUFOBJ)) ;
-	
+
 	if $(SOURCE_GRIST)
 	{
 	    S = $(S:G=$(SOURCE_GRIST)) ;
 	}
-	
+
 	CCFLAGS on $(S) += $(>) ;
 }
 
 rule ObjectHdrs
 {
 	S = $(<:S=$(SUFOBJ)) ;
-	
+
 	if $(SOURCE_GRIST)
 	{
 	    S = $(S:G=$(SOURCE_GRIST)) ;
 	}
-	
+
 	HDRS on $(S) += $(>) ;
 }
 
 rule Objects
 {
 	S = $(<) ;
-	
+
 	if $(SOURCE_GRIST)
 	{
 	    S = $(<:G=$(SOURCE_GRIST)) ;
 	}
-	
-	for i in $(S) 
-	{ 
+
+	for i in $(S)
+	{
 		Object $(i:S=$(SUFOBJ)) : $(i) ;
 	}
 }
@@ -505,13 +553,13 @@ rule SubDir
 	#
 	#	SubDir TOP d1 [ d2 [ d3 [ d4 ] ] ]
 	#
-	# TOP is the name of the (environment) variable that names the 
+	# TOP is the name of the (environment) variable that names the
 	# TOP level directory of the build tree.  d1...d4 are the
 	# directory elements that lead to this directory.  The call
 	# to SubDir is system independent, in that it contains no OS
-	# path!  We crudely construct the path below.
+	# path!	 We crudely construct the path below.
 
-	if ! $($(<[1])) 
+	if ! $($(<[1]))
 	{
 	    ECHO Top level of source tree has not been set with $(<[1]) ;
 	}
@@ -519,7 +567,7 @@ rule SubDir
 	# Get the grist $(g), search $(s)
 	# This is just hideous variable manipulation
 
-	if $(<[5]) { 
+	if $(<[5]) {
 		g = $(<[2])!$(<[3])!$(<[4])!$(<[5]) ;
 		s = /$(<[2])/$(<[3])/$(<[4])/$(<[5]) ;
 	} else if $(<[4]) {
@@ -537,7 +585,7 @@ rule SubDir
 	}
 
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
-	# These can be reset if needed.  For example, if the source
+	# These can be reset if needed.	 For example, if the source
 	# directory should not hold object files, LOCATE_TARGET can
 	# subsequently be redefined.
 
@@ -569,12 +617,12 @@ rule SubInclude
 	#
 	# to include a subdirectory's Jamfile.
 
-	if ! $($(<[1])) 
+	if ! $($(<[1]))
 	{
 	    ECHO Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	if $(<[5]) { 
+	if $(<[5]) {
 		include $($(<[1]))/$(<[2])/$(<[3])/$(<[4])/$(<[5])/$(JAMFILE) ;
 	} else if $(<[4]) {
 		include $($(<[1]))/$(<[2])/$(<[3])/$(<[4])/$(JAMFILE) ;
@@ -595,10 +643,10 @@ rule UserObject
 	ECHO "Unknown suffix on" $(>) "- see UserObject rule in Jambase(5)." ;
 }
 
-rule Yacc 
+rule Yacc
 {
 	h = $(<:BS=.h) ;
-	
+
 	DEPENDS $(<) $(h) : $(>) ;
 	Yacc1 $(<) $(h) : $(>) ;
 	Clean clean : $(<) $(h) ;
@@ -612,114 +660,159 @@ rule Yacc
 # Actions
 #
 
-actions updated together piecemeal Archive 
+if $(UNIX)
 {
+
+    actions updated together piecemeal Archive
+    {
 	$(AR) $(<) $(>)
-}
+    }
 
-actions As
-{
+    actions As
+    {
 	$(AS) $(ASFLAGS) -o $(<) $(>) ;
-}
+    }
 
-actions C++
-{
+    actions C++
+    {
 	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
-}
+    }
 
-actions "Cc -o"
-{
+    actions Cc
+    {
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
-}
+    }
 
-actions "Cc -mv"
-{
-	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) $(>)
-	[ $(<) != $(<:D=) ] && $(MV) $(<:D=) $(<)
-}
-
-actions piecemeal together existing Clean
-{
+    actions piecemeal together existing Clean
+    {
 	$(RM) $(>)
-}
+    }
 
-actions File
-{
+    actions File
+    {
 	$(RM) $(<)
 	$(CP) $(>) $(<) &&
 	$(CHMOD) $(FILEMODE) $(<)
-}
+    }
 
-actions Fortran
-{
+    actions Fortran
+    {
 	$(FORTRAN) $(FORTRANFLAGS) -o $(<) $(>)
-}
+    }
 
-actions HardLink
-{
+    actions HardLink
+    {
 	$(RM) $(<) && $(LN) $(>) $(<)
-}
-
-if $(INSTALL)
-{
-    actions Install
-    {
-	    $(INSTALL) -m $(INSTALLMODE) $(>) $(<)
     }
-}
-else
-{
-    actions Install
-    {
-	    [ -d "$(<:D)" ] || $(MKDIR) $(<:D)
-	    $(CP) $(>) $(<) &&
-	    $(CHMOD) $(INSTALLMODE) $(<) 
-    }
-}
 
-actions Lex
-{
+    if $(INSTALL)
+    {
+	actions Install
+	{
+	$(INSTALL) -m $(INSTALLMODE) $(>) $(<)
+	}
+    }
+    else
+    {
+	actions Install
+	{
+	[ -d "$(<:D)" ] || $(MKDIR) $(<:D)
+	$(CP) $(>) $(<) &&
+	$(CHMOD) $(INSTALLMODE) $(<)
+	}
+    }
+
+    actions Lex
+    {
 	$(LEX) $(>) && $(MV) lex.yy.c $(<)
-}
+    }
 
-actions Link 
-{
-	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) 
-	then $(CHMOD) $(EXEMODE) $(<) 
+    actions Link
+    {
+	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	then $(CHMOD) $(EXEMODE) $(<)
 	else $(RM) $(<); exit 1
 	fi
-}
+    }
 
-actions together Ranlib
-{
+    actions CcMv
+    {
+	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
+    }
+
+    actions together Ranlib
+    {
 	$(RANLIB) $(<)
-}
+    }
 
-actions quietly updated piecemeal together RmTemps
-{
+    actions quietly updated piecemeal together RmTemps
+    {
 	$(RM) $(>)
-}
+    }
 
-actions Shell
-{
+    actions Shell
+    {
 	awk '
 		NR == 1 { print "$(SHELLHEADER)" }
 		NR == 1 && /^[#:]/ { next }
 		/^##/ { next }
 		{ print }
-	' < $(>) > $(<)
+	' < $(>) > $(<) && $(CHMOD) $(SHELLMODE) $(<)
+    }
 
-	$(CHMOD) $(SHELLMODE) $(<)
-}
-
-actions Yacc1
-{
+    actions Yacc1
+    {
 	$(YACC) $(>) &&
 	{
 	    $(MV) y.tab.c $(<[1])
 	    $(MV) y.tab.h $(<[2])
 	}
+    }
 }
+
+if $(NT)
+{
+    if $(BCCROOT)
+    {
+	actions Link
+	{
+	$(LINK) -e$(<) $(LINKFLAGS) $(UNDEFS) -L$(LINKLIBS) $(NEEDLIBS) $(>) || del $(<) /f
+	}
+
+	actions together piecemeal Archive
+	{
+	$(AR) $(ARFLAGS) $(<) -+$(>)
+	}
+    }
+    else if $(MSVCNT)
+    {
+	actions Link
+	{
+	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	}
+
+	actions together piecemeal Archive
+	{
+	$(AR) /out:$(<) $(>)
+	}
+    }
+
+    actions Cc
+    {
+	$(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
+    }
+
+    actions piecemeal together existing Clean
+    {
+	$(RM) $(>) /f /q
+    }
+
+    actions File
+    {
+	copy $(>) $(<)
+    }
+}
+
 
 #
 # Backwards compatibility with jam 1, where rules were uppercased.
@@ -745,7 +838,7 @@ rule INSTALLMAN { InstallMan $(MANDIR) : $(<) ; }
 
 #
 # Now include the user's Jam rules and Jamfile.
-# 
+#
 
 include $(JAMUSER) ;
 include $(JAMFILE) ;

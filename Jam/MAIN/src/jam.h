@@ -64,7 +64,7 @@
 # include <time.h>
 
 # define OTHERSYMS "NT=true","OS=NT"
-# define JAMBASE "Jambase.NT"
+# define JAMBASE "Jambase"
 # define MAXCMD	996	/* longest command */
 # define EXITOK 0
 
