@@ -220,8 +220,13 @@ void	(*func)();
 
 	while( dirent = readdir( d ) )
 	{
+# ifdef sinix
+	    /* Broken structure definition on sinix. */
+	    f.f_base.ptr = dirent->d_name - 2;
+# else
 	    f.f_base.ptr = dirent->d_name;
-	    f.f_base.len = strlen( dirent->d_name );
+# endif
+	    f.f_base.len = strlen( f.f_base.ptr );
 
 	    file_build( &f, filename );
 

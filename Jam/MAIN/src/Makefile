@@ -10,8 +10,10 @@ OPTIM = -O
 #CFLAGS = -Dsolaris
 
 # AIX needs -lbsd, and has no identifying cpp symbol
+# Use _AIX41 if you're not on 3.2 anymore.
 #LINKLIBS = -lbsd
-#CFLAGS = -DAIX
+#CFLAGS = -D_AIX
+#CFLAGS = -D_AIX41
 
 # NT (with Microsoft compiler)
 # Use FATFS if building on a DOS FAT file system

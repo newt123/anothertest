@@ -18,7 +18,9 @@
  * 08/20/95 (seiwald) - added LINUX.
  * 08/21/95 (seiwald) - added NCR.
  * 10/23/95 (seiwald) - added SCO.
+ * 01/03/96 (seiwald) - SINIX (nixdorf) added.
  * 03/13/96 (seiwald) - Jambase now compiled in; remove JAMBASE variable.
+ * 04/29/96 (seiwald) - AIX now has 31 and 42 OSVERs.
  */
 
 # ifdef VMS
@@ -109,7 +111,11 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # ifdef _AIX
 # define unix
-# define OTHERSYMS "UNIX=true","OS=AIX"
+# ifdef _AIX41
+# define OTHERSYMS "UNIX=true","OS=AIX","OSVER=41"
+# else
+# define OTHERSYMS "UNIX=true","OS=AIX","OSVER=32"
+# endif
 # endif
 # ifdef __bsdi__
 # define OTHERSYMS "UNIX=true","OS=BSDI"
@@ -149,6 +155,9 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif
 # ifdef M_XENIX
 # define OTHERSYMS "UNIX=true","OS=SCO"
+# endif
+# ifdef sinix
+# define OTHERSYMS "UNIX=true","OS=SINIX"
 # endif
 # ifdef sun
 # define OTHERSYMS "UNIX=true","OS=SUNOS"
