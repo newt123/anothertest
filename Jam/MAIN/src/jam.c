@@ -221,7 +221,7 @@ char	**argv;
 	    if( strlen( date ) == 25 )
 		date[ 24 ] = 0;
 
-	    var_set( "JAMDATE", list_new( L0, newstr( date ), VAR_SET ) );
+	    var_set( "JAMDATE", list_new( L0, newstr( date ) ), VAR_SET );
 	}
 
 	/* load up environment variables */

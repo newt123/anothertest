@@ -83,7 +83,7 @@ time_t	*time;
 	if( DEBUG_SEARCH )
 	    printf( "search %s: %s\n", target, buf );
 
-	timestamp( target, time );
+	timestamp( buf, time );
 
 	return newstr( buf );
 }

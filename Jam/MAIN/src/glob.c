@@ -13,6 +13,7 @@
  *	?	any single character
  *	[a-z]	any single character in the range a-z
  *	[^a-z]	any single character not in the range a-z
+ *	\x	match x
  *	
  * External functions:
  *
@@ -95,6 +96,13 @@ register char *s;
 
 			--s;
 		}
+		break;
+
+	case '\\':
+		/* Force literal match of next char. */
+
+		if( !*c || *s++ != *c++ )
+		    return 1;
 		break;
 
 	default:

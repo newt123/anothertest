@@ -580,6 +580,20 @@ int	flags;
 	if( ( flags & RULE_NEWSRCS ) && t->fate <= T_FATE_STABLE )
 	    continue;
 
+	/* Prohibit duplicates for RULE_TOGETHER */
+
+	if( flags & RULE_TOGETHER )
+	{
+	    LIST *m;
+
+	    for( m = l; m; m = m->next )
+		if( !strcmp( m->string, t->boundname ) )
+		    break;
+
+	    if( m )
+		continue;
+	}
+
 	/* Build new list */
 
 	l = list_new( l, copystr( t->boundname ) );

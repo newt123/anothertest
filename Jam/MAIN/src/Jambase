@@ -419,6 +419,18 @@ else if $(VMS)
 	}
 }
 
+# 
+# Define some MS-specific commands for MS-specific actions (which
+# are not yet added to Jambase)
+#
+if $(NT) || $(OS2)
+{
+	MSLIB 		default = lib ;
+	MSLINK		default = link ;
+	MSIMPLIB 	default = implib ;
+	MSRC		default = rc ;
+}
+
 JAMFILE		default = Jamfile ;
 JAMRULES	default = Jamrules ;
 
@@ -428,9 +440,9 @@ HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 # Base dependencies - first for "bootstrap" kinds of rules
 #
 
-DEPENDS all : shell files lib exe ;
-DEPENDS all shell files lib exe : first ;
-NOTFILE all first shell files lib exe dirs clean uninstall ;
+DEPENDS all : shell files lib exe obj ;
+DEPENDS all shell files lib exe obj : first ;
+NOTFILE all first shell files lib exe obj dirs clean uninstall ;
 ALWAYS clean uninstall ;
 
 #
@@ -455,6 +467,8 @@ rule Bulk
 
 rule Cc
 {
+	local _h ;
+
 	DEPENDS $(<) : $(>) ;
 
 	# Just to clarify here: this sets the per-target CCFLAGS to
@@ -469,14 +483,18 @@ rule Cc
 	    CcMv $(<) : $(>) ;
 	}
 
-	if $(VMS) && $(HDRS[1])
+	_h = $(HDRS) $(SUBDIRHDRS) ;
+
+	if $(VMS) && $(_h)
 	{
-	    SLASHINC on $(<) = "/inc=(" $(HDRS[1]) ,$(HDRS[2-]) ")" ;
+	    SLASHINC on $(<) = "/inc=(" $(_h[1]) ,$(_h[2-]) ")" ;
 	}
 }
 
 rule C++
 {
+	local _h ;
+
 	DEPENDS $(<) : $(>) ;
 	C++FLAGS on $(<) += $(C++FLAGS) $(SUBDIRC++FLAGS) ;
 
@@ -485,9 +503,11 @@ rule C++
 	    CcMv $(<) : $(>) ;
 	}
 
-	if $(VMS) && $(HDRS[1])
+	_h = $(HDRS) $(SUBDIRHDRS) ;
+
+	if $(VMS) && $(_h)
 	{
-	    SLASHINC on $(<) = "/inc=(" $(HDRS[1]) ,$(HDRS[2-]) ")" ;
+	    SLASHINC on $(<) = "/inc=(" $(_h[1]) ,$(_h[2-]) ")" ;
 	}
 }
 
@@ -649,7 +669,14 @@ rule LibraryFromObjects
 
 	l = $(<:S=$(SUFLIB)) ;
 
-	DEPENDS lib : $(l) ;
+	if $(KEEPOBJS)
+	{
+	    DEPENDS obj : $(s) ;
+	}
+	else
+	{
+	    DEPENDS lib : $(l) ;
+	}
 
 	# Set LOCATE for the library and its contents.  The bound
 	# value shows up as $(NEEDLIBS) on the Link actions.
@@ -734,18 +761,19 @@ rule MainFromObjects
 
 	makeGristedName s : $(>) ;
 
-	# make compiled sources a dependency of target
+	makeSuffixed t $(SUFEXE) : $(<) ;
 
-	if $(<:S)
+	if $(t) != $(<)
 	{
-	    t = $(<) ;
-	} else {
-	    t = $(<:S=$(SUFEXE)) ;
+	    DEPENDS $(<) : $(t) ;
+	    NOTFILE $(<) ;
 	}
+
+	# make compiled sources a dependency of target
 
 	DEPENDS exe : $(t) ;
 	DEPENDS $(t) : $(s) ;
-	MakeLocate $(t) $(<) : $(LOCATE_TARGET) ;
+	MakeLocate $(t) : $(LOCATE_TARGET) ;
 
 	Clean clean : $(t) ;
 
@@ -784,6 +812,15 @@ rule MkDir
 	    # create parent directories explicitly there.
 
 	    s = $(<:D) ;
+
+	    if $(NT)
+	    {
+	        switch $(s)
+		{
+		case *:   : s = ;
+		case *:\\ : s = ;
+		}
+	    }
 
 	    if $(s) && $(s) != $(<)
 	    {
@@ -901,6 +938,7 @@ rule Objects
 	for i in $(s)
 	{
 		Object $(i:S=$(SUFOBJ)) : $(i) ;
+		DEPENDS obj : $(i:S=$(SUFOBJ)) ;
 	}
 }
 
@@ -1149,21 +1187,40 @@ rule addDirName
 
 	if $(>)
 	{
-	    _s = $(>[1]) ;
-
-	    for _i in $(>[2-])
+	    if $(VMS)
 	    {
-		_s = $(_s)$(SLASH)$(_i) ;
+		# This handles the following cases:
+		# 	a -> [a]
+		# 	a b c -> [a.b.c]
+		# 	x: -> x:
+		# 	x: a -> x:[a]
+		# 	x:[a] b -> x:[a.b]
+
+		switch $(>[1])
+		{
+		case *:* : _s = $(>[1]) ;
+		case \\[*\\] : _s = $(>[1]) ;
+		case * : _s = [$(>[1])] ;
+		}
+
+		for _i in [$(>[2-])]
+		{
+		    _s = $(_i:R=$(_s)) ;
+		}
+	    }
+	    else
+	    {
+		_s = $(>[1]) ; 
+
+		for _i in $(>[2-])
+		{
+		    _s = $(_s)$(SLASH)$(_i) ;
+		}
 	    }
 	}
 	else
 	{
 	    _s = $(DOT) ;
-	}
-
-	if $(VMS)
-	{
-	    _s = [$(_s)] ;
 	}
 
 	$(<) += $(_s) ;
@@ -1251,6 +1308,48 @@ rule makeRelPath
 	} else {
 	    $(<[1]) = $(_r:R=$(_l)) ;
 	}
+}
+
+rule makeSuffixed
+{
+   # E.g., "makeSuffixed s_exe $(SUFEXE) : yacc lex foo.bat ;"
+   # sets $(s_exe) to (yacc,lex,foo.bat) on Unix and 
+   # (yacc.exe,lex.exe,foo.bat) on NT.
+
+	if $(<[2])
+	{
+	    local _i ;
+
+	    $(<[1]) = ;
+
+	    for _i in $(>)
+	    {
+		if $(_i:S)
+		{
+		    $(<[1]) += $(_i) ;
+		}
+		else
+		{
+		    $(<[1]) += $(_i:S=$(<[2])) ;
+		}
+	    }
+	}
+	else
+	{
+	    $(<[1]) = $(>) ;
+	}
+}
+
+rule unmakeDir
+{
+    if $(>[1]:D) && $(>[1]:D) != $(>[1]) && $(>[1]:D) != \\\\ 
+    {
+        unmakeDir $(<) : $(>[1]:D) $(>[1]:BS) $(>[2-]) ;
+    }
+    else
+    {
+        $(<) = $(>) ;
+    }
 }
 
 #
@@ -1565,6 +1664,11 @@ else if $(VMS)
     actions Cc
     { 
 	cc/obj=$(<) $(CCFLAGS) $(OPTIM) $(SLASHINC) $(>) 
+    }
+
+    actions C++
+    { 
+	cxx/obj=$(<) $(C++FLAGS) $(OPTIM) $(SLASHINC) $(>) 
     }
 
     actions Chmod

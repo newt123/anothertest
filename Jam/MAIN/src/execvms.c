@@ -22,17 +22,26 @@
 /*
  * execvms.c - execute a shell script, ala VMS
  *
+ * The approach is this:
+ *
+ *	If the command is a single line, and shorter than WRTLEN (what we believe
+ *	to be the maximum line length), we just system() it.
+ *
+ *	If the command is multi-line, or longer than WRTLEN, we write the command
+ *	block to a temp file, splitting long lines (using "-" at the end of the line
+ *	to indicate contiuation), and then source that temp file.
+ *
  * 05/04/94 (seiwald) - async multiprocess interface; noop on VMS
+ * 12/20/96 (seiwald)  - rewritten to handle multi-line commands well
  */
 
 #define WRTLEN 240
 
 #define MIN( a, b )	((a) < (b) ? (a) : (b))
 
-    /* macros to allocate and initialize VMS descriptors
-     */
-#define DESCALLOC( name ) struct dsc$descriptor_s \
-	(name) = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_D, NULL }
+/* 1 for the @ and 4 for the .com */
+
+char tempnambuf[ L_tmpnam + 1 + 4 ] = {0};
 
 void
 execcmd( string, func, closure, shell )
@@ -41,82 +50,94 @@ void (*func)();
 void *closure;
 LIST *shell;
 {
-    int rstat = EXEC_CMD_OK;
+	char *s, *e, *p;
+	int rstat = EXEC_CMD_OK;
+	int status;
 
-    /* Split string at newlines, and don't execute empty lines */
-    /* Bail if any lines fail. */
+	/* See if string is more than one line */
+	/* discounting leading/trailing white space */
 
-    while( *string )
-    {
-	char *s;
-	char *os = string;
-	int something = 0;
+	for( s = string; *s && isspace( *s ); s++ )
+		;
 
-	for( s = string; *s && *s != '\n'; s++ )
-	    if( !isspace( *s ) )
-		something++;
+	e = p = strchr( s, '\n' );
 
-	string = *s ? s + 1 : s ;
+	while( p && isspace( *p ) )
+		++p;
 
-	if( something )
+	/* If multi line or long, write to com file.  Otherwise, exec directly. */
+
+	if( p && *p || e - s > WRTLEN )
 	{
-	    int status;
-	    int len;
+	    FILE *f;
 
-	    *s = '\0';
+	    /* Create temp file invocation "@sys$scratch:tempfile.com" */
 
-	    if( ( len = strlen( os ) ) < WRTLEN )
+	    if( !*tempnambuf )
 	    {
-		status = system( os ) & 0x07;
+		tempnambuf[0] = '@';
+		(void)tmpnam( tempnambuf + 1 );
+		strcat( tempnambuf, ".com" );
 	    }
-	    else
+	    
+	    /* Open tempfile */
+
+	    if( !( f = fopen( tempnambuf + 1, "w" ) ) )
 	    {
-		FILE *f = fopen( "sys$scratch:jam.com", "w" );
+		printf( "can't open command file\n" );
+		(*func)( closure, EXEC_CMD_FAIL );
+		return;
+	    }
 
-		if( !f )
-		{
-		    printf( "can't open command file\n" );
-		    rstat = EXEC_CMD_FAIL;
-		    break;
-		}
+	    /* For each line of the string */
 
-	        fputc( '$', f );
+	    while( *string )
+	    {
+		char *s = strchr( string, '\n' );
+		int len = s ? s + 1 - string : strlen( string );
+
+		fputc( '$', f );
+
+		/* For each chunk of a line that needs to be split */
 
 		while( len > 0 )
 		{
 		    int l = MIN( len, WRTLEN );
 
-		    fwrite( os, l, 1, f );
-
-		    if( l < len )
-			fputc( '-', f );
-
-		    fputc( '\n', f );
+		    fwrite( string, l, 1, f );
 
 		    len -= l;
-		    os += l;
+		    string += l;
+
+		    if( len )
+		    {
+			fputc( '-', f );
+			fputc( '\n', f );
+		    }
 		}
-
-		fclose( f );
-
-		status = system( "@sys$scratch:jam.com" ) & 0x07;
-
-		unlink( "sys$scratch:jam.com" );
-
-	    }		
-
-	    /* Fail for error or fatal error */
-	    /* OK on OK, warning, or info exit */
-
-	    if( status == 2 || status == 4 )
-	    {
-		rstat = EXEC_CMD_FAIL;
-		break;
 	    }
-	}
-    }
 
-    (*func)( closure, rstat );
+	    fclose( f );
+
+	    status = system( tempnambuf ) & 0x07;
+
+	    unlink( tempnambuf + 1 );
+	}
+	else
+	{
+	    /* Execute single line command */
+	    /* Strip trailing newline before execing */
+	    if( e ) *e = 0;
+	    status = system( s ) & 0x07;
+	}
+
+	/* Fail for error or fatal error */
+	/* OK on OK, warning, or info exit */
+
+	if( status == 2 || status == 4 )
+	    rstat = EXEC_CMD_FAIL;
+
+	(*func)( closure, rstat );
 }
 
 int 

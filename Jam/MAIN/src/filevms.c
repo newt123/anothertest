@@ -87,13 +87,14 @@ file_dirscan( char *dir, void (*func)() )
     char esa[256];
     char filename[256];
     char filename2[256];
+    char dirname[256];
     register status;
     FILENAME f;
 
     memset( (char *)&f, '\0', sizeof( f ) );
 
-    f.f_dir.ptr = dir;
-    f.f_dir.len = strlen( dir );
+    f.f_root.ptr = dir;
+    f.f_root.len = strlen( dir );
 
 	/* get the input file specification
 	 */
@@ -135,16 +136,46 @@ file_dirscan( char *dir, void (*func)() )
 	sys$open( &xfab );
 	sys$close( &xfab );
 
+	file_cvttime( &xab.xab$q_rdt, &time );
+
 	filename[xnam.nam$b_rsl] = '\0';
 
-	f.f_base.ptr = xnam.nam$l_name;
-	f.f_base.len = xnam.nam$b_name;
-	f.f_suffix.ptr = xnam.nam$l_type;
-	f.f_suffix.len = xnam.nam$b_type;
+	/* What we do with the name depends on the suffix: */
+	/* .dir is a directory */
+	/* .xxx is a file with a suffix */
+	/* . is no suffix at all */
+
+	if( xnam.nam$b_type == 4 && !strncmp( xnam.nam$l_type, ".DIR", 4 ) )
+	{
+	    /* directory */
+	    sprintf( dirname, "[.%.*s]", xnam.nam$b_name, xnam.nam$l_name );
+	    f.f_dir.ptr = dirname;
+	    f.f_dir.len = strlen( dirname );
+	    f.f_base.ptr = 0;
+	    f.f_base.len = 0;
+	    f.f_suffix.ptr = 0;
+	    f.f_suffix.len = 0;
+	}
+	else
+	{
+	    /* normal file with a suffix */
+	    f.f_dir.ptr = 0;
+	    f.f_dir.len = 0;
+	    f.f_base.ptr = xnam.nam$l_name;
+	    f.f_base.len = xnam.nam$b_name;
+	    f.f_suffix.ptr = xnam.nam$l_type;
+	    f.f_suffix.len = xnam.nam$b_type;
+	}
 
 	file_build( &f, filename2 );
 
-	file_cvttime( &xab.xab$q_rdt, &time );
+	/* debugging
+	printf("root '%s' base %.*s suf %.*s = %s\n",
+		dir,
+		xnam.nam$b_name, xnam.nam$l_name, 
+		xnam.nam$b_type, xnam.nam$l_type,
+		 filename2);
+	*/
 
 	(*func)( filename2, 1 /* time valid */, time );
     }

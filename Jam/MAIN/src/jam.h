@@ -45,7 +45,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "VMS=true","OS=VMS"
 # endif 
 
-# define MAXCMD	255 /* longest command - related to quotas */
+# define MAXCMD	1024 /* longest command - related to quotas */ /* dwd 14-dec-1996 */
 # define SPLITPATH ','
 # define EXITOK 1
 # define EXITBAD 0

@@ -107,7 +107,7 @@ short yydgoto[] = {                                       1,
    61,   24,   25,   26,   27,   11,   33,   82,   18,   12,
    68,   99,  108,   83,   20,   41,
 };
-short yysindex[] = {                                      0,
+int yysindex[] = {                                      0,
  -138,    0, -282, -248,    0, -279,    0, -267,    0,    0,
  -120, -123, -261, -248, -248,    0, -176, -257, -242, -268,
  -138, -264,    0, -249, -138, -213, -236,    0,    0,    0,
@@ -120,7 +120,7 @@ short yysindex[] = {                                      0,
  -267, -167, -161,    0,    0, -138,    0, -154, -183, -189,
  -138, -267,    0,    0,    0,    0,    0, -180,    0,
 };
-short yyrindex[] = {                                      0,
+int yyrindex[] = {                                      0,
     0,    0,    0,    0,    0,    0,    0, -155, -186,    0,
     0,    0,    0,    0,    0,    0, -243,    0,    0, -195,
     0,    0,    0,    0, -263, -151,    0,    0,    0,    0,
@@ -133,7 +133,7 @@ short yyrindex[] = {                                      0,
  -155,    1,    0,    0,    0, -256,    0,    0,    0,    0,
     0, -172,    0,    0,    0,    0,    0,    0,    0,
 };
-short yygindex[] = {                                      0,
+int yygindex[] = {                                      0,
    -1,  -49,   40,   -2,   63,    9,   62,   45,   -8,    0,
     0,    0,    0,    0,    0,    0,
 };
@@ -313,6 +313,18 @@ typedef int YYSTYPE;
 #ifndef YYINT
 #define YYINT int
 #endif
+#ifndef YYLVAL
+#define YYLVAL yylval
+#endif
+#ifndef YYPARSE
+#define YYPARSE() yyparse()
+#endif
+#ifndef YYABORTCALL
+#define YYABORTCALL() return (1)
+#endif
+#ifndef YYACCEPTCALL
+#define YYACCEPTCALL() return (0)
+#endif
 YYINT yydebug;
 YYINT yynerrs;
 YYINT yyerrflag;
@@ -320,14 +332,14 @@ YYINT yychar;
 short *yyssp;
 YYSTYPE *yyvsp;
 YYSTYPE yyval;
-YYSTYPE yylval;
+YYSTYPE YYLVAL;
 short yyss[YYSTACKSIZE];
 YYSTYPE yyvs[YYSTACKSIZE];
 #define YYABORT goto yyabort
 #define YYACCEPT goto yyaccept
 #define YYERROR goto yyerrlab
 YYINT
-yyparse()
+YYPARSE()
 {
     register YYINT yym, yyn, yystate;
 #if YYDEBUG
@@ -379,7 +391,7 @@ yyloop:
             goto yyoverflow;
         }
         *++yyssp = yystate = yytable[yyn];
-        *++yyvsp = yylval;
+        *++yyvsp = YYLVAL;
         yychar = (-1);
         if (yyerrflag > 0)  --yyerrflag;
         goto yyloop;
@@ -420,7 +432,7 @@ yyinrecovery:
                     goto yyoverflow;
                 }
                 *++yyssp = yystate = yytable[yyn];
-                *++yyvsp = yylval;
+                *++yyvsp = YYLVAL;
                 goto yyloop;
             }
             else
@@ -688,7 +700,7 @@ case 54:
 #line 287 "jamgram.y"
 { yyval.list = yyvsp[0].list; }
 break;
-#line 692 "y.tab.c"
+#line 704 "y.tab.c"
     }
     yyssp -= yym;
     yystate = *yyssp;
@@ -741,7 +753,7 @@ to state %d\n", *yyssp, yystate);
 yyoverflow:
     YYSTACKERRORCALL();
 yyabort:
-    return (1);
+    YYABORTCALL();
 yyaccept:
-    return (0);
+    YYACCEPTCALL();
 }

@@ -99,10 +99,20 @@ Changes since 2.1
     the directory component of "/" is "/".  It also now successfully gets
     the timestamp for "D:\" or just plain "\".
 
+    JAMDATE now gets set properly -- due to a misplaced paren (forgive
+    my fading C skills) it wasn't being set on NT.  (2.1.14)
+
+    'actions together' now suppresses duplicate sources from showing up in
+    $(>).  (2.1.15)
+
     Accessing variables whose names contained ['s (as happens with MkDir
     on VMS) wasn't working, because it treated the [ as an array subscript.
     Now [ and ] are, like :, handled specially so that they can appear in
     variable values.
+
+    Multi-line command blocks on VMS are now executed in a single system()
+    call rather than separate ones for each line.  This allows "dcl scripts"
+    to be used.
 
 Release notes for Jam 2.1.
 

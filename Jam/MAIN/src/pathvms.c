@@ -37,7 +37,7 @@ file_parse( file, f )
 char		*file;
 FILENAME	*f;
 {
-	char *p; 
+	char *p, *q;
 	char *end;
 	
 	memset( (char *)f, 0, sizeof( *f ) );
@@ -72,8 +72,15 @@ FILENAME	*f;
 	} 
 
 	/* Look for .suffix */
+	/* This would be memrchr() */
 
-	if( ( p = strrchr( file, '.' ) ) && p < end )
+	p = 0;
+	q = file;
+
+	while( q = memchr( q, '.', end - q ) )
+	    p = q++;
+
+	if( p )
 	{
 	    f->f_suffix.ptr = p;
 	    f->f_suffix.len = end - p;
@@ -145,6 +152,7 @@ file_build( f, file )
 FILENAME	*f;
 char		*file;
 {
+	char *ofile = file;
 
 	int dir_flags = HAS_DEV;
 	int root_flags = 0;
@@ -220,6 +228,10 @@ char		*file;
 	{
 	    memcpy( file, f->f_suffix.ptr, f->f_suffix.len );
 	    file += f->f_suffix.len;
+	}
+	else if( f->f_base.len )
+	{
+	    *file++ = '.';
 	}
 
 	if( f->f_member.len )
