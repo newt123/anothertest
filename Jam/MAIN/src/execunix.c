@@ -44,9 +44,6 @@
  * 01/22/95 (seiwald) - $(JAMSHELL) support
  */
 
-# define PMAX 64
-# define ARGMAX 32
-
 static int intr = 0;
 
 static int cmdsrunning = 0;
@@ -58,7 +55,7 @@ static struct
 	int	pid;
 	void	(*func)();
 	void 	*closure;
-} cmdtab[ PMAX ] = {0};
+} cmdtab[ MAXJOBS ] = {0};
 
 /*
  * onintr() - bump intr to note command interruption
@@ -84,15 +81,15 @@ LIST *shell;
 {
 	int pid;
 	int slot;
-	char *argv[ ARGMAX + 1 ];	/* +1 for NULL */
+	char *argv[ MAXARGC + 1 ];	/* +1 for NULL */
 
 	/* Find a slot in the running commands table for this one. */
 
-	for( slot = 0; slot < PMAX; slot++ )
+	for( slot = 0; slot < MAXJOBS; slot++ )
 	    if( !cmdtab[ slot ].pid )
 		break;
 
-	if( slot == PMAX )
+	if( slot == MAXJOBS )
 	{
 	    printf( "no slots for child!\n" );
 	    exit( 1 );
@@ -110,7 +107,7 @@ LIST *shell;
 
 	    sprintf( jobno, "%d", slot );
 
-	    for( i = 0; shell && i < ARGMAX; i++, shell = list_next( shell ) )
+	    for( i = 0; shell && i < MAXARGC; i++, shell = list_next( shell ) )
 	    {
 		switch( shell->string[0] )
 		{
@@ -167,7 +164,7 @@ LIST *shell;
 	/* Wait until we're under the limit of concurrent commands. */
 	/* Don't trust globs.jobs alone. */
 
-	while( cmdsrunning >= PMAX || cmdsrunning >= globs.jobs )
+	while( cmdsrunning >= MAXJOBS || cmdsrunning >= globs.jobs )
 	    if( !execwait() )
 		break;
 }
@@ -202,11 +199,11 @@ execwait()
 
 	/* Find the process in the cmdtab. */
 
-	for( i = 0; i < PMAX; i++ )
+	for( i = 0; i < MAXJOBS; i++ )
 	    if( w == cmdtab[ i ].pid )
 		break;
 
-	if( i == PMAX )
+	if( i == MAXJOBS )
 	{
 	    printf( "waif child found!\n" );
 	    exit( -1 );

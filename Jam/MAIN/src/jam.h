@@ -139,8 +139,10 @@
 /* You probably don't need to much with these. */
 
 # define MAXSYM	1024	/* longest symbol in the environment */
-# define MAXARG 1024	/* longest single word on a line */
 # define MAXPATH 1024	/* longest filename */
+
+# define MAXJOBS 64	/* silently enforce -j limit */
+# define MAXARGC 32	/* words in $(JAMSHELL) */
 
 /* Jam private definitions below. */
 
