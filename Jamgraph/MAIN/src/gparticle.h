@@ -19,6 +19,8 @@ public:
 
 	void Init( GWorld* );
 	void AddSpring( GParticle* p );
+	bool HasSpring( GParticle* p );
+	void HideSprings( GWorld* w );
 	
 	double Q;	//charge
 	double m;	//mass
@@ -39,7 +41,6 @@ public:
 	void Render();
 
 	GVector NearBy();
-	void HideSprings();
 
 	GParticle* next;
 	GSpring* springs; //connected springs

@@ -13,6 +13,25 @@ GWorld* w;
 GParticle* p;
 PartDict* pd;
 double mx, my;
+bool paused;
+bool showhelp;
+
+bool antialias;
+bool blend;
+bool include;
+
+#define JAMGRAPH_HELP "\
+	\n\
+	Usage: \n\
+		jam -ndd | jamgraph [opts]\n\
+	\n\
+	Jamgraph options:\n\
+		a : Enable antialiasing (implies b)\n\
+		b : Enable alpha blending\n\
+		i : Graph include dependencies\n\
+	\n\
+	Push ? in Jamgraph to display controls information.\n\
+"
 
 void load()
 {
@@ -28,10 +47,16 @@ void load()
 			line = new char[1024]
 		)
 	{
-		if ( memcmp( line, "Depends \"", 9 ) ) continue;
-		line += 9;
-//		if ( memcmp( line, "Includes \"", 10 ) ) continue;
-//		line += 10;
+		if ( include )
+		{
+			if ( memcmp( line, "Includes \"", 10 ) ) continue;
+			line += 10;
+		}
+		else
+		{
+			if ( memcmp( line, "Depends \"", 9 ) ) continue;
+			line += 9;
+		}
 
 		t1 = line;
         while ( *line != '"' ) line++;
@@ -90,7 +115,8 @@ void key( unsigned char key, int x, int y )
 		w->scale *= 0.9;
 		glScalef( 0.9, 0.9, 0.9 );
 		break;
-	case ' ':
+	case 'c':
+	case 'C':
 		w->autoscale = true;
 		break;
 	case 'f':
@@ -111,17 +137,25 @@ void key( unsigned char key, int x, int y )
 	case 'R':
 		w->RemoveAllBut( w->root );
 		break;
-	case 'h':
-	case 'H':
+	case 'a':
+	case 'A':
 		p = w->ParticleAt( mx, my );
 		if ( p ) w->Remove( p );
 		p = 0;
 		break;
-	case 'j':
-	case 'J':
+	case 's':
+	case 'S':
 		p = w->ParticleAt( mx, my );
-		if ( p ) p->HideSprings();
+		if ( p ) p->HideSprings( w );
 		p = 0;
+		break;
+	case 'p':
+	case 'P':
+		paused = !paused;
+		break;
+	case '/':
+	case '?':
+		showhelp = !showhelp;
 		break;
 	}
 }
@@ -164,8 +198,11 @@ void move( int x, int y )
 void timer( int val )
 {
 	w->Render();
-	w->ComputeForce();
-	w->Step();
+	if ( !paused )
+	{
+		w->ComputeForce();
+		w->Step();
+	}
 	glutPostRedisplay();
 	glutTimerFunc( 1, timer, 0 );
 }
@@ -178,22 +215,62 @@ void display()
 
 int main ( int argc, char** argv )
 {
+	glutInit( &argc, argv );
+
+	p = 0;
+	paused = showhelp = false;
+	antialias = blend = include = false;
+
+	//Parse arguments.  We only have three flags: "a" for antialiasing,
+	//"b" for blending, and "i" for includes.  So I'm going to cheat
+	//by just looking for occurrences of those characters, regardless
+	//of context.
+	while ( argc )
+	{
+		argc--;
+		argv++;
+		while ( argv[0] && *argv[0] )
+		{
+            switch ( *(argv[0]) )
+			{
+			case 'a':
+				antialias = true;
+			case 'b':
+				blend = true;
+				break;
+			case 'i':
+				include = true;
+				break;
+			case 'h':
+			case '?':
+				printf( JAMGRAPH_HELP );
+				return 0;
+			}
+			(argv[0])++;
+		}
+	}
+
 	w = new GWorld();
 	load();
 
-	p = 0;
-
-	glutInit( &argc, argv );
-	glutInitDisplayMode( GLUT_DOUBLE | GLUT_ALPHA );
+	glutInitDisplayMode( GLUT_DOUBLE | ( blend ? GLUT_ALPHA : 0 ) );
 	glutCreateWindow( "Jamgraph" );
 	glutReshapeWindow( 600, 600 );
 
+	//Blending
+	if ( blend )
+	{
+		glEnable( GL_BLEND );
+		glBlendFunc (GL_SRC_ALPHA, GL_ONE);
+	}
+
 	//Antialiasing
-	glEnable( GL_BLEND );
-	glEnable( GL_POLYGON_SMOOTH );
-	glEnable( GL_LINE_SMOOTH );
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE);
-	glHint( GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE );
+	if ( antialias )
+	{
+		glEnable( GL_POLYGON_SMOOTH );
+		glEnable( GL_LINE_SMOOTH );
+		glHint( GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE );
+	}
 
 	glutMouseFunc( click );
 	glutMotionFunc( move );
@@ -204,11 +281,3 @@ int main ( int argc, char** argv )
 
 	return 0;
 }
-
-#ifdef WIN32
-int WINAPI WinMain(HINSTANCE h,HINSTANCE,LPSTR s,int)
-{
-	char* wargs[] = { "jamgraph", "foo" };
-	return main( 1, wargs );
-}
-#endif //WIN32

@@ -8,6 +8,8 @@
 
 #include "gworld.h"
 
+extern bool showhelp;
+
 GWorld::GWorld(void)
 {
 	parts = root = 0;
@@ -33,7 +35,7 @@ void GWorld::Add( GParticle* p )
 
 void GWorld::RemoveAllBut( GParticle* a )
 {
-	for ( GParticle* p = parts ; p ; p=p->next )
+	for ( GParticle* p = parts ; p ; p = p->next )
 	{
 		p->inworld = false;
 		p->init = true;
@@ -43,12 +45,13 @@ void GWorld::RemoveAllBut( GParticle* a )
 }
 
 void GWorld::Remove( GParticle* a )
-{
+{	
 	a->inworld = false;
 	if ( a == parts ) parts = parts->next;
 	for ( GParticle* p = parts ; p ; p = p->next )
 	{
-		if ( p->next && !p->next->inworld ) p->next = p->next->next;
+		if ( p->HasSpring( a ) ) p->init = true;
+		if ( p->next == a && !p->next->inworld ) p->next = p->next->next;
 	}
 }
 
@@ -100,6 +103,14 @@ void GWorld::Render()
 	{
 		p->Render();
 	}
+
+	if ( showhelp )
+	{
+		glPushMatrix();
+		glLoadIdentity();
+		RenderHelp();
+		glPopMatrix();
+	}
 }
 
 GParticle* GWorld::ParticleAt( double x, double y )
@@ -136,4 +147,45 @@ void GWorld::ReScale()
 	
 	//Re-scale to include all particles.
 	scale = ( scale + ( 3.0 / outer ) ) / 4.0 ;
+}
+
+#define RENDERED_HELP "\
+ Left click: expand a node\n\
+Right click: drag a node\n\
+\n\
+ Z: zoom in\n\
+ X: zoom out\n\
+ C: auto camera\n\
+\n\
+ F: toggle friction\n\
+ G: toggle high gravity\n\
+\n\
+ R: reset graph\n\
+ T: trim to only this node\n\
+\n\
+ A: abolish this node\n\
+ S: stow away dependents\n\
+\n\
+ ?: toggle this text\n\
+"
+
+void GWorld::RenderHelp()
+{
+	double lineheight = 28.0 / glutGet( GLUT_WINDOW_HEIGHT );
+	double y = 1.0 - lineheight;
+	char* c = RENDERED_HELP;
+
+	glRasterPos2f( -1, y );
+	for ( char* c = RENDERED_HELP ; *c ; c++ )
+	{
+		if ( *c == '\n' )
+		{
+			y -= lineheight;
+			glRasterPos2f( -1, y );
+		}
+		else
+		{
+			glutBitmapCharacter( GLUT_BITMAP_8_BY_13, *c );
+		}
+	}
 }

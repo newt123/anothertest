@@ -76,13 +76,16 @@
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"/>
 			<Tool
-				Name="VCCustomBuildTool"/>
+				Name="VCCustomBuildTool"
+				Description="Moving Jamgraph to Jam bin directory"
+				CommandLine="copy $(TargetPath) c:\jam\bin\$(TargetFileName)"
+				Outputs="c:\jam\bin\$(TargetFileName)"/>
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)/jamgraph.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="TRUE"
-				SubSystem="2"
+				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"/>

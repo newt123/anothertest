@@ -37,21 +37,34 @@ void GParticle::AddSpring( GParticle* p )
 	springs = s;
 }
 
-void GParticle::HideSprings()
+bool GParticle::HasSpring( GParticle* p )
 {
 	for ( GSpring* s = springs ; s ; s = s->next )
 	{
-		s->part->inworld = false;
+		if ( s->part == p ) return true;
 	}
-	init = false;
+	return false;
+}
+
+void GParticle::HideSprings( GWorld* w )
+{
+	for ( GSpring* s = springs ; s ; s = s->next )
+	{
+		s->part->HideSprings( w );
+		w->Remove( s->part );
+	}
+	init = true;
 }
 
 void GParticle::Init( GWorld* w )
 {
 	for ( GSpring* s = springs ; s ; s = s->next )
 	{
-		s->part->pos = NearBy();
-		w->Add( s->part );
+		if ( !s->part->inworld )
+		{
+			s->part->pos = NearBy();
+			w->Add( s->part );
+		}
 	}
 	init = false;
 	return;
@@ -88,9 +101,9 @@ void GParticle::Init( GWorld* w )
 GVector GParticle::NearBy()
 {
 	double dx, dy;
-	int i = rand() % 128;
-	dx = r * 2 * cos( i * 2.0 * M_PI / 128 ) ;
-	dy = r * 2 * sin( i * 2.0 * M_PI / 128 ) ;
+	int i = rand() % 2048;
+	dx = r * 2 * cos( i * 2.0 * M_PI / 2048 ) ;
+	dy = r * 2 * sin( i * 2.0 * M_PI / 2048 ) ;
 	return pos + GVector( dx, dy );
 }
 
@@ -141,13 +154,13 @@ void GParticle::ComputeForce( GWorld* w )
 	}
 
 	//Gravitational force toward the center
-	dd = ~pos + r * 10.0;
 
 	//fv = ( pos / dd ) * ( -1 * CONST_G * w->mass * m / ( dd * dd ) );
 	//Instead of using real gravity, we'll use a version that's
 	//actually useful, which is more like a spring connecting everything
 	//in the world to the center.
-
+	
+	dd = ~pos + r * 10.0;
 	fv = ( pos / dd ) * ( -1 * CONST_G * w->mass * m * dd );
 	if ( w->heavyg ) fv = fv * 1000.0;
 	F = F + fv;
@@ -157,6 +170,12 @@ extern GParticle* p;
 
 void GParticle::Step( GWorld* w )
 {
+	init = false;
+	for ( GSpring* s = springs ; s ; s = s->next )
+	{
+		if ( !s->part->inworld ) init = true;
+	}
+
 	if ( p == this ) return;
 
 	double fric = ( init && initn ) ? CONST_f : CONST_f * 5.0;
@@ -221,6 +240,7 @@ void GParticle::Render()
 		glEnd();
 	}
 
+	//Draw node name.
 	glColor3f( 1, 1, 0 );
 	glBegin( GL_LINE_STRIP );
 		glVertex2f( 0, 0 );

@@ -17,6 +17,7 @@ public:
 	void Step();
 	void Render();
 	void ReScale();
+	void RenderHelp();
 
 	void Init();
 	void Add( GParticle* p );
