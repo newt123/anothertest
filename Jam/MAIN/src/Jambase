@@ -484,7 +484,12 @@ rule LinkLibraries
 	# make library dependencies of target
 	# set NEEDLIBS variable used by 'actions Main'
 
-	T = $(<:S=$(SUFEXE)) ;
+	if $(<:S)
+	{
+	    T = $(<) ;
+	} else {
+	    T = $(<:S=$(SUFEXE)) ;
+	}
 
 	DEPENDS $(T) : $(>:S=$(SUFLIB)) ;
 	NEEDLIBS on $(T) += $(>:S=$(SUFLIB)) ;
@@ -501,11 +506,17 @@ rule MainFromObjects
 	# make compiled sources a dependency of target
 
 	S = $(>) ;
-	T = $(<:S=$(SUFEXE)) ;
 
 	if $(SOURCE_GRIST)
 	{
 	    S = $(>:G=$(SOURCE_GRIST)) ;
+	}
+
+	if $(<:S)
+	{
+	    T = $(<) ;
+	} else {
+	    T = $(<:S=$(SUFEXE)) ;
 	}
 
 	DEPENDS exe : $(T) ;
@@ -632,7 +643,14 @@ rule RmTemps
 
 rule Setuid
 {
-	EXEMODE on $(<:S=$(SUFEXE)) = 4755 ;
+	if $(<:S)
+	{
+	    T = $(<) ;
+	} else {
+	    T = $(<:S=$(SUFEXE)) ;
+	}
+
+	EXEMODE on $(T) = 4755 ;
 }
 
 rule Shell
@@ -767,7 +785,14 @@ rule SubInclude
 
 rule Undefines
 {
-	UNDEFS on $(<:S=$(SUFEXE)) += $(UNDEFFLAG)$(>) ;
+	if $(<:S)
+	{
+	    T = $(<) ;
+	} else {
+	    T = $(<:S=$(SUFEXE)) ;
+	}
+
+	UNDEFS on $(T) += $(UNDEFFLAG)$(>) ;
 }
 
 rule UserObject
