@@ -4,30 +4,21 @@
  * This file is part of Jam - see jam.c for Copyright information.
  */
 
-# if defined( NT ) || defined( __OS2__ )
-
 # include "jam.h"
 # include "filesys.h"
 
+# ifdef NT
+
 # include <io.h>
 
-# ifdef __OS2__
-# include <dos.h>
-# endif
-
 /*
- * fileunix.c - manipulate file names and scan directories on UNIX
+ * filent.c - scan directories and archives on NT
  *
  * External routines:
  *
- *	file_parse() - split a file name into dir/base/suffix/member
- *	file_build() - build a filename given dir/base/suffix/member
  *	file_dirscan() - scan a directory for files
  *	file_time() - get timestamp of file, if not done by file_dirscan()
  *	file_archscan() - scan an archive for files
- *
- * File_parse() and file_build() just manipuate a string and a structure;
- * they do not make system calls.
  *
  * File_dirscan() and file_archscan() call back a caller provided function
  * for each file found.  A flag to this callback function lets file_dirscan()
@@ -35,147 +26,9 @@
  * file.   If file_dirscan() or file_archscan() do not provide the file's
  * timestamp, interested parties may later call file_time().
  *
- * 12/21/94 (wingerd) Use backslashes for pathnames - the NT way.
- * 02/23/95 (wingerd) Compilers on NT can handle "/" in pathnames, so we
- *                    should expect hdr searches to come up with strings
- *                    like "thing/thing.h". So we need to test for "/" as
- *                    well as "\" when parsing pathnames.
- * 02/14/95 (seiwald) - parse and build /xxx properly
- * 03/16/95 (seiwald) - fixed accursed typo on line 69.
  * 07/10/95 (taylor)  Findfirst() returns the first file on NT.
+ * 05/03/96 (seiwald) split apart into pathnt.c
  */
-
-/*
- * file_parse() - split a file name into dir/base/suffix/member
- */
-
-void
-file_parse( file, f )
-char		*file;
-FILENAME	*f;
-{
-	char *p, *p1; 
-	char *end;
-	
-	memset( (char *)f, 0, sizeof( *f ) );
-
-	/* Look for <grist> */
-
-	if( file[0] == '<' && ( p = strchr( file, '>' ) ) )
-	{
-	    f->f_grist.ptr = file + 1;
-	    f->f_grist.len = p - file - 1;
-	    file = p + 1;
-	}
-
-	/* Look for dir/ */
-
-	p = strrchr( file, '\\' );
-	p1 = strrchr( file, '/' );
-	p = p1 > p ? p1 : p;
-
- 	/* Special case for \ - dirname is \, not "" */
-
-	if( p )
-	{
-	    f->f_dir.ptr = file;
- 	    f->f_dir.len = p == file ? 1 : p - file;
-	    file = p + 1;
-	}
-
-	end = file + strlen( file );
-
-	/* Look for (member) */
-
-	if( ( p = strchr( file, '(' ) ) && end[-1] == ')' )
-	{
-	    f->f_member.ptr = p + 1;
-	    f->f_member.len = end - p - 2;
-	    end = p;
-	} 
-
-	/* Look for .suffix */
-
-	if( ( p = strrchr( file, '.' ) ) && p < end )
-	{
-	    f->f_suffix.ptr = p;
-	    f->f_suffix.len = end - p;
-	    end = p;
-	}
-
-	/* Leaves base */
-
-	f->f_base.ptr = file;
-	f->f_base.len = end - file;
-}
-
-/*
- * file_build() - build a filename given dir/base/suffix/member
- */
-
-void
-file_build( f, file )
-FILENAME	*f;
-char		*file;
-{
-	if( f->f_grist.len )
-	{
-	    *file++ = '<';
-	    memcpy( file, f->f_grist.ptr, f->f_grist.len );
-	    file += f->f_grist.len;
-	    *file++ = '>';
-	}
-
-	/* Don't prepend root if it's . or directory is rooted */
-
-	if( f->f_root.len 
-	    && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == '\\' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == '/' )
-	    && !( f->f_dir.len && f->f_dir.ptr[1] == ':' ) )
-	{
-	    memcpy( file, f->f_root.ptr, f->f_root.len );
-	    file += f->f_root.len;
-	    *file++ = '\\';
-	}
-	    
-	if( f->f_dir.len )
-	{
-	    memcpy( file, f->f_dir.ptr, f->f_dir.len );
-	    file += f->f_dir.len;
-	}
-
-	/* Put \ between dir and file */
-
-	if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
-	{
-	    /* Special case for dir \ : don't add another \ */
-
-	    if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == '\\' ) )
-		*file++ = '\\';
-	}
-
-	if( f->f_base.len )
-	{
-	    memcpy( file, f->f_base.ptr, f->f_base.len );
-	    file += f->f_base.len;
-	}
-
-	if( f->f_suffix.len )
-	{
-	    memcpy( file, f->f_suffix.ptr, f->f_suffix.len );
-	    file += f->f_suffix.len;
-	}
-
-	if( f->f_member.len )
-	{
-	    *file++ = '(';
-	    memcpy( file, f->f_member.ptr, f->f_member.len );
-	    file += f->f_member.len;
-	    *file++ = ')';
-	}
-	*file = 0;
-}
 
 /*
  * file_dirscan() - scan a directory for files
@@ -191,11 +44,7 @@ void	(*func)();
 	char filename[ MAXPATH ];
 	long handle;
 	int ret;
-# ifndef __OS2__
 	struct _finddata_t finfo[1];
-# else /* OS2 */
-	struct _find_t finfo[1];
-# endif /* OS2 */
 
 	/* First enter directory itself */
 
@@ -218,7 +67,6 @@ void	(*func)();
 	if( DEBUG_BINDSCAN )
 	    printf( "scan directory %s\n", dir );
 
-# ifndef __OS2__
 	handle = _findfirst( filespec, finfo );
 
 	if( ret = ( handle < 0L ) )
@@ -237,28 +85,6 @@ void	(*func)();
 	}
 
 	_findclose( handle );
-
-# else /* OS2 */
-
-	/* Time info in dos find_t is not very useful.  It consists */
-	/* of a separate date and time, and putting them together is */
-	/* not easy.  So we leave that to a later stat() call. */
-
-	if( !_dos_findfirst( filespec, _A_NORMAL|_A_RDONLY|_A_SUBDIR, finfo ) )
-	{
-	    do
-	    {
-		f.f_base.ptr = finfo->name;
-		f.f_base.len = strlen( finfo->name );
-
-		file_build( &f, filename );
-
-		(*func)( filename, 0 /* not stat()'ed */, (time_t)0 );
-	    }
-	    while( !_dos_findnext( finfo ) );
-	}
-
-# endif /* OS2 */
 }
 
 /*
@@ -273,29 +99,8 @@ time_t	*time;
 	/* This is called on OS2, not NT.  */
 	/* NT fills in the time in the dirscan. */
 
-# ifdef __OS2__
-
-	struct stat statbuf;
-
-	if( stat( filename, &statbuf ) < 0 )
-	    return -1;
-
-	*time = statbuf.st_mtime;
-# endif
-
 	return 0;
 }
-
-# ifdef __OS2__
-
-void
-file_archscan( archive, func )
-char *archive;
-void (*func)();
-{
-}
-
-# else __OS2__
 
 /*
  * file_archscan() - scan an archive for files
@@ -414,7 +219,5 @@ void (*func)();
 
 	close( fd );
 }
-
-# endif /* OS2 */
 
 # endif /* NT */
