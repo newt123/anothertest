@@ -387,12 +387,13 @@ environment variable pointing to the base of the tree.  The variable's
 name is left up to the user, but in this example we use $(TOP).
 .SH SubInclude Rule
 .PP
-The SubInclude rule sources the \fIJamfile\fR from the named subdirectory.
-It takes as its first argument the name of the environment variable that
-points to the root of the directory tree, and as subsequent arguments the
-directory names leading from the root to the \fIJamfile\fR to be included.
-Note that the name of the subdirectory is given as individual elements:
-the SubInclude rule does not use system-specific file name syntax.
+The \fISubInclude\fR rule sources the \fIJamfile\fR from the named
+subdirectory.  It takes as its first argument the name of the
+environment variable that points to the root of the directory tree, and
+as subsequent arguments the directory names leading from the root to
+the \fIJamfile\fR to be included.  Note that the name of the
+subdirectory is given as individual elements:  the \fISubInclude\fR
+rule does not use system-specific file name syntax.
 .PP
 The recommended practice is only to include one level of subdirectories
 at a time, and let the \fBJamfile\fR in each subdirectory include its
@@ -409,11 +410,11 @@ SubInclude TOP misc ;
 .SS SubDir Rule
 .PP
 In the \fBJamfile\fR of a directory that has contents other than just
-more subdirectories, the \fBSubDir\fR rule announces the name of the
-directory, in the same format as the \fBSubInclude\fR rule.  While the
-directory for \fBSubDir\fR could be inferred from the \fRSubInclude\fR,
+more subdirectories, the \fISubDir\fR rule announces the name of the
+directory, in the same format as the \fISubInclude\fR rule.  While the
+directory for \fISubDir\fR could be inferred from the \fRSubInclude\fR,
 restating it in each file makes it possible to invoke \fBJam\fR in a
-subdirectory without having to start at the root.  The \fBSubDir\fR
+subdirectory without having to start at the root.  The \fISubDir\fR
 rule should be invoked before any other rule.
 .XB
 # Mondo Man page directory.
@@ -424,8 +425,8 @@ InstallMan /usr/local/man : mondo.1 mondofile.5 mondod.8 ;
 .XE
 .PP
 If a subdirectory has both subdirectories of its own and files that
-need building, the \fBSubIncludes\fR should go at the end of the \fBJamfile\fR,
-after the effects of the \fBSubDir\fR rule are needed.
+need building, the \fISubIncludes\fR should go at the end of the \fBJamfile\fR,
+after the effects of the \fISubDir\fR rule are needed.
 .XB
 # Mondo src code.
 
@@ -440,8 +441,8 @@ SubInclude TOP src util ;
 .SS SubDirCcFlags, SubDirHdrs Rules
 .PP
 These two rules set the values of $(SUBDIRCCFLAGS) and $(SUBDIRHDRS),
-which are used by the \fBObject\fR rule when setting the target-specific
-values for $(CCFLAGS) and $(HDRS).  The \fBSubDir\fR rule clears these
+which are used by the \fIObject\fR rule when setting the target-specific
+values for $(CCFLAGS) and $(HDRS).  The \fISubDir\fR rule clears these
 variables out, and thus they provide directory-specific values of $(CCFLAGS)
 and $(HDRS).
 .XB
@@ -450,7 +451,7 @@ SubDir TOP src util ;
 SubDirHdrs $(TOP)/src/hdr ;
 SubDirCcFlags -DUSE_FAST_CODE ;
 .SS Variables
-The following variables are used when \fBJam\fR spans multiple directories:
+The following variables are used when \fIJam\fR spans multiple directories:
 .BB
 LOCATE_TARGET	Directory to put targets.
 SEARCH_SOURCE	Directory to find sources.
@@ -459,10 +460,10 @@ SUBDIRCCFLAGS	Per-directory CCFLAGS.
 SUBDIRHDRS	Per-directory HDRS.
 .BE
 .PP
-\fBSubDir\fR sets $(LOCATE_TARGET) and $(SEARCH_SOURCE) to be the
-directory given to \fBSubDir\fR.  These variables are used extensively
+\fISubDir\fR sets $(LOCATE_TARGET) and $(SEARCH_SOURCE) to be the
+directory given to \fISubDir\fR.  These variables are used extensively
 by rules in \fBJambase\fR: most rules that generate targets (like
-\fBMain\fR, \fBObject\fR, etc.) set $(LOCATE) to be $(LOCATE_TARGET)
+\fIMain\fR, \fIObject\fR, etc.) set $(LOCATE) to be $(LOCATE_TARGET)
 for the targets they generate, and rules that use sources (most all of
 them) set $(SEARCH) to be $(SEARCH_SOURCE) for the sources they use.
 .PP
@@ -470,18 +471,18 @@ $(LOCATE) and $(SEARCH) are better explained in \fBJam\fR(1), but in
 brief they tell \fBJam\fR where to create new targets and find existing
 ones, respectively.
 .PP
-\fBSubDir\fR sets $(SOURCE_GRIST) to be a value derived from the
+\fISubDir\fR sets $(SOURCE_GRIST) to be a value derived from the
 directory name.  $(SOURCE_GRIST) is used by the rules that take
 source files to perturb file names in different directories that
 would otherwise be the same.
 .PP
-$(SUBDIRCCFLAGS) and $(SUBDIRHDRS) are cleared by \fBSubDir\fR,
-set by \fBSubDirCcFlags\fR and \fBSubDirHdrs\fR, and then used
-by \fBObject\fR when setting the target-specific values for $(CCFLAGS)
+$(SUBDIRCCFLAGS) and $(SUBDIRHDRS) are cleared by \fISubDir\fR,
+set by \fISubDirCcFlags\fR and \fISubDirHdrs\fR, and then used
+by \fIObject\fR when setting the target-specific values for $(CCFLAGS)
 and $(HDRS).  They could also be set directly.
 .PP
 It should be noted that the user can set these variables independently
-of \fBSubDir\fR, or after it.  The most profitable example is setting
+of \fISubDir\fR, or after it.  The most profitable example is setting
 $(LOCATE_TARGET) to be a directory outside the source tree: in this
 case, \fBJam\fR can build without touching the source tree.
 .SH MISCELLANEOUS
