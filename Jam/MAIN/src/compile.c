@@ -218,28 +218,32 @@ LIST		*sources;
 	else
 	{
 	    /* Handle one of the comparison operators */
-
-	    LIST	*nt;
-	    LIST	*ns;
-	    char	*st;
-	    char	*ss;
-
 	    /* Expand targets and sources */
 
-	    st = ss = "";
+	    LIST *nt, *ns, *s, *t;
+	    t = nt = var_list( parse->llist, targets, sources );
+	    s = ns = var_list( parse->rlist, targets, sources );
 
-	    if( nt = var_list( parse->llist, targets, sources ) )
-		st = nt->string;
-
-	    if( ns = var_list( parse->rlist, targets, sources ) )
-		ss = ns->string;
-
-	    status = strcmp( st, ss );
+	    status = 0;
 
 	    if( DEBUG_IF )
 	    {
 		debug_compile( 0, "if" );
-		printf( "'%s' (%d) '%s'\n", st, status, ss );
+		list_print( nt );
+		printf( "(%d)", status );
+		list_print( ns );
+		printf( "\n" );
+	    }
+
+	    while( !status && ( t || s ) )
+	    {
+		char *st = t ? t->string : "";
+		char *ss = s ? s->string : "";
+
+		status = strcmp( st, ss );
+
+		t = t ? list_next( t ) : t;
+		s = s ? list_next( s ) : s;
 	    }
 
 	    list_free( nt );
