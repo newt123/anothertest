@@ -503,7 +503,7 @@ rule HdrRule
 
 rule InstallInto
 {
-	local t ;
+	local i t ;
 
 	t = $(>:G=installed) ;
 
@@ -516,7 +516,10 @@ rule InstallInto
 
 	Clean uninstall : $(t) ;
 
-	Install $(t) : $(>) ;
+	for i in $(>)
+	{
+	    Install $(i:G=installed) : $(i) ;
+	}
 
 	if ! $(INSTALL)
 	{
