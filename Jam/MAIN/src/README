@@ -88,14 +88,13 @@ INSTALLING
 	    NEXTSTEP 3.2	NEXT
 	    OSF/1		OSF
 	    PTX V2.1.0		PTX
-	    Solaris 2		SOLARIS		*+
+	    Solaris 2		SOLARIS		*
 	    SunOS4.1		SUNOS
 	    Ultrix 4.2		ULTRIX
 
 	    NT			NT		*
 	
 	    * requires editing Makefile
-	    + only works with SUNSwpro CC (dirent confusion) 
 
     Build jam with @build.com on:
 
