@@ -39,13 +39,13 @@ rule UserObject
     {
 	if $(UNIX)
 	{
-	    DEPENDS $(<) $(<:B)tab.h : $(>) ;
-	    YYacc $(<) $(<:B)tab.h : $(>) ;
-	    LOCATE on $(<) $(<:B)tab.h = $(LOCATE_TARGET) ;
-	    Clean clean : $(<) $(<:B)tab.h ;
+	    DEPENDS $(<:S=.y) $(<:B)tab.h : $(>) ;
+	    YYacc $(<:S=.y) $(<:B)tab.h : $(>) ;
+	    LOCATE on $(<:S=.y) $(<:B)tab.h = $(LOCATE_TARGET) ;
+	    Clean clean : $(<:S=.y) $(<:B)tab.h ;
 	}
-	Cc $(<) : $(<:S=.c) ; 
 	Yacc $(<:S=.c) : $(<:S=.y) ;
+	Cc $(<) : $(<:S=.c) ; 
     }
 }
 
