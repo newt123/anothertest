@@ -367,13 +367,13 @@ SubDirCcFlags -DUSE_FAST_CODE ;
 .PP
 One of the functions of the \fIObject\fR rule is to scan source files
 for (C style) header file inclusions.  To do so, it sets the
-Jam-special variables $(HDRSCAN) and $(HDRRULE) (specifically for the
-source file).  The presence of these variables triggers a special
-mechanism in \fBjam\fR for scanning a file for header file inclusions
-and invoking a rule with the results of the scan.  The $(HDRSCAN)
-variable is set to an \fBegrep\fR(1) pattern that matches "#include"
-statements in C source files, and the $(HDRRULE) variable is set to the
-name of the rule that gets invoked as such:
+\fBjam\fR-special variables $(HDRSCAN) and $(HDRRULE) as
+target-specific variables for the source file.  The presence of these
+variables triggers a special mechanism in \fBjam\fR for scanning a file
+for header file inclusions and invoking a rule with the results of the
+scan.  The $(HDRSCAN) variable is set to an \fBegrep\fR(1) pattern that
+matches "#include" statements in C source files, and the $(HDRRULE)
+variable is set to the name of the rule that gets invoked as such:
 .BB
 $(HDRRULE) source-file : included-files ;
 .BE
@@ -388,9 +388,9 @@ $(HDRSEARCH) to $(HDRS) and $(STDHDRS).
 The header file scanning occurs during the "file binding" phase of
 \fBjam\fR, which means that the target-specific variables (for the
 source file) are in effect.  To accomodate nested includes, one of the
-\fIHdrRule\fR's jobs is to pass the values of $(HDRRULE), $(HDRSCAN),
-and $(HDRSEARCH) onto the included files, so that they will be scanned
-as well.
+\fIHdrRule\fR's jobs is to pass the target-specific values of
+$(HDRRULE), $(HDRSCAN), and $(HDRSEARCH) onto the included files, so
+that they will be scanned as well.
 .SS HdrRule Rule
 .PP
 \fIHdrRule\fR can be invoked directly, but it is most usable as the
@@ -417,7 +417,7 @@ by the program "mkhdr", which can be built from "mkhdr.c".  By calling
 The complete list of variables used by the \fIHdrRule\fR coterie are:
 .BB
 $(HDRRULE)         scan rule, when set activates scanning (HdrRule)
-$(HDRSCAN)         scan pattern ($(HDRPATTERN))
+$(HDRSCAN)         scan pattern when actually scanning ($(HDRPATTERN))
 $(HDRSEARCH)       search list for HdrRule ($(HDRS) $(STDHDRS))
 $(HDRS)            non-standard directories for headers ()
 $(STDHDRS)         standard directories for headers (/usr/include)
@@ -718,8 +718,8 @@ Clean zap : junk1 junk2 junk3 ;
 .PP
 Saying "\f(CWjam zap\fP" would cause it to delete junk1, junk2, and junk3.
 .PP
-All rules listed in this manual page, except the \fIInstall\fR ones, invoke
-the following \fIClean\fR rule:
+All rules listed in this manual page that generate targets, except the
+\fIInstall\fR rules, invoke the following \fIClean\fR rule:
 .BB
 Clean clean : $(<) ;
 .BE
@@ -1132,6 +1132,11 @@ ASFLAGS (no default)
 .IP
 Flags handed to the assembler for \fBAs\fR.
 .PP
+AWK (\fIawk\fR)
+.IP
+The name of awk interpreter, used when copying a shell script for
+the \fIShell\fR rule.
+.PP
 BINDIR (default \fI/usr/local/bin\fR)
 .IP
 Not used.  Set for convenience.
@@ -1154,6 +1159,10 @@ C++FLAGS (no default)
 Flags handed to the C++ compiler for \fBC++\fR.  \fBOPTIM\fR is also
 handed to the C++ compiler.
 .PP
+CP (default \fIcp\fR)
+.IP
+The file copy program, used by \fIFile\fR and \fIInstall\fR.
+.PP
 EXEMODE (default \fI711\fR)
 .IP
 Permissions for executables linked with \fBMain\fR.
@@ -1170,6 +1179,10 @@ FORTRANFLAGS (no default)
 .IP
 Flags handed to the Fortran compiler for \fBFortran\fR.
 .PP
+GROUP (no default)
+.IP
+The group owner of installed filed.  Used by \fIInstall\fR.
+.PP
 HDRPATTERN (default ^#[\\t ]*include[\\t ]*[<"](.*)[">].*$)
 .IP
 The \fBregexp\fR(3) pattern for finding header file includes in source
@@ -1178,15 +1191,35 @@ files.  The \fBObject\fR rule sets the \fBjam\fR-special variable
 corresponding target of the \fBObject\fR rule invocation depends on all
 header files found.
 .PP
+HDRRULE (default HdrRule)
+.IP
+The rule to invoke with the results of header file scanning.
+This is a \fBjam\fR-special variable.
+.PP
+HDRSCAN (default $(HDRPATTERN))
+.IP
+The \fBregexp\fR(3) pattern for header file scanning.  This variable
+and $(HDRRULE) trigger the scanning.  This is a \fBjam\fR-special
+variable.
+.PP
 HDRS (no default)
 .IP
 Directories to be scanned for header files and handed to the C compiler
 with -I.  The \fBObject\fR rule sets \fBHDRS\fR to $(HDRS) for each of
 its sources.
 .PP
+INSTALL (default \fIinstall\fR)
+.IP
+The file copying program for the \fIInstall\fR rule.  If not set
+\fIInstall\fR uses $(CP).
+.PP
 JAMFILE (default \fIJamfile\fR)
 .IP
 The user-provided file listing the sources to be built.
+.PP
+JAMRULES (default \fIJamrules\fR)
+.IP
+The name of the file included by the \fISubDir\fR rule.
 .PP
 LEX (default \fIlex\fR )
 .IP
@@ -1224,6 +1257,16 @@ MANDIR (default \fI/usr/local/man\fR)
 .IP
 Not used.  Set for convenience.
 .PP
+MKDIR (default \fImkdir\fR)
+.IP
+The program to create directories for the \fIMkDir\fR rule.
+.PP
+MODE (default varies)
+.IP
+The file mode for files installed with \fIInstall\fR.  Is set to
+$(EXEMODE), $(FILEMODE), or $(SHELLMODE) depending which rule invoked
+\fIInstall\fR.
+.PP
 MV (default \fImv -f\fR)
 .IP
 The file rename command and options.
@@ -1232,10 +1275,19 @@ OPTIM (default \fI-O\fR)
 .IP
 More flags handed to the C compiler.
 .PP
+OWNER (no default)
+.IP
+The owner of installed filed.  Used by \fIInstall\fR.
+.PP
 RANLIB (default \fIranlib\fR)
 .IP
 If set, the command string to be invoked on each library after
 archiving.
+.PP
+RELOCATE (default unset)
+.IP
+If set, tells the \fICc\fR rule to move the output object file to
+its target directory because the cc command has a broken -o option.
 .PP
 RM (default \fIrm -f\fR)
 .IP
@@ -1258,10 +1310,37 @@ SHELLMODE (default \fI755\fR)
 .IP
 Permissions for files installed by \fBShell\fR.
 .PP
+SLASH (default \fI/\fR)
+.IP
+The directory separator.  Used by \fISubDir\fR and \fISubInclude\fR
+to build up a directory path.
+.PP
+SOURCE_GRIST (no default)
+.IP
+Set by the \fISubDir\fR to a value derived from the directory name, and
+used by \fIObjects\fR and related rules as 'grist' to perturb file names.
+.PP
 STDHDRS (default \fI/usr/include\fR)
 .IP
 Directories where headers can be found without resorting to using the
 \fIflag\fR to the C compiler.
+.PP
+SUBDIR (no default)
+.IP
+Set by \fISubDir\fR to be the named directory.
+.PP
+SUFEXE (default "")
+.IP
+The suffix for executable files, if none provided.  Used by the
+\fIMain\fR rule.
+.PP
+SUFLIB (default \fI.a\fR)
+.IP
+The suffix for libraries.  Used by the \fILibrary\fR and related rules.
+.PP
+SUFOBJ (default \fI.o\fR)
+.IP
+The suffix for object files.  Used by the \fIObjects\fR and related rules.
 .PP
 UNDEFFLAG (default \fI-u _\fR)
 .IP

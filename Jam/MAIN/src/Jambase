@@ -325,6 +325,12 @@ rule Cc
 rule C++
 {
 	DEPENDS $(<) : $(>) ;
+	C++FLAGS on $(<) += $(C++FLAGS) $(SUBDIRC++FLAGS) ;
+
+	if $(VMS) && $(HDRS[1])
+	{
+	    SLASHINC on $(<) = "/inc=(" $(HDRS[1]) ,$(HDRS[2-]) ")" ;
+	}
 }
 
 rule File
@@ -423,16 +429,16 @@ rule InstallMan
 	{
 	    switch $(i:S)
 	    {
-	    case .1 : S = 1 ; case .2 : S = 2 ; case .3 : S = 3 ;
-	    case .4 : S = 4 ; case .5 : S = 5 ; case .6 : S = 6 ;
-	    case .7 : S = 7 ; case .8 : S = 8 ; case .l : S = l ;
-	    case .n : S = n ; case .man : S = 1 ;
+	    case .1 : s = 1 ; case .2 : s = 2 ; case .3 : s = 3 ;
+	    case .4 : s = 4 ; case .5 : s = 5 ; case .6 : s = 6 ;
+	    case .7 : s = 7 ; case .8 : s = 8 ; case .l : s = l ;
+	    case .n : s = n ; case .man : s = 1 ;
 	    }
 
-	    D = $(i:D=man$(S):S=.$(S)) ;
+	    d = $(i:D=man$(s):S=.$(s)) ;
 
-	    Install $(D:R=$(<)) : $(i) ;
-	    MODE on $(D:R=$(<)) = $(FILEMODE) ;
+	    Install $(d:R=$(<)) : $(i) ;
+	    MODE on $(d:R=$(<)) = $(FILEMODE) ;
 	}
 }
 
@@ -462,44 +468,44 @@ rule LibraryFromObjects
 {
 	# library depends on its member objects
 
-	L = $(<:S=$(SUFLIB)) ;
-	S = $(>) ;
+	l = $(<:S=$(SUFLIB)) ;
+	s = $(>) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(>:G=$(SOURCE_GRIST)) ;
+	    s = $(>:G=$(SOURCE_GRIST)) ;
 	}
 
-	DEPENDS lib : $(L) ;
-	DEPENDS $(L) : $(L)($(S:BS)) ;
+	DEPENDS lib : $(l) ;
+	DEPENDS $(l) : $(l)($(s:BS)) ;
 
-	Clean clean : $(L) ;
+	Clean clean : $(l) ;
 
 	# We wish we could locate the library and it's contents,
 	# but the reference to $(NEEDLIBS) in Main's actions
 	# get the unbound names.  Only $(<) and $(>) refer to
 	# bound file name in rule actions.  Sigh.
 	#
-	# LOCATE on $(<) $(<)($(S:BS)) = $(LOCATE_TARGET) ;
+	# LOCATE on $(<) $(<)($(s:BS)) = $(LOCATE_TARGET) ;
 
 	# each archive member object depends on real object
 	# each real object gets compiled from sources
 
-	for i in $(S)
+	for i in $(s)
 	{
-	    DEPENDS $(L)($(i:BS)) : $(i) ;
+	    DEPENDS $(l)($(i:BS)) : $(i) ;
 	}
 
 	# must call separate Archive rule so that 'updated' modifier
 	# on 'actions' refers to updated .o's.
 	# delete objects after archive is made
 
-	if $(CRELIB) { CreLib $(L) ; }
+	if $(CRELIB) { CreLib $(l) ; }
 
-	Archive $(L) : $(S) ;
-	RmTemps $(L) : $(S) ;
+	Archive $(l) : $(s) ;
+	RmTemps $(l) : $(s) ;
 
-	if $(RANLIB) { Ranlib $(L) ; }
+	if $(RANLIB) { Ranlib $(l) ; }
 }
 
 rule Link
@@ -515,13 +521,13 @@ rule LinkLibraries
 
 	if $(<:S)
 	{
-	    T = $(<) ;
+	    t = $(<) ;
 	} else {
-	    T = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	DEPENDS $(T) : $(>:S=$(SUFLIB)) ;
-	NEEDLIBS on $(T) += $(>:S=$(SUFLIB)) ;
+	DEPENDS $(t) : $(>:S=$(SUFLIB)) ;
+	NEEDLIBS on $(t) += $(>:S=$(SUFLIB)) ;
 }
 
 rule Main
@@ -534,27 +540,27 @@ rule MainFromObjects
 {
 	# make compiled sources a dependency of target
 
-	S = $(>) ;
+	s = $(>) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(>:G=$(SOURCE_GRIST)) ;
+	    s = $(>:G=$(SOURCE_GRIST)) ;
 	}
 
 	if $(<:S)
 	{
-	    T = $(<) ;
+	    t = $(<) ;
 	} else {
-	    T = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	DEPENDS exe : $(T) ;
-	DEPENDS $(T) : $(S) ;
-	LOCATE on $(T) = $(LOCATE_TARGET) ;
+	DEPENDS exe : $(t) ;
+	DEPENDS $(t) : $(s) ;
+	LOCATE on $(t) = $(LOCATE_TARGET) ;
 
-	Clean clean : $(T) ;
+	Clean clean : $(t) ;
 
-	Link $(T) : $(S) ;
+	Link $(t) : $(s) ;
 }
 
 rule MkDir
@@ -577,6 +583,7 @@ rule MkDir
 	    # create parent directories explicitly there.
 
 	    s = $(<:D) ;
+
 	    if $(s) && $(s) != $(<)
 	    {
 		Depends $(<) : $(s) ;
@@ -607,22 +614,22 @@ rule Object
 	# with the scanned file as the target and the found headers
 	# as the sources.  HDRSEARCH is just grist for HdrRule.
 
-	# HDRLOCAL is where cc first looks for #include "foo.h" files.
+	# $(h) is where cc first looks for #include "foo.h" files.
 	# If the source file is in a distant directory, look there.
 	# Else, look in "" (the current directory).
 
 	if $(SEARCH_SOURCE)
 	{
-	    HDRLOCAL = $(SEARCH_SOURCE) ;
+	    h = $(SEARCH_SOURCE) ;
 	}
 	else
 	{
-	    HDRLOCAL = "" ;
+	    h = "" ;
 	}
 
 	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
-	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(HDRLOCAL) $(STDHDRS) ;
+	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(h) $(STDHDRS) ;
 
 	# if source is not .c, generate .c with specific rule
 
@@ -644,50 +651,50 @@ rule Object
 
 rule ObjectCcFlags
 {
-	S = $(<:S=$(SUFOBJ)) ;
+	s = $(<:S=$(SUFOBJ)) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(S:G=$(SOURCE_GRIST)) ;
+	    s = $(s:G=$(SOURCE_GRIST)) ;
 	}
 
-	CCFLAGS on $(S) += $(>) ;
+	CCFLAGS on $(s) += $(>) ;
 }
 
 rule ObjectC++Flags
 {
-	S = $(<:S=$(SUFOBJ)) ;
+	s = $(<:S=$(SUFOBJ)) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(S:G=$(SOURCE_GRIST)) ;
+	    s = $(s:G=$(SOURCE_GRIST)) ;
 	}
 
-	C++FLAGS on $(S) += $(>) ;
+	C++FLAGS on $(s) += $(>) ;
 }
 
 rule ObjectHdrs
 {
-	S = $(<:S=$(SUFOBJ)) ;
+	s = $(<:S=$(SUFOBJ)) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(S:G=$(SOURCE_GRIST)) ;
+	    s = $(s:G=$(SOURCE_GRIST)) ;
 	}
 
-	HDRS on $(S) += $(>) ;
+	HDRS on $(s) += $(>) ;
 }
 
 rule Objects
 {
-	S = $(<) ;
+	s = $(<) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(<:G=$(SOURCE_GRIST)) ;
+	    s = $(<:G=$(SOURCE_GRIST)) ;
 	}
 
-	for i in $(S)
+	for i in $(s)
 	{
 		Object $(i:S=$(SUFOBJ)) : $(i) ;
 	}
@@ -702,12 +709,12 @@ rule Setuid
 {
 	if $(<:S)
 	{
-	    T = $(<) ;
+	    t = $(<) ;
 	} else {
-	    T = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	EXEMODE on $(T) = 4755 ;
+	EXEMODE on $(t) = 4755 ;
 }
 
 rule Shell
@@ -845,12 +852,12 @@ rule Undefines
 {
 	if $(<:S)
 	{
-	    T = $(<) ;
+	    t = $(<) ;
 	} else {
-	    T = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	UNDEFS on $(T) += $(UNDEFFLAG)$(>) ;
+	UNDEFS on $(t) += $(UNDEFFLAG)$(>) ;
 }
 
 rule UserObject
