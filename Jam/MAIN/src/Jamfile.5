@@ -325,33 +325,39 @@ SHELLHEADER on /usr/local/bin/add = "#!/bin/awk -f" ;
 .SS InstallBin Rule
 .PP
 \fIInstallBin\fR calls \fBinstall\fR(1) to install executables in 
-/usr/local/bin.
+the target directory.  $(BINDIR) is set to /usr/local/bin for convenience.
 .XB
 Main add : add.c ;
 Main sub : sub.c ;
-InstallBin add sub ;
+InstallBin $(BINDIR) : add sub ;
 .XE
 .SS InstallLib Rule
-\fIInstallLib\fR calls \fBinstall\fR(1) to install files in
-/usr/local/lib.
+\fIInstallLib\fR calls \fBinstall\fR(1) to install files in the target
+directory.  $(LIBDIR) is set to /usr/local/lib for convenience.
 .XB
-InstallLib bighelp.txt ;
+InstallLib $(LIBDIR) : bighelp.txt ;
 .XE
 .SS InstallMan Rule
 .PP
 \fIInstallMan\fR calls \fBinstall\fR(1) to install manual pages in 
-the appropriate subdirectories of /usr/local/man.
+the appropriate subdirectories of the target directory.  $(MANDIR)
+is set to /usr/local/man for convenience.
 .XB
-InstallMan add.1 sub.1 bigfile.8 ;
+InstallMan /usr/local/man : add.1 sub.1 bigfile.8 ;
 .XE
 .SS InstallShell Rule
 .PP
 \fIInstallShell\fR calls \fBinstall\fR(1) to install shell scripts in 
-/usr/local/bin.
+the target directory.
 .XB
 Shell bugs : bugs.sh ;
-InstallShell bugs ;
+InstallShell /usr/local/bin : bugs ;
 .XE
+.PP
+The difference between \fIShell\fR and \fIInstallShell\fR is not much: they
+both copy the source to the target.  The former also makes
+sure the script begins with the magic string (#!/bin/sh); the latter uses
+\fIinstall\fR(1) for the copy.
 .SS Variables
 .PP
 The following variables control the installation rules:

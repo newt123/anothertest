@@ -63,17 +63,18 @@ when \fBJam\fR does its header file scan of \fIsource\fR.
 .RP "Install target : source ;"
 Copies \fIsource\fR into \fItarget\fR, using \fIinstall\fR(1).  Used by
 the other \fIInstall\fR* rules.
-.RP "InstallBin sources ; "
-Copy \fIsources\fR into $(BINDIR) with mode $(EXEMODE).  Dependents of
+.RP "InstallBin dir : sources ; "
+Copy \fIsources\fR into \fIdir\fR with mode $(EXEMODE).  Dependents of
 \fIinstall\fR.
-.RP "InstallLib sources ;"
-Copy \fIsources\fR into $(LIBDIR) with mode $(FILEMODE).  Dependents of
+.RP "InstallLib dir : sources ;"
+Copy \fIsources\fR into \fIdir\fR with mode $(FILEMODE).  Dependents of
 \fIinstall\fR.
-.RP "InstallMan sources ;"
-Copy \fIsources\fR into the appropriate subdirectory of $(MANDIR) with
-mode $(FILEMODE).  Dependents of \fIinstall\fR.
-.RP "InstallShell sources ;"
-Copy \fIsources\fR into $(BINDIR) with mode $(SHELLMODE).  Dependents
+.RP "InstallMan dir : sources ;"
+Copy \fIsources\fR into the appropriate subdirectory of \fIdir\fR with
+mode $(FILEMODE).  The subdirectory is \fBman\fIs\fR, where \fIs\fR
+is the suffix of each of \fIsources\fR.  Dependents of \fIinstall\fR.
+.RP "InstallShell dir : sources ;"
+Copy \fIsources\fR into \fIdir\fR with mode $(SHELLMODE).  Dependents
 of \fIinstall\fR.
 .RP "Lex source.c : source.l ;"
 Process the \fBlex\fR(1) source file \fIsource.l\fR and rename the
@@ -159,7 +160,7 @@ Flags handed to the assembler for \fBAs\fR.
 .PP
 BINDIR (default \fI/usr/local/bin\fR)
 .IP
-The install directory for \fBInstallBin\fR.
+Not used.  Set for convenience.
 .PP
 CC (default \fIcc\fR)
 .IP
@@ -224,7 +225,7 @@ The \fBlex\fR(1) command and flags.
 .PP
 LIBDIR (default \fI/usr/local/lib\fR)
 .IP
-The target directory for \fBInstallLib\fR.
+Not used.  Set for convenience.
 .PP
 LINK (default \fIcc\fR)
 .IP
@@ -249,6 +250,10 @@ by \fBObject\fR.  This works by setting the \fBJam\fR-special variable
 LN (default \fIln\fR)
 .IP
 The hard link command for \fIHardLink\fR.
+.PP
+MANDIR (default \fI/usr/local/man\fR)
+.IP
+Not used.  Set for convenience.
 .PP
 MV (default \fImv -f\fR)
 .IP

@@ -7,22 +7,17 @@ if $(VMS)
 	JAMLIB = libjam.olb ; 
 	OSFILES = execvms.c filevms.c ; 
 }
-
-if $(UNIX)	
+else if $(UNIX)	
 { 
 	JAMLIB = libjam.a ; 
 	OSFILES = execunix.c fileunix.c ;
 
-	LIBDIR = /usr/local/lib/jam ;
-
-	INSTALLMAN jam.1 Jambase.5 ;
-	INSTALLBIN jam ;
-
-	INSTALLLIB Jambase ;
+	InstallBin /usr/local/bin : jam ;
+	InstallLib /usr/local/lib/jam : Jambase ;
+	InstallMan /usr/local/man : jam.1 Jambase.5 ;
 
 }
-
-if $(NT)	
+else if $(NT)	
 { 
 	JAMLIB = libjam.lib ; 
 	OSFILES = execnt.c filent.c ; 
@@ -57,7 +52,8 @@ actions YYacc
 Main 		jam : jam.c ;
 LinkLibraries 	jam : $(JAMLIB) ;
 
-Library         $(JAMLIB) : command.c compile.c expand.c hash.c glob.c lists.c 
-		    make.c make1.c newstr.c option.c parse.c rules.c scan.c 
-		    search.c timestamp.c variable.c jamgram.yy headers.c 
-		    regexp.c $(OSFILES) ;
+Library         $(JAMLIB) : 
+		command.c compile.c expand.c hash.c glob.c lists.c 
+		make.c make1.c newstr.c option.c parse.c rules.c scan.c 
+		search.c timestamp.c variable.c jamgram.yy headers.c 
+		regexp.c $(OSFILES) ;

@@ -20,6 +20,7 @@
 # 10/06/94 (seiwald) - Dumb yyacc stuff moved into Jamfile.
 # 10/14/94 (seiwald) - (Crude) support for .s, .C, .cc, .cpp, and .f files.
 # 01/08/94 (seiwald) - Shell now handled with awk, not sed
+# 01/09/94 (seiwald) - Install* now take dest directory as target
 
 # Rules defined by this file:
 #
@@ -35,10 +36,10 @@
 # Hardlink target : source ;		make link from source to target
 # HdrRule source : headers ;		handle #includes
 # Install target : source ;		install any single file
-# InstallBin sources ;			install binaries
-# InstallLib sources ;			install files
-# InstallMan source ;			install man pages
-# InstallShell source ;			install shell script
+# InstallBin dir : sources ;		install binaries
+# InstallLib dir : sources ;		install files
+# InstallMan dir : sources ;		install man pages
+# InstallShell dir : sources ;		install shell scripts
 # Lex source.c : source.l ;		.l -> .c
 # Library lib : source ;		archive library from compiled sources
 # LibraryFromObjects lib : objects ;	archive library from objects
@@ -550,32 +551,27 @@ actions Shell
 
 rule InstallBin
 {
-	for i in $(<)
+	for i in $(>)
 	{
-	    Install $(i:D=$(BINDIR)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(BINDIR)) = $(EXEMODE) ;
+	    Install $(i:R=$(<)) : $(i) ;
+	    INSTALLMODE on $(i:R=$(<)) = $(EXEMODE) ;
 	}
 }
 
 rule InstallLib
 {
-	for i in $(<) 
+	for i in $(>) 
 	{
-	    Install $(i:D=$(LIBDIR)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(LIBDIR)) = $(FILEMODE) ;
+	    Install $(i:R=$(<)) : $(i) ;
+	    INSTALLMODE on $(i:R=$(<)) = $(FILEMODE) ;
 	}
-}
-
-rule InstallLibDir
-{
-	INSTALLLIBDIR = $(<) ;
 }
 
 rule InstallMan
 {
 	# Really this just strips the . from the suffix
 
-	for i in $(<)
+	for i in $(>)
 	{
 	    switch $(i:S)
 	    {
@@ -585,19 +581,19 @@ rule InstallMan
 	    case .n : S = n ; case .man : S = 1 ;
 	    }
 
-	    D = $(i:D=$(MANDIR)/man$(S):S=.$(S)) ;
+	    D = $(i:D=man$(S):S=.$(S)) ;
 
-	    Install $(D) : $(i) ;
-	    INSTALLMODE on $(D) = $(FILEMODE) ;
+	    Install $(D:R=$(<)) : $(i) ;
+	    INSTALLMODE on $(D:R=$(<)) = $(FILEMODE) ;
 	}
 }
 
 rule InstallShell
 {
-	for i in $(<) 
+	for i in $(>) 
 	{
-	    Install $(i:D=$(BINDIR)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(BINDIR)) = $(SHELLMODE) ;
+	    Install $(i:R=$(<)) : $(i) ;
+	    INSTALLMODE on $(i:R=$(<)) = $(SHELLMODE) ;
 	}
 }
 
@@ -715,9 +711,6 @@ rule BULK { Bulk $(<) : $(>) ; }
 rule FILE { File $(<) : $(>) ; }
 rule HDRRULE { HdrRule $(<) : $(>) ; }
 rule INSTALL { Install $(<) : $(>) ; }
-rule INSTALLBIN { InstallBin $(<) : $(>) ; }
-rule INSTALLLIB { InstallLib $(<) : $(>) ; }
-rule INSTALLMAN { InstallMan $(<) : $(>) ; }
 rule LIBRARY { Library $(<) : $(>) ; }
 rule LIBS { LinkLibraries $(<) : $(>) ; }
 rule LINK { Link $(<) : $(>) ; }
@@ -725,6 +718,12 @@ rule MAIN { Main $(<) : $(>) ; }
 rule SETUID { Setuid $(<) ; }
 rule SHELL { Shell $(<) : $(>) ; }
 rule UNDEFINES { Undefines $(<) : $(>) ; }
+
+# Old INSTALL* didn't take dest directory.
+
+rule INSTALLBIN { InstallBin $(BINDIR) : $(<) ; }
+rule INSTALLLIB { InstallLib $(LIBDIR) : $(<) ; }
+rule INSTALLMAN { InstallMan $(MANDIR) : $(<) ; }
 
 #
 # Now include the user's Jam rules and Jamfile.
