@@ -405,7 +405,8 @@ can alternately be named by the variable $(xxxRULES), where xxx is
 the name of the root variable).  This file could be empty, but
 in practice it contains user-provided rules and variable definitions
 that are shared throughout the tree, such as library names, header
-directories, install directories, compiler flags, etc.  
+directories, install directories, compiler flags, etc.  This file is
+good candidate for automatic customizing with \fBautoconf\fR.
 .IP 3.
 Preface the \fBJamfile\fR in each directory with an invocation of
 the \fISubDir\fR rule.
