@@ -46,7 +46,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "VMS=true","OS=VMS"
 # endif 
 
-# define MAXLINE 1024 /* longest command - related to quotas */ /* dwd 14-dec-1996 */
+# define MAXLINE 1024 /* longest 'together' actions */
 # define SPLITPATH ','
 # define EXITOK 1
 # define EXITBAD 0
@@ -76,7 +76,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # endif /* _PPC_ */
 
 # define SPLITPATH ';'
-# define MAXLINE 996	/* longest command */
+# define MAXLINE 996	/* longest 'together' actions */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -95,7 +95,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "OS2=true","OS=OS2"
 # define SPLITPATH ';'
-# define MAXLINE 996	/* longest command */
+# define MAXLINE 996	/* longest 'together' actions */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -116,7 +116,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "UNIX=true","OS=QNX"
 # define SPLITPATH ':'
-# define MAXLINE 996	/* longest command */
+# define MAXLINE 996	/* longest 'together' actions */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -130,7 +130,7 @@ int unlink( char *f ); 	/* In filevms.c */
 
 # define OTHERSYMS "MAC=true","OS=MAC"
 # define SPLITPATH ','
-# define MAXLINE 1024
+# define MAXLINE 1024	/* longest 'together' actions */
 # define EXITOK 0
 # define EXITBAD 1
 
@@ -237,7 +237,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "UNIX=true","OS=UNKNOWN"
 # endif
 
-# define MAXLINE 10240	/* longest command */
+# define MAXLINE 10240	/* longest 'together' actions' */
 # define SPLITPATH ':'
 # define EXITOK 0
 # define EXITBAD 1

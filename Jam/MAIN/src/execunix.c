@@ -163,9 +163,12 @@ LIST *shell;
 	while( p && isspace( *p ) )
 		++p;
 
-	/* If multi line, write to bat file.  Otherwise, exec directly. */
+	/* If multi line or too long, write to bat file. */
+	/* Otherwise, exec directly. */
+	/* Frankly, if it is a single long line I don't think the */
+	/* command interpreter will do any better -- it will fail. */
 
-	if( p && *p )
+	if( p && *p || strlen( string ) > MAXLINE )
 	{
 	    FILE *f;
 
