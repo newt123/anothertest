@@ -50,7 +50,7 @@
  * 08/23/94 (seiwald) - Support for '+=' (append to variable)
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/22/95 (seiwald) - Exit rule.
- * 02/02/95 (seiwald) - Always rule; Laura rule.
+ * 02/02/95 (seiwald) - Always rule; LEAVES rule.
  * 02/14/95 (seiwald) - NoUpdate rule.
  */
 
@@ -93,9 +93,9 @@ compile_builtins()
     bindrule( "INCLUDES" )->procedure = 
 	parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, T_DEPS_INCLUDES );
 
-    bindrule( "Laura" )->procedure = 
-    bindrule( "LAURA" )->procedure = 
-	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_LAURA );
+    bindrule( "Leaves" )->procedure = 
+    bindrule( "LEAVES" )->procedure = 
+	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_LEAVES );
 
     bindrule( "NoCare" )->procedure = 
     bindrule( "NOCARE" )->procedure = 

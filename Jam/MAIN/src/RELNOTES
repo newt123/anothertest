@@ -108,7 +108,7 @@ Release notes for Jam 2.0.
 
 	New EXIT rule makes it possible to raise a fatal error.
 
-	New LAURA rule which say target depends only on the update
+	New LEAVES rule which say target depends only on the update
 	times of the leaf sources.
 
 	New NOUPDATE rule says built targets only if they don't exist.

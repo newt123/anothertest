@@ -30,21 +30,65 @@ defined by the \fBjam\fR boilerplate, \fBJambase\fR.  \fBJambase\fR
 defines rules that provide roughly \fBmake\fR(1)-like functionality.
 .PP
 This description goes with \fBJam\fR Release 2.0.
+.SH JAM OVERVIEW
+.SS Invocation
 .PP
-Each example here is all or part of a \fBJamfile\fR.  Once you have
-written a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
-simplest way is:
+The examples in the following sections are parts of a \fBJamfile\fR.
+Once you have written a \fBJamfile\fR, you can invoke \fBjam\fR to
+build things.  The simplest syntax is:
 .BB
-jam
-.BE
-.PP
-You can preview \fBjam\fR's work with:
-.BB
-jam -n
+jam [-n]
 .BE
 .PP
 The \fB-n\fR tells \fBjam\fR to do a verbose dry-run.
-.SH WHITESPACE NOTE
+.SS Rules
+.PP
+The \fBjam\fR language consists mostly of rule invocations.  A rule is
+invoked with \fItargets\fR and \fIsources\fR.  That is,
+.BB
+Rule targets : sources ;
+.BE
+.PP
+Each rule definition has potentially two parts: the rule procedure
+and the rule's actions.  The procedure is just more \fBjam\fR
+statements to interpret when the rule is invoked.  The actions are
+the shell commands to execute when the targets are to be updated.
+.PP
+The \fBJambase\fR consists mostly of rule definitions, and your
+\fBJamfile\fR will contain mostly rule invocations.
+.SS Variables
+.PP
+\fBJam\fR has two types of variables: global ones and target-specific
+ones.  The latter take effect only when the named target is being
+bound, scanned for header files, or updated.  Target-specific variables
+enable generic actions (like the \fICc\fR rule's call to the C
+compiler) to be used for different targets.  Only the target-specific
+variables (HDRS, CCFLAGS, etc.) vary.
+.PP
+The \fBJambase\fR rules use variables in three ways:
+.IP "Procedure Input"
+If a variable is procedure input, it must be set before invoking the
+rule.  This is sometimes used to pass additional parameters to the rule
+(beyond the targets and sources), and is sometimes used for conditional
+definitions (e.g., if the RANLIB variable is set, invoke the
+\fIRanlib\fR rule).  When we describe the variables in each section, we
+mark procedure input variables with a *.
+.IP "Procedure Output"
+A rule procedure may set variables for later use.  Except where noted,
+all rules set these variables specific to the rule's targets.
+Sometimes the variable are later used during the binding and header
+file scanning phase, and sometimes they are used by the actions.
+.IP "Actions Input"
+The shell commands to update a target often contain variable references.
+These variables may be set globally or target-specific.  The latter take
+precedence.
+.PP
+Often, a variable will be used in more than just way: a variable set by
+a rule procedure may quite likely be used by the actions.  In some
+cases, a variable that is input to a rule procedure may be output
+(target-specific) as well.  This has the effect of freezing the
+variable's value for the target.
+.SS Whitespace Note
 .PP
 \fBJam\fR requires whitespace (blanks, tabs, or newlines) to surround
 all tokens, including the colon (:) and semicolon (;)
@@ -54,7 +98,7 @@ those platforms.
 .PP
 Specific information about the syntax of a \fBJamfile\fR can be found in
 \fBjam\fR(1).
-.SH EXECUTABLES AND LIBRARIES
+.SH BUILDING EXECUTABLES AND LIBRARIES
 .PP
 The following rules compile source files and build executables and
 libraries.
@@ -67,7 +111,7 @@ Main myprog : main.c util.c ;
 .XE
 .PP
 This compiles main.c and util.c and links main.o and util.o into myprog.
-As with all rules that compile source files, \fIMain\fR handles header file 
+As with all rules that compile source files, \fIMain\fR handles header file
 dependencies automatically.
 .SS Library Rule
 .PP
@@ -75,7 +119,7 @@ The \fILibrary\fR rule compiles source files, archives the
 resulting object files into a library, and then deletes the object
 files.
 .XB
-Library libstring.a : strcmp.c strcpy.c strlen.c ; 
+Library libstring.a : strcmp.c strcpy.c strlen.c ;
 Library libtree.a : treemake.c treetrav.c ;
 .XE
 .PP
@@ -109,21 +153,23 @@ need the same libraries.
 .SS Variables
 .PP
 The following variables control the linking of executables and the
-archiving of libraries.
+archiving of libraries. 
 .BB
 $(AR)              archive command (ar ru)
-$(EXEMODE)         default value for $(MODE) (711)
+$(EXEMODE)       * default value for MODE (711)
 $(LINK)            linker command (cc)
 $(LINKFLAGS)       linker flags ()
 $(LINKLIBS)        additional libraries that aren't dependencies ()
-$(MODE)            permission set on executable after linking ($(EXEMODE))
+$(MODE)            permission on target
 $(RANLIB)          name of ranlib program, if any (ranlib)
 .BE
+.PP
+\fIMain\fR sets a target-specific MODE to the current value of $(EXEMODE).
 .PP
 The difference between and the arguments to \fILinkLibraries\fR
 and the value of $(LINKLIBS) is that the former are expected to be
 real, buildable libraries, while the latter are just handed without
-inspection to the $(LINK) command.  The ordering on the $(LINK)
+inspection to the $(LINK) command.  The ordering on the link
 command line is first \fILinkLibraries\fR and then $(LINKLIBS).
 .XB
 Main xprog : xprog.c ;
@@ -134,12 +180,11 @@ LINKLIBS on xprog = -lXext -lX11 ;
 Library libxutil.a : xtop.c xbottom.c xutil.c ;
 .XE
 .PP
-This example uses the \fBjam\fR syntax "variable \fIon\fR target".  The
-causes the variable to take on the value only only when updating the
-named target.  In this way, only xprog will be linked with these
-special $(LINKFLAGS) and $(LINKLIBS), even if other executables were
-going to be built by the same \fBJamfile\fR.  The actual link command
-line would look like this:
+This example uses the \fBjam\fR syntax "variable \fIon\fR target" to
+set a target-specific variable.  In this way, only xprog will be linked
+with these special $(LINKFLAGS) and $(LINKLIBS), even if other
+executables were going to be built by the same \fBJamfile\fR.  The
+actual link command line would look like this:
 .BB
 cc -Bstatic -o xprog xprog.o libuxtil.a -lXext -lX11
 .BE
@@ -186,7 +231,7 @@ show how this is useful.
 The \fIObject\fR rule looks at the suffix of the source file and calls
 the appropriate rules to do the actual compiling.  This invariably
 involves a call to the \fICc\fR to turn the .c into a .o, but may also
-require a call to other rules to turn the source file into a .c. 
+require a call to other rules to turn the source file into a .c.
 Thus the \fIObject\fR rule is responsible for the generation of an
 object file from any type of source.
 .XB
@@ -204,7 +249,7 @@ below.
 The \fIObject\fR calls compiling rules specific to the suffix of the
 source file.  Because the extra work done by the \fIObject\fR rule, it
 is not always useful to call the compiling rules directly.  But the
-adventurous user might attempt it.  
+adventurous user might attempt it. 
 .XB
 Yacc grammar.c : grammar.y ;
 Lex scan.c : scan.l ;
@@ -218,7 +263,7 @@ Any files with suffixes not understood by the \fIObject\fR rule are
 passed to the \fIUserObject\fR rule.  The default definition of
 \fIUserObject\fR simply emits a warning that the suffix is not understood.
 This rule definition is intended to be replaced with one that
-recognizes the suffix.  
+recognizes the suffix. 
 .XB
 rule UserObject
 {
@@ -242,12 +287,12 @@ actions As
 Library libsys.a : alloca.s memcpy.s ;
 .XE
 .PP
-It should be mentioned that this example is contrived, in that the \fB.s\fR 
+It should be mentioned that this example is contrived, in that the \fB.s\fR
 suffix is already handled by \fIObject\fR.
 .SS LibraryFromObjects Rule
 .PP
 Sometimes the \fILibrary\fR rule's straightforward compiling of source
-into object modules to be archived isn't flexible enough.  The 
+into object modules to be archived isn't flexible enough.  The
 \fILibraryFromObjects\fR rule does the archiving (and deleting) job
 of the \fILibrary\fR rule, but not the compiling.  The user can make
 use of the \fIObjects\fR or \fIObject\fR rule for that.
@@ -275,7 +320,7 @@ ObjectCcFlags w.c : -DW_CODE ;
 .XE
 .PP
 This compiles two different programs, w and uptime, from the same
-source file with different C compiler flags.  Another use of 
+source file with different C compiler flags.  Another use of
 \fIMainFromObjects\fR is when there are no objects at all, and
 everything is to be loaded from libraries.
 .XB
@@ -290,38 +335,43 @@ cc -o testprog libprog.a
 .PP
 Linking purely from libraries is something that doesn't work everywhere:
 it depends on the symbol "main" being undefined when the linker encounters
-the library that contains the definition of "main".  
+the library that contains the definition of "main". 
 .SS Variables
 .PP
 The following variables control the compiling of source files.
 .BB
-$(CC)              The C Compiler (cc)
-$(C++)             The C++ Compiler (gcc)
-$(CCFLAGS)         C compiler flags()
-$(C++FLAGS)        C++ compiler flags()
-$(HDRS)            non-standard header directories ()
-$(LEX)             The Lex program (lex)
-$(OPTIM)           optimization flag, if desired (-O)
-$(STDHDRS)         standard header directories (/usr/include)
-$(SUBDIRCCFLAGS)   Per-directory CCFLAGS.
-$(SUBDIRC++FLAGS)  Per-directory C++FLAGS.
-$(SUBDIRHDRS)      Per-directory HDRS.
-$(YACC)            The Yacc program (yacc -d)
+$(C++)              The C++ Compiler (gcc)
+$(C++FLAGS)       * C++ compiler flags()
+$(CC)               The C Compiler (cc)
+$(CCFLAGS)        * C compiler flags()
+$(HDRS)           * non-standard header directories ()
+$(LEX)              The Lex program (lex)
+$(OPTIM)            optimization flag, if desired (-O)
+$(STDHDRS)        * standard header directories (/usr/include)
+$(SUBDIRC++FLAGS) * Per-directory C++FLAGS
+$(SUBDIRCCFLAGS)  * Per-directory CCFLAGS
+$(SUBDIRHDRS)     * Per-directory HDRS
+$(YACC)             The Yacc program (yacc -d)
 .BE
 .PP
-$(CC), $(C++), $(CCFLAGS), $(C++FLAGS), $(OPTIM), and $(HDRS) all affect 
+The \fICc\fR rule sets a target-specific $(CCFLAGS) to the current
+value of $(CCFLAGS) and $(SUBDIRCCFLAGS).  Similarly for the \fIC++\fR
+rule.  The \fIObject\fR rule sets a target-specific $(HDRS) to the
+current value of $(HDRS) and $(SUBDDIRHDRS).
+.PP
+$(CC), $(C++), $(CCFLAGS), $(C++FLAGS), $(OPTIM), and $(HDRS) all affect
 the compiling of C and C++ files.  $(OPTIM) is separate from $(CCFLAGS)
 and $(C++FLAGS) so they can be set independently.
 .PP
 $(HDRS) lists the directories to search for header files, and it is
-used in two ways: first, it is passed to the C compiler (with the 
-flag \fB-I\fR prepended); second, it is used by \fIHdrRule\fR
-to locate the header files whose names were found when scanning source
-files.  $(STDHDRS) lists the header directories that the C compiler
-already knows about:  it is not passed to the C compiler, but is used by
-\fIHdrRule\fR.
+used in two ways: first, it is passed to the C compiler (with the flag
+\fB-I\fR prepended); second, it is used by \fIHdrRule\fR to locate the
+header files whose names were found when scanning source files.
+$(STDHDRS) lists the header directories that the C compiler already
+knows about.  It does not need passing to the C compiler, but is used
+by \fIHdrRule\fR.
 .PP
-Note that these flags, if set as target-specific variables, must be
+Note that these variables, if set as target-specific variables, must be
 set on the target, not the source file.  The target file in this case
 is the object file to be generated.
 .XB
@@ -334,7 +384,7 @@ CCFLAGS on xtiff.o = -DHAVE_TIFF ;
 This can be done more easily with the rules that follow.
 .SS ObjectCcFlags, ObjectC++Flags, ObjectHdrs Rules
 .PP
-$(CCFLAGS), $(C++FLAGS) and $(HDRS) can be manipulated directly, but there are 
+$(CCFLAGS), $(C++FLAGS) and $(HDRS) can be manipulated directly, but there are
 rules that allow these variables to be set by referring to the original
 source file name, rather than to the derived object file name.
 \fIObjectCcFlags\fR adds object-specific flags to the $(CCFLAGS) variable,
@@ -410,18 +460,18 @@ rule BuiltHeaders
 .PP
 This example just says that the files included by "ugly.c" are generated
 by the program "mkhdr", which can be built from "mkhdr.c".  By calling
-\fIHdrRule\fR at the end of \fIBuiltHeaders\fR, all the gadgetry of 
+\fIHdrRule\fR at the end of \fIBuiltHeaders\fR, all the gadgetry of
 \fIHdrRule\fR takes effect and it doesn't need to be duplicated.
 .SS Variables
 .PP
 The complete list of variables used by the \fIHdrRule\fR coterie are:
 .BB
+$(HDRPATTERN)    * scan pattern for $(HDRSCAN) (ugly egrep expression)
 $(HDRRULE)         scan rule, when set activates scanning (HdrRule)
+$(HDRS)          * non-standard directories for headers ()
 $(HDRSCAN)         scan pattern when actually scanning ($(HDRPATTERN))
 $(HDRSEARCH)       search list for HdrRule ($(HDRS) $(STDHDRS))
-$(HDRS)            non-standard directories for headers ()
-$(STDHDRS)         standard directories for headers (/usr/include)
-$(HDRPATTERN)      scan pattern for $(HDRSCAN) (ugly egrep expression)
+$(STDHDRS)       * standard directories for headers (/usr/include)
 .BE
 .PP
 The \fIObject\fR rule sets HDRRULE and HDRSCAN specifically for the
@@ -458,12 +508,14 @@ Shell /usr/local/bin/add : add.sh ;
 .SS Variables
 The following variables are used when copying files:
 .BB
-$(FILEMODE)        permissions for target file (644)
+$(FILEMODE)      * default value for MODE for files (644)
 $(SHELLHEADER)     first line of shell scripts (#!/bin/sh)
-$(SHELLMODE)       permissions for shell scripts (755)
+$(SHELLMODE)     * default value for MODE for shell scripts (755)
+$(MODE)            permission on target
 .BE
 .PP
-These can be set target-specific.
+\fIFile\fR and \fRShell\fR sets a target-specific MODE to the current value
+of $(FILEMODE) or $(SHELLMODE), respectively.
 .XB
 Shell /usr/local/bin/add : add.awk ;
 SHELLHEADER on /usr/local/bin/add = "#!/bin/awk -f" ;
@@ -473,7 +525,7 @@ This installs an \fBawk\fR(1) script.
 .SH INSTALLING FILES
 .SS InstallBin Rule
 .PP
-\fIInstallBin\fR calls \fBinstall\fR(1) to install executables in 
+\fIInstallBin\fR calls \fBinstall\fR(1) to install executables in
 the target directory.  $(BINDIR) is set to /usr/local/bin for convenience.
 .XB
 Main add : add.c ;
@@ -488,7 +540,7 @@ InstallLib $(LIBDIR) : bighelp.txt ;
 .XE
 .SS InstallMan Rule
 .PP
-\fIInstallMan\fR calls \fBinstall\fR(1) to install manual pages in 
+\fIInstallMan\fR calls \fBinstall\fR(1) to install manual pages in
 the appropriate subdirectories of the target directory.  $(MANDIR)
 is set to /usr/local/man for convenience.
 .XB
@@ -496,7 +548,7 @@ InstallMan $(MANDIR) : add.1 sub.1 bigfile.8 ;
 .XE
 .SS InstallShell Rule
 .PP
-\fIInstallShell\fR calls \fBinstall\fR(1) to install shell scripts in 
+\fIInstallShell\fR calls \fBinstall\fR(1) to install shell scripts in
 the target directory.
 .XB
 Shell bugs : bugs.sh ;
@@ -518,8 +570,8 @@ way, the contents of the install directory can depend on the existence
 of the install directory itself, and thus the directory will be made
 before its contents are installed.  You can call \fIMkDir\fR directly.
 .XB
-File /usr/local/bin/junky : junky ; 
-DEPENDS /usr/local/bin/junky : /usr/local/bin ; 
+File /usr/local/bin/junky : junky ;
+DEPENDS /usr/local/bin/junky : /usr/local/bin ;
 MkDir /usr/local/bin ;
 .XE
 .PP
@@ -534,15 +586,20 @@ $(BINDIR)          InstallBin directory (/usr/local/bin)
 $(LIBDIR)          InstallLib directory (/usr/local/lib)
 $(MANDIR)          InstallMan directory (/usr/local/man)
 $(INSTALL)         The install program; uses cp if not set (install)
-$(FILEMODE)        generic permissions for InstallLib, InstallMan (644)
-$(EXEMODE)         generic permissions for InstallBin (711)
-$(SHELLMODE)       generic permissions for InstallShell (755)
+$(FILEMODE)      * default MODE for InstallLib, InstallMan (644)
+$(EXEMODE)       * default MODE for InstallBin (711)
+$(SHELLMODE)     * default MODE for InstallShell (755)
+$(MODE)            permission on target
 $(MKDIR)           Program for creating a directory (mkdir)
 .BE
 .PP
+The \fIInstall\fR rules set a target-specific MODE to the current value
+of $(FILEMODE), $(EXEMODE), or $(SHELLMODE), depending on which \fIInstall\fR
+rule was invoked.
+.PP
 The directory variables are just defined for convenience: they must
 be passed as the target to the appropriate \fIInstall\fR rule.
-The $(INSTALL) and mode variables must be set (globally) before 
+The $(INSTALL) and mode variables must be set (globally) before
 calling the \fIInstall\fR rules in order to take effect.
 .SH HANDLING DIRECTORY TREES
 .PP
@@ -619,11 +676,11 @@ at a time, and let the \fBJamfile\fR in each subdirectory include its
 own subdirectories.  This allows a user to sit in any arbitrary directory
 of the source tree and build that subtree.
 .XB
-# Top level Jamfile for mondo project.  
-# 
+# Top level Jamfile for mondo project. 
+#
 # $(TOP) points to root of mondo tree (set in environment).
 
-SubInclude TOP src ;    
+SubInclude TOP src ;   
 SubInclude TOP man ;
 SubInclude TOP misc ;
 SubInclude TOP util ;
@@ -676,7 +733,7 @@ modifying the source tree.
 .SS VMS Notes
 .PP
 On VMS, the logical name table is not imported as is the environment
-on UNIX.  To use the \fISubDir\fR and related rules, you must 
+on UNIX.  To use the \fISubDir\fR and related rules, you must
 set the value of the variable that names the root directory.
 .XB
 TOP = USR_DISK:[JONES.SRC] ;
@@ -703,7 +760,7 @@ Note three things: the concealed translation allows the logical to be
 used as a device name; the device name in the logical (here DK100)
 cannot itself be concealed logical (VMS rules, man); and the directory
 component of the definition must end in a period (more VMS rules).
-.SH MISCELLANEOUS
+.SH MISCELLANEOUS RULES
 .SS Clean Rule
 .PP
 The \fIClean\fR rule has only a simple action: to delete all of its
@@ -737,7 +794,7 @@ left around by the user.
 Given user-defined targets, the \fIClean\fR rule can selectively
 remove other generated files.
 .XB
-rule M4 
+rule M4
 {
         # File depends on it's m4 source
 
@@ -777,7 +834,7 @@ several special targets which are dependencies of \fIall\fR:
 .BB
 all             - parent of first, shell, files, lib, exe
 first           - first dependency of 'all', for potential initialization
-shell           - parent of all Shell targets 
+shell           - parent of all Shell targets
 files           - parent of all File targets
 lib             - parent of all Library targets
 exe             - parent of all Main target
@@ -794,9 +851,9 @@ You can remove the files that \fBjam\fR built giving \fIclean\fR and
 \fIuninstall\fR as targets.  And you can arrange for \fBjam\fR to run
 initialization commands by putting actions on the target \fIfirst\fR.
 .XB
-actions Initialize 
+actions Initialize
 {
-	ECHO "This is a test of the jam initialization system." 
+	ECHO "This is a test of the jam initialization system."
 }
 
 Initialize first ;
@@ -829,7 +886,7 @@ INCLUDES foo.c : foo.h ;
 .XE
 .PP
 Both "foo.c" and "foo.h" become dependencies of "foo.o" in this example.
-.SS ALWAYS, LAURA, NOCARE, NOTFILE, NOUPDATE, TEMPORARY Rules
+.SS ALWAYS, LEAVES, NOCARE, NOTFILE, NOUPDATE, TEMPORARY Rules
 .PP
 Six rules mark targets so that \fBjam\fR treats them differently
 during its target binding and updating phase.  Normally, \fBjam\fR
@@ -873,7 +930,7 @@ it will use the target's parent's time when determining if the target
 needs updating.  Object files that are also archived in a library are
 marked as such, so that they can be deleted after they are archived.
 .PP
-The \fILAURA\fR rule makes each of the targets depend only on its
+The \fILEAVES\fR rule makes each of the targets depend only on its
 "leaf" dependencies.  This makes it immune to its dependencies being
 updated, as the "leaf" dependencies are those without their own
 dependencies and without updating actions.  This allows a target to be
@@ -944,10 +1001,10 @@ execs a shell, passing the action block as an argument to the shell.
 The invocation of the shell is controlled by $(JAMSHELL), whose default
 value is:
 .BB
-	JAMSHELL = /bin/sh -c % ;
+JAMSHELL = /bin/sh -c % ;
 .BE
 .PP
-The \fB%\fR is replaced with the text of the action block.  
+The \fB%\fR is replaced with the text of the action block. 
 .PP
 On UNIX \fBjam\fR can build targets in parallel, as long as the
 dependencies among files are properly spelled out and actions don't
@@ -974,11 +1031,11 @@ possible to write a multiple host shell.
 # This sample JAMSHELL uses the SunOS on(1) command to execute
 # a command string with an identical environment on another host.
 #
-# Set JAMSHELL = jamshell ! % 
+# Set JAMSHELL = jamshell ! %
 #
 # where jamshell is the name of this shell file.
 #
-# This version handles up to -j6; after that they get executed 
+# This version handles up to -j6; after that they get executed
 # locally.
 
 case $1 in
@@ -1093,7 +1150,7 @@ scanning and compiling \fIsource\fR.  Any file suffix on \fIsource\fR
 is ignored.
 .RP Objects "sources ;"
 For each source file in \fIsources\fR,
-calls \fIObject\fR to compile the source file into a similarly named 
+calls \fIObject\fR to compile the source file into a similarly named
 object file.
 .RP RmTemps "targets : sources ;"
 Marks \fIsources\fR as temporary with the \fBTEMPORARY\fR rule, and
@@ -1144,7 +1201,7 @@ Not used.  Set for convenience.
 .PP
 CC (default \fIcc\fR)
 .IP
-C compiler used for \fBObject\fR.
+C compiler used for \fBCc\fR.
 .PP
 CCFLAGS (no default)
 .IP
@@ -1157,7 +1214,7 @@ C++ compiler used for \fBC++\fR.
 .PP
 C++FLAGS (no default)
 .IP
-Flags handed to the C++ compiler for \fBC++\fR.  \fBOPTIM\fR is also
+Flags handed to the C++ compiler for \fBC++\fR.  \fBOPTIM\fR is also
 handed to the C++ compiler.
 .PP
 CP (default \fIcp\fR)

@@ -30,7 +30,7 @@
  * 12/20/94 (seiwald) - make0() headers after determining fate of target, so 
  *			that headers aren't seen as dependents on themselves.
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
- * 02/02/95 (seiwald) - propagate leaf source time for new Laura rule.
+ * 02/02/95 (seiwald) - propagate leaf source time for new LEAVES rule.
  * 02/14/95 (seiwald) - NOUPDATE rule means don't update existing target.
  */
 
@@ -206,10 +206,10 @@ int	anyhow;
 	    leaf = max( leaf, c->target->leaf );
 	    leaf = max( leaf, c->target->hleaf );
 
-	    /* If Laura has been applied, we only heed the timestamps of */
+	    /* If LEAVES has been applied, we only heed the timestamps of */
 	    /* the leaf source nodes. */
 
-	    if( t->flags & T_FLAG_LAURA )
+	    if( t->flags & T_FLAG_LEAVES )
 	    {
 		last = leaf;
 		continue;

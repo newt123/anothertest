@@ -171,7 +171,7 @@ exits with a failure status.
 .br
 Makes \fI<sources>\fR dependencies of anything of which \fI<targets>\fR 
 are dependencies.
-.IP "LAURA \fI<targets>\fR ;"
+.IP "LEAVES \fI<targets>\fR ;"
 .br
 Makes each of \fI<targets>\fR depend only on its leaf sources, and not
 on any intermediate targets.  Its leaf sources are those dependencies
@@ -192,7 +192,7 @@ old.
 Marks \fI<targets>\fR as temporary.
 .RE
 .PP
-The \fIALWAYS\fR, \fILAURAW\fR, \fINOCARE\fR, \fINOTFILE\fR,
+The \fIALWAYS\fR, \fILEAVES\fR, \fINOCARE\fR, \fINOTFILE\fR,
 \fINOUPDATE\fR, and \fITEMPORARY\fR affect only the binding phase
 (q.v.).
 .SS "Flow-of-Control"
@@ -403,7 +403,7 @@ following six built-in rules to the target:
 .RS
 .IP ALWAYS
 The target is always updated.
-.IP LAURA
+.IP LEAVES
 The target is only updated if it is missing or if its leaf sources
 are newer.  Leaf sources are those dependencies of the target that have
 no dependencies themselves.

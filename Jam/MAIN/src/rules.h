@@ -25,7 +25,7 @@
  * 06/01/94 (seiwald) - new 'actions existing' does existing sources
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/19/95 (seiwald) - split DONTKNOW into CANTFIND/CANTMAKE.
- * 02/02/95 (seiwald) - new LAURA modifier on targets.
+ * 02/02/95 (seiwald) - new LEAVES modifier on targets.
  * 02/14/95 (seiwald) - new NOUPDATE modifier on targets.
  */
 
@@ -101,7 +101,7 @@ struct _target {
 # define 	T_FLAG_NOCARE 	0x02	/* NOCARE applied */
 # define 	T_FLAG_NOTFILE 	0x04	/* NOTFILE applied */
 # define	T_FLAG_TOUCHED	0x08	/* ALWAYS applied or -t target */
-# define	T_FLAG_LAURA	0x10	/* LAURA applied */
+# define	T_FLAG_LEAVES	0x10	/* LEAVES applied */
 # define	T_FLAG_NOUPDATE	0x20	/* NOUPDATE applied */
 
 	char	binding;		/* how target relates to real file */
