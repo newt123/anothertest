@@ -104,7 +104,7 @@ static char *othersyms[] = { OTHERSYMS, 0 } ;
 extern char **environ;
 
 char *usage = 
-	"jam -anv -j<jobs> -f<Jambase> -d<debuglevel> -t<target>... target...";
+    "jam [-anv -j<jobs> -f<Jambase> -d<debuglevel> -t<target>...] target...";
 
 main( argc, argv )
 char	**argv;
@@ -119,8 +119,17 @@ char	**argv;
 
 	if( ( n = getoptions( argc, argv, "d:j:f:t:anv", optv ) ) < 0 )
 	{
-		printf( "usage: %s\n", usage );
-		exit( EXITBAD );
+	    printf( "\nusage: %s\n\n", usage );
+
+            printf( "-a      Build all targets, even if they are current.\n" );
+            printf( "-dx     Set the debug level to x (0-9).\n" );
+            printf( "-fx     Read x instead of Jambase.\n" );
+            printf( "-jx     Run up to x shell commands concurrently.\n" );
+            printf( "-n      Don't actually execute the updating actions.\n" );
+            printf( "-tx     Rebuild x, even if it is up-to-date.\n" );
+            printf( "-v      Print the version of jam and exit.\n\n" );
+
+	    exit( EXITBAD );
 	}
 
 	argc -= n, argv += n;
