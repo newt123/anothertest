@@ -152,7 +152,7 @@ case HPUX :	RANLIB default = "" ;
 case PTX :	RANLIB default = "" ;
 case SCO :	RANLIB default = "" ;
 case SOLARIS :	RANLIB default = "" ;
-		INSTALL default = "install" 
+		INSTALL default = "install" ;
 		AR default = "/usr/ccs/bin/ar ru" ;
 }
 
