@@ -18,18 +18,17 @@
 /*
  * execunix.c - execute a shell script on UNIX
  *
- * If $(JAMSHELL) is defined, uses that to formulate execv().
+ * If $(JAMSHELL) is defined, uses that to formulate execvp().
  * The default is:
  *
- *	/bin/sh sh -c %
+ *	/bin/sh -c %
  *
- * The first word is the pathname of the executable, the subsequent
- * words are the argv[].  % expands to the command string and ! 
- * expands to the slot number (starting at 1) for multiprocess 
- * (-j) invocations.
+ * Each word must be an individual element in a jam variable value.
  *
- * The words are not part of a single string, but rather individual 
- * elements in a jam variable value.
+ * In $(JAMSHELL), % expands to the command string and ! expands to 
+ * the slot number (starting at 1) for multiprocess (-j) invocations.
+ * If $(JAMSHELL) doesn't include a %, it is tacked on as the last
+ * argument.
  *
  * Don't just set JAMSHELL to /bin/sh - it won't work!
  *
@@ -104,7 +103,7 @@ LIST *shell;
 	{
 	    int i;
 	    char jobno[4];
-	    int ok = 0;
+	    int gotpercent = 0;
 
 	    sprintf( jobno, "%d", slot + 1 );
 
@@ -112,7 +111,7 @@ LIST *shell;
 	    {
 		switch( shell->string[0] )
 		{
-		case '%':	argv[i] = string; ok++; break;
+		case '%':	argv[i] = string; gotpercent++; break;
 		case '!':	argv[i] = jobno; break;
 		default:	argv[i] = shell->string;
 		}
@@ -120,21 +119,17 @@ LIST *shell;
 		    printf( "argv[%d] = '%s'\n", i, argv[i] );
 	    }
 
-	    argv[i] = 0;
+	    if( !gotpercent )
+		argv[i++] = string;
 
-	    if( !ok || i <= 1 )
-	    {
-		printf( "bungled JAMSHELL value!\n" );
-		exit( EXITBAD );
-	    }
+	    argv[i] = 0;
 	}
 	else
 	{
 	    argv[0] = "/bin/sh";
-	    argv[1] = "sh";		/* argv[1] is base for execv */
-	    argv[2] = "-c";
-	    argv[3] = string;
-	    argv[4] = 0;
+	    argv[1] = "-c";
+	    argv[2] = string;
+	    argv[3] = 0;
 	}
 
 	/* Catch interrupts whenever commands are running. */
@@ -146,7 +141,7 @@ LIST *shell;
 
 	if ((pid = vfork()) == 0) 
    	{
-		execv( argv[0], argv + 1 );
+		execvp( argv[0], argv );
 		_exit(127);
 	}
 

@@ -67,7 +67,7 @@ Set the debug level to \fI<n>\fR.  Interesting values are:
 .br
 3 Produce dependency information
 .br
-4 Show timestamps of bound files
+4 Show modification times of bound files
 .br
 5 Show rule invocation
 .br
@@ -200,9 +200,9 @@ Makes \fI<sources>\fR dependents of anything of which \fI<targets>\fR
 are dependents.
 .IP "LAURA \fI<targets>\fR"
 .br
-Makes each of \fI<targets>\fR immune to updating unless its leaf
-sources are newer than the target itself.  Its leaf sources are those
-dependents without any dependents themselves.
+Makes each of \fI<targets>\fR depend only on its leaf sources, and not
+on any intermediate targets.  Its leaf sources are those dependents
+without any dependents themselves.
 .IP "NOCARE \fI<targets>\fR"
 .br
 Marks \fI<targets>\fR as possibly being bogus (see \fBBinding\fR, below).
@@ -228,7 +228,7 @@ for \fI<a>\fR in \fI<args>\fR { \fI<statements>\fR }
 .IP
 switch \fI<a>\fR { case \fI<v1>\fR : \fI<statements>\fR ; case \fI<v2>\fR : \fI<statements>\fR ; ... }
 .IP
-if \fI<cond>\fR { \fI<statements>\fR } else { \fI<statements>\fR }
+if \fI<cond>\fR { \fI<statements>\fR } [ else { \fI<statements>\fR } ]
 .PP
 The 
 .B include 
@@ -460,7 +460,7 @@ If a target has been marked with TEMPORARY and it is missing, then its
 parent's modification time is used when comparing against sources.
 .IP \n(bu
 If a target has been marked with NOTFILE, it is marked for updating
-only if any of its sources is marked for updating (timestamps are not
+only if any of its sources is marked for updating (modification times are not
 compared).
 .IP \n(bu
 If a target has been marked with NOUPDATE, it is only updated if it is
@@ -472,8 +472,8 @@ If a target is a source file that includes header files,
 .B jam
 invokes the 
 .RB $( HDRRULE )
-rule on the target, giving the (unbound) names of
-the header files as sources.  A target is scanned for header file
+rule on the target, giving it as sources the (unbound) names of
+the header files.  A target is scanned for header file
 dependencies if
 .RB $( HDRSCAN )
 is set to a
@@ -499,17 +499,16 @@ which depend on it are skipped.
 one target at a time.  If there are multiple actions on a single
 target, they are run sequentially.
 .PP
-(UNIX only).  The special variable $(\fBJAMSHELL\fR) gives \fBjam\fR
-the path and arguments to a command execution shell to be used instead
-of /bin/sh.  This variable's value must be a multi-element list: the
-first element is the pathname of the executable.  Subsequent elements
-make up the argument vector (beginning with argv[0]).  An element
-"\fB%\fR" is replaced with the command string to execute.  An element
-"\fB!\fR" is replaced with the multiprocess slot number.  The slot
-number is inclusively between 1 and the maximum number of concurrent
-jobs permitted by the \fB-j\fR command line flag (default 1).  One
-element of the list must be "\fB%\fR" (so that the command string is
-passed).  The default value is: "/bin/sh sh -c %".
+(UNIX only).  The special variable $(\fBJAMSHELL\fR) gives \fBjam\fR a
+command execution shell to be used instead of /bin/sh.  This variable's
+value must be a multi-element list, corresponding to the argument
+vector for the command shell.  An element "\fB%\fR" is replaced with the
+command string to execute.  An element "\fB!\fR" is replaced with the
+multiprocess slot number, which is (inclusively) between 1 and the
+maximum number of concurrent jobs specified with the \fB-j\fR flag
+(default 1).  If no element of the list is "\fB%\fR", the command
+string is tacked on as the last argument.  The default value is:
+"/bin/sh -c %".
 
 .SH DIAGNOSTICS
 .PP
@@ -542,12 +541,10 @@ Due to sources not being found, other targets cannot be made.
 warning: X depends on itself
 .IP
 A target depends on itself either directly or through its sources.
-This most frequently happens with header file inclusions.
 .PP
 don't know how to make X
 .IP
-A needed target is not present and no actions are defined to create
-the target.
+A target is not present and no actions have been defined to create it.
 .PP
 X skipped for lack of Y
 .IP
@@ -555,7 +552,7 @@ A source failed to build, and thus a target cannot be built.
 .PP
 warning: using independent target X
 .IP
-A target that does is not a dependent of any target being made is
+A target that does is not a dependent of any other target is
 being referenced with $(<) or $(>).  
 .PP
 X removed
@@ -564,8 +561,9 @@ X removed
 removed a partially built target after being interrupted.
 
 .SH FILES
-/usr/local/bin/jam
 /usr/local/lib/jam/Jambase
+.br
+Jamfile
 
 .SH BUGS, LIMITATIONS
 .PP
