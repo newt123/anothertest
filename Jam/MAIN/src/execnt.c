@@ -33,7 +33,11 @@ static int intr = 0;
 
 static int cmdsrunning = 0;
 
+# ifdef _MSC_VER
+static void (*istat)( int disp );
+# else
 static void (*istat)();
+# endif
 
 static struct
 {
@@ -46,9 +50,14 @@ static struct
  * onintr() - bump intr to note command interruption
  */
 
+# ifdef _MSC_VER
+void
+onintr( int disp )
+# else
 void
 onintr( disp )
 int disp;
+# endif
 {
 	intr++;
 	printf( "...interrupted\n" );
