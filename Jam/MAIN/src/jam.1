@@ -159,7 +159,7 @@ $(>) includes only targets marked for updating.
 Rebuilds \fI<targets>\fR, even if they are up-to-date.
 .IP "DEPENDS \fI<targets>\fR : \fI<sources>\fR ;"
 .br
-Makes \fI<sources>\fR dependents of \fI<targets>\fR.
+Makes \fI<sources>\fR dependencies of \fI<targets>\fR.
 .IP "ECHO \fI<args>\fR ;"
 .br
 Blurts out the message \fI<args>\fR to stdout.
@@ -169,13 +169,13 @@ Blurts out the message \fI<args>\fR to stdout and then
 exits with a failure status.
 .IP "INCLUDES \fI<targets>\fR : \fI<sources>\fR ;"
 .br
-Makes \fI<sources>\fR dependents of anything of which \fI<targets>\fR 
-are dependents.
+Makes \fI<sources>\fR dependencies of anything of which \fI<targets>\fR 
+are dependencies.
 .IP "LAURA \fI<targets>\fR ;"
 .br
 Makes each of \fI<targets>\fR depend only on its leaf sources, and not
-on any intermediate targets.  Its leaf sources are those dependents
-without any dependents themselves.
+on any intermediate targets.  Its leaf sources are those dependencies
+without any dependencies themselves.
 .IP "NOCARE \fI<targets>\fR ;"
 .br
 Marks \fI<targets>\fR as possibly being bogus.
@@ -405,8 +405,8 @@ following six built-in rules to the target:
 The target is always updated.
 .IP LAURA
 The target is only updated if it is missing or if its leaf sources
-are newer.  Leaf sources are those dependents of the target that have
-no dependents themselves.
+are newer.  Leaf sources are those dependencies of the target that have
+no dependencies themselves.
 .IP NOCARE
 The target is ignored if it is missing and has no updating actions.  
 Normally, \fBjam\fR issues a warning and skips other targets that
@@ -498,7 +498,7 @@ A source failed to build, and thus a target cannot be built.
 .PP
 warning: using independent target X
 .IP
-A target that does is not a dependent of any other target is
+A target that does is not a dependency of any other target is
 being referenced with $(<) or $(>).  
 .PP
 X removed

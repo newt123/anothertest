@@ -24,15 +24,15 @@ For example:
 .SH DESCRIPTION
 .PP
 This manual page gives instructions and examples for writing a
-\fBJamfile\fR, a file that tells the build tool \fBjam\fR what to build
-in the current directory.  It consists of invocations of rules which
-are defined by the \fBjam\fR boilerplate, \fBJambase\fR.  \fBJambase\fR
-defines rules which provide roughly \fBmake\fR(1)-like functionality.
+\fBJamfile\fR, a file in the current directory that tells the build
+tool \fBjam\fR what to build.  It consists of invocations of rules
+defined by the \fBjam\fR boilerplate, \fBJambase\fR.  \fBJambase\fR
+defines rules that provide roughly \fBmake\fR(1)-like functionality.
 .PP
 This description goes with \fBJam\fR Release 2.0.
 .PP
 Each example here is all or part of a \fBJamfile\fR.  Once you have
-created a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
+written a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
 simplest way is:
 .BB
 jam
@@ -52,12 +52,15 @@ tokens.  This is because \fBjam\fR runs on many platforms and no
 characters, save whitespace, are uncommon in the file names on all of
 those platforms.
 .PP
-More information about the syntax of a \fBJamfile\fR can be found in
+Specific information about the syntax of a \fBJamfile\fR can be found in
 \fBjam\fR(1).
 .SH EXECUTABLES AND LIBRARIES
+.PP
+The following rules compile source files and build executables and
+libraries.
 .SS Main Rule
 .PP
-The \fIMain\fR rule compiles one or more source files and links the resulting
+The \fIMain\fR rule compiles source files and links the resulting
 objects into an executable.
 .XB
 Main myprog : main.c util.c ;
@@ -68,7 +71,7 @@ As with all rules that compile source files, \fBjam\fR handles header file
 dependencies automatically.
 .SS Library Rule
 .PP
-The \fILibrary\fR rule compiles one or more source files, archives the
+The \fILibrary\fR rule compiles source files, archives the
 resulting object files into a library, and then deletes the object
 files.
 .XB
@@ -92,17 +95,17 @@ Library libtree.a : treemake.c treetrav.c ;
 .XE
 .PP
 The \fILinkLibraries\fR rule does two things: it makes the libraries
-dependents of the executable, so that they get built first; and it
+dependencies of the executable, so that they get built first; and it
 makes the libraries show up on the command line that links the
 executable.  The ordering of the lines above is not critical, because
 \fBjam\fR builds targets in the order that they are needed.
 .PP
-You can provide multiple libraries to a single invocation of the
+You can put multiple libraries on a single invocation of the
 \fILinkLibraries\fR rule, or you can provide them in multiple
 invocations.  In both cases, the libraries appear on the link command
-line in the order in which they were encountered.
-You can also provide multiple executables to the \fILinkLibraries\fR
-rule, if all the executables need the same libraries.
+line in the order in which they were encountered.  You can also provide
+multiple executables to the \fILinkLibraries\fR rule, if all the
+executables need the same libraries.
 .SS Variables
 .PP
 The following variables control the linking of executables and the
@@ -112,7 +115,7 @@ $(AR)              archive command (ar ru)
 $(EXEMODE)         permission set on executable after linking (711)
 $(LINK)            linker command (cc)
 $(LINKFLAGS)       linker flags ()
-$(LINKLIBS)        additional libraries that aren't dependents ()
+$(LINKLIBS)        additional libraries that aren't dependencies ()
 $(RANLIB)          name of ranlib program, if any (ranlib)
 .BE
 .PP
@@ -141,286 +144,12 @@ cc -Bstatic -o xprog xprog.o libuxtil.a -lXext -lX11
 .BE
 .PP
 Note that the default link command is cc.
-.SH COPYING FILES
-.SS File Rule
-The \fIFile\fR rule copies one file to another.
-The target name needn't bear any relationship to the source name.
-.XB
-File $(DESTDIR)/foo : bar ;
-.XE
-.SS Bulk Rule
-The \fIBulk\fR rule is a shorthand for many invocations of the \fIFile\fR
-rule when all files are going to the same directory.
-.XB
-Bulk /usr/local/lib/grob : grobvals.txt grobvars.txt ;
-.XE
-.SS HardLink Rule
-The \fIHardLink\fR rule makes a hard link (using \fBln\fR(1)) from the
-source to the target, if there isn't one already.
-.XB
-HardLink config.h : config.h.dist ;
-.XE
-.SS Shell Rule
-The \fIShell\fR rule is like the \fIFile\fR rule, except that it makes
-sure the first line of the target is "#!/bin/sh" and sets the permission
-to make the file executable.
-.XB
-Shell /usr/local/bin/add : add.sh ;
-.XE
-.SS Variables
-The following variables are used when copying files:
-.BB
-$(FILEMODE)        permissions for target file (644)
-$(SHELLHEADER)     first line of shell scripts (#!/bin/sh)
-$(SHELLMODE)       permissions for shell scripts (755)
-.BE
-.PP
-These can be set target-specific.
-.XB
-Shell /usr/local/bin/add : add.awk ;
-SHELLHEADER on /usr/local/bin/add = "#!/bin/awk -f" ;
-.XE
-.PP
-This installs an \fBawk\fR(1) script.
-.SH INSTALLING FILES
-.SS InstallBin Rule
-.PP
-\fIInstallBin\fR calls \fBinstall\fR(1) to install executables in 
-the target directory.  $(BINDIR) is set to /usr/local/bin for convenience.
-.XB
-Main add : add.c ;
-Main sub : sub.c ;
-InstallBin $(BINDIR) : add sub ;
-.XE
-.SS InstallLib Rule
-\fIInstallLib\fR calls \fBinstall\fR(1) to install files in the target
-directory.  $(LIBDIR) is set to /usr/local/lib for convenience.
-.XB
-InstallLib $(LIBDIR) : bighelp.txt ;
-.XE
-.SS InstallMan Rule
-.PP
-\fIInstallMan\fR calls \fBinstall\fR(1) to install manual pages in 
-the appropriate subdirectories of the target directory.  $(MANDIR)
-is set to /usr/local/man for convenience.
-.XB
-InstallMan $(MANDIR) : add.1 sub.1 bigfile.8 ;
-.XE
-.SS InstallShell Rule
-.PP
-\fIInstallShell\fR calls \fBinstall\fR(1) to install shell scripts in 
-the target directory.
-.XB
-Shell bugs : bugs.sh ;
-InstallShell $(BINDIR) : bugs ;
-.XE
-.PP
-The difference between \fIShell\fR and \fIInstallShell\fR is not much: they
-both copy the source to the target.  The former also makes
-sure the script begins with the magic string "#!/bin/sh"; the latter uses
-\fBinstall\fR(1) for the copy.
-.SS MkDir Rule
-.PP
-All the \fIInstall\fR rules invoke the \fIMkDir\fR rule to create the
-directory for the target file.  \fIMkDir\fR recursively invokes itself
-on its parent directory, to make sure the whole path gets created.
-\fIMkDir\fR marks directories with the built-in rule \fINOUPDATE\fR,
-which tells \fBjam\fR not to update a target once it exists.  In that
-way, the contents of the install directory can depend on the existence
-of the install directory itself, and thus the directory will be made
-before its contents are installed.  You can call \fIMkDir\fR directly.
-.XB
-File /usr/local/bin/junky : junky ; 
-DEPENDS /usr/local/bin/junky : /usr/local/bin ; 
-MkDir /usr/local/bin ;
-.XE
-.PP
-This says that /usr/local/bin must be created before /usr/local/bin/junky
-can be built.  Needless to say, \fBjam\fR can't do much if you don't have
-permissions to create directories along the path.
-.SS Variables
-.PP
-The following variables control the installation rules:
-.BB
-$(BINDIR)          InstallBin directory (/usr/local/bin)
-$(LIBDIR)          InstallLib directory (/usr/local/lib)
-$(MANDIR)          InstallMan directory (/usr/local/man)
-$(INSTALL)         The install program; uses cp if not set (install)
-$(FILEMODE)        generic permissions for InstallLib, InstallMan (644)
-$(EXEMODE)         generic permissions for InstallBin (711)
-$(SHELLMODE)       generic permissions for InstallShell (755)
-$(MKDIR)           Program for creating a directory (mkdir)
-.BE
-.PP
-The directory variables are just defined for convenience: they must
-be passed as the target to the appropriate \fIInstall\fR rule.
-The $(INSTALL) and mode variables must be set (globally) before 
-calling the \fIInstall\fR rules in order to take effect.
-.SH HANDLING DIRECTORY TREES
-.PP
-\fBJam\fR can build large projects spread across many directories in
-one pass, tracking the relationships among all files.  It doesn't
-require the user to change the invocations of normal rules like
-\fIMain\fR, \fILibrary\fR, etc. to use non-local pathnames:  these
-rules continue to refer to files in the directory of the
-\fBJamfile\fR.  This section describes the rules and
-variables which support this.
-.PP
-To build a whole directory tree at a time, the user must do three
-things:
-.IP 1.
-Set an environment variable pointing to the root directory of the
-source tree.  The root variable's name is left up to the user, but in these
-examples we use TOP.
-.IP 2.
-Place at the root of the tree a file named \fBJamrules\fR.  (This file
-can alternately be named by the variable $(xxxRULES), where xxx is the
-name of the root variable).  This file could be empty, but in practice
-it contains user-provided rules and variable definitions that are
-shared throughout the tree.  Examples of such definitions are library
-names, header directories, install directories, compiler flags, etc.
-This file is good candidate for automatic customizing with
-\fBautoconf\fR.
-.IP 3.
-Preface the \fBJamfile\fR in each directory with an invocation of
-the \fISubDir\fR rule.
-.SS SubDir Rule
-.PP
-The \fISubDir\fR rule does two things:
-.IP 1.
-It reads in the \fBJamrules\fR at the root of the tree, if that file
-hasn't already been read in by a previous invocation of \fISubDir\fR.
-.IP 2.
-It sets a few variables which tell \fBjam\fR the name of the
-\fBJamfile\fR's directory, so that \fBjam\fR may find source files that
-are named local to the \fBJamfile\fR's directory.
-.PP
-The \fISubDir\fR rule takes as its first argument the root variable's
-name and as subsequent arguments the directory names leading from the
-root to the directory of the current \fBJamfile\fR.  Note that the name
-of the subdirectory is given as individual elements:  the \fISubDir\fR
-rule does not use system-specific directory name syntax.  
-.PP
-The \fISubDir\fR rule must be invoked before any rules that refer to
-the contents of the directory - it is best to put it at the top of each
-\fBJamfile\fR.
-.XB
-# Mondo src/util directory.
-
-SubDir TOP src util ;
-
-Main $(TOP)/bin/testutil : test.c ;
-
-LinkLibraries $(TOP)/bin/testutil : $(TOP)/lib/libutil.a ;
-
-Library $(TOP)/lib/libutil.a : gadgets.c gizmos.c widgets.c ;
-.XE
-.PP
-This compiles four files in $(TOP)/src/util, archives three of the
-objects into libutil.a, and links the whole thing into $(TOP)/bin/testutil.
-.SS SubInclude Rule
-.PP
-The \fISubInclude\fR rule sources the \fBJamfile\fR from the named
-subdirectory.  Its arguments are in the same format as \fISubDir\fR's, and
-its only reason for being is to allow including a subdirectory
-\fBJamfile\fR without having to use system-specific directory name
-syntax.
-.PP
-The recommended practice is only to include one level of subdirectories
-at a time, and let the \fBJamfile\fR in each subdirectory include its
-own subdirectories.  This allows a user to sit in any arbitrary directory
-of the source tree and build that subtree.
-.XB
-# Top level Jamfile for mondo project.  
-# 
-# $(TOP) points to root of mondo tree (set in environment).
-
-SubInclude TOP src ;    
-SubInclude TOP man ;
-SubInclude TOP misc ;
-SubInclude TOP util ;
-.XE
-.PP
-If a directory has both subdirectories of its own as well as files that
-need building, the \fISubIncludes\fR should be either before the
-\fISubDir\fR rule or be at the end of the \fBJamfile\fR - \fInot\fR
-between the \fISubDir\fR and other rule invocations.
-.XB
-# Mondo src code.
-
-SubDir TOP src ;
-
-Main mondo : mondo.c ;
-LinkLibraries mondo : $(TOP)/lib/libmisc.a $(TOP)/lib/libutil.a ;
-
-SubInclude TOP src misc ;
-SubInclude TOP src util ;
-.XE
-.SS Variables
-The following variables are used when \fBjam\fR spans multiple directories:
-.BB
-$(LOCATE_TARGET)   Directory to put targets.
-$(SEARCH_SOURCE)   Directory to find sources.
-$(SOURCE_GRIST)    Something to perturb source file names.
-.BE
-.PP
-\fISubDir\fR sets $(LOCATE_TARGET) and $(SEARCH_SOURCE) to be the
-directory given to \fISubDir\fR.  These variables are used extensively
-by rules in \fBJambase\fR: most rules that generate targets (like
-\fIMain\fR, \fIObject\fR, etc.) set $(LOCATE) to be $(LOCATE_TARGET)
-for the targets they generate, and rules that use sources (most all of
-them) set $(SEARCH) to be $(SEARCH_SOURCE) for the sources they use.
-.PP
-$(LOCATE) and $(SEARCH) are better explained in \fBjam\fR(1), but in
-brief they tell \fBjam\fR where to create new targets and where to find
-existing ones, respectively.
-.PP
-\fISubDir\fR sets $(SOURCE_GRIST) to be a value derived from the
-directory name.  $(SOURCE_GRIST) is used by the rules that take
-source files to perturb file names in different directories that
-would otherwise be the same.
-.PP
-It should be noted that the user can set these variables independently
-of \fISubDir\fR, or after it.  The most profitable example is setting
-$(LOCATE_TARGET) to be a directory outside the source tree: in this
-case, \fBjam\fR can build into a target directory (tree) without ever
-modifying the source tree.
-.SS VMS Notes
-.PP
-On VMS, the logical name table is not imported as is the environment
-on UNIX.  To use the \fISubDir\fR and related rules, you must 
-set the value of the variable that names the root directory.
-.XB
-TOP = USR_DISK:[JONES.SRC] ;
-
-SubInclude TOP util ;
-.XE
-.PP
-The variable must have a value that looks like a directory or device.
-If you choose, you can use a concealed logical.
-.XB
-TOP = TOP: ;
-
-SubInclude TOP util ;
-.XE
-.PP
-The \fB:\fR at the end of TOP makes the value of $(TOP) look like a
-device name, which \fBjam\fR respects as a directory name and will use
-when trying to access files.  TOP must then be defined from DCL:
-.BB
-$ define/job/translation=concealed TOP DK100:[USERS.JONES.SRC.]
-.BE
-.PP
-Note three things: the concealed translation allows the logical to be
-used as a device name; the device name in the logical (here DK100)
-cannot itself be concealed logical (VMS rules, man); and the directory
-component of the definition must end in a period (more VMS rules).
 .SH COMPILING
 .PP
 Compiling of source files occurs normally as a byproduct of the
 \fIMain\fR or \fILibrary\fR rules.  If you want to control the
 compiling process with finer granularity, you can use the rules
-described here.  They are the same rules used by \fIMain\fR and
+described here.  These are the rules used by \fIMain\fR and
 \fILibrary\fR.
 .SS Objects Rule
 .PP
@@ -589,7 +318,7 @@ used in two ways: first, it is passed to the C compiler (with the
 flag \fB-I\fR prepended); second, it is used by \fIHdrRule\fR
 to locate the header files whose names were found when scanning source
 files.  $(STDHDRS) lists the header directories that the C compiler
-knows about:  it is not passed to the C compiler, but is used by
+already knows about:  it is not passed to the C compiler, but is used by
 \fIHdrRule\fR.
 .PP
 Note that these flags, if set as target-specific variables, must be
@@ -700,6 +429,280 @@ source files to be scanned, rather than globally.  If they were set
 globally, \fBjam\fR would attempt to scan all files, even library
 archives and executables, for header file inclusions.  That would
 be slow and probably not yield desirable results.
+.SH COPYING FILES
+.SS File Rule
+The \fIFile\fR rule copies one file to another.
+The target name needn't bear any relationship to the source name.
+.XB
+File $(DESTDIR)/foo : bar ;
+.XE
+.SS Bulk Rule
+The \fIBulk\fR rule is a shorthand for many invocations of the \fIFile\fR
+rule when all files are going to the same directory.
+.XB
+Bulk /usr/local/lib/grob : grobvals.txt grobvars.txt ;
+.XE
+.SS HardLink Rule
+The \fIHardLink\fR rule makes a hard link (using \fBln\fR(1)) from the
+source to the target, if there isn't one already.
+.XB
+HardLink config.h : config.h.dist ;
+.XE
+.SS Shell Rule
+The \fIShell\fR rule is like the \fIFile\fR rule, except that it makes
+sure the first line of the target is "#!/bin/sh" and sets the permission
+to make the file executable.
+.XB
+Shell /usr/local/bin/add : add.sh ;
+.XE
+.SS Variables
+The following variables are used when copying files:
+.BB
+$(FILEMODE)        permissions for target file (644)
+$(SHELLHEADER)     first line of shell scripts (#!/bin/sh)
+$(SHELLMODE)       permissions for shell scripts (755)
+.BE
+.PP
+These can be set target-specific.
+.XB
+Shell /usr/local/bin/add : add.awk ;
+SHELLHEADER on /usr/local/bin/add = "#!/bin/awk -f" ;
+.XE
+.PP
+This installs an \fBawk\fR(1) script.
+.SH INSTALLING FILES
+.SS InstallBin Rule
+.PP
+\fIInstallBin\fR calls \fBinstall\fR(1) to install executables in 
+the target directory.  $(BINDIR) is set to /usr/local/bin for convenience.
+.XB
+Main add : add.c ;
+Main sub : sub.c ;
+InstallBin $(BINDIR) : add sub ;
+.XE
+.SS InstallLib Rule
+\fIInstallLib\fR calls \fBinstall\fR(1) to install files in the target
+directory.  $(LIBDIR) is set to /usr/local/lib for convenience.
+.XB
+InstallLib $(LIBDIR) : bighelp.txt ;
+.XE
+.SS InstallMan Rule
+.PP
+\fIInstallMan\fR calls \fBinstall\fR(1) to install manual pages in 
+the appropriate subdirectories of the target directory.  $(MANDIR)
+is set to /usr/local/man for convenience.
+.XB
+InstallMan $(MANDIR) : add.1 sub.1 bigfile.8 ;
+.XE
+.SS InstallShell Rule
+.PP
+\fIInstallShell\fR calls \fBinstall\fR(1) to install shell scripts in 
+the target directory.
+.XB
+Shell bugs : bugs.sh ;
+InstallShell $(BINDIR) : bugs ;
+.XE
+.PP
+The difference between \fIShell\fR and \fIInstallShell\fR is not much: they
+both copy the source to the target.  The former also makes
+sure the script begins with the magic string "#!/bin/sh"; the latter uses
+\fBinstall\fR(1) for the copy.
+.SS MkDir Rule
+.PP
+All the \fIInstall\fR rules invoke the \fIMkDir\fR rule to create the
+directory for the target file.  \fIMkDir\fR recursively invokes itself
+on its parent directory, to make sure the whole path gets created.
+\fIMkDir\fR marks directories with the built-in rule \fINOUPDATE\fR,
+which tells \fBjam\fR not to update a target once it exists.  In that
+way, the contents of the install directory can depend on the existence
+of the install directory itself, and thus the directory will be made
+before its contents are installed.  You can call \fIMkDir\fR directly.
+.XB
+File /usr/local/bin/junky : junky ; 
+DEPENDS /usr/local/bin/junky : /usr/local/bin ; 
+MkDir /usr/local/bin ;
+.XE
+.PP
+This says that /usr/local/bin must be created before /usr/local/bin/junky
+can be built.  Needless to say, \fBjam\fR can't do much if you don't have
+permissions to create directories along the path.
+.SS Variables
+.PP
+The following variables control the installation rules:
+.BB
+$(BINDIR)          InstallBin directory (/usr/local/bin)
+$(LIBDIR)          InstallLib directory (/usr/local/lib)
+$(MANDIR)          InstallMan directory (/usr/local/man)
+$(INSTALL)         The install program; uses cp if not set (install)
+$(FILEMODE)        generic permissions for InstallLib, InstallMan (644)
+$(EXEMODE)         generic permissions for InstallBin (711)
+$(SHELLMODE)       generic permissions for InstallShell (755)
+$(MKDIR)           Program for creating a directory (mkdir)
+.BE
+.PP
+The directory variables are just defined for convenience: they must
+be passed as the target to the appropriate \fIInstall\fR rule.
+The $(INSTALL) and mode variables must be set (globally) before 
+calling the \fIInstall\fR rules in order to take effect.
+.SH HANDLING DIRECTORY TREES
+.PP
+\fBJam\fR can build large projects spread across many directories in
+one pass, tracking the relationships among all files.  It doesn't
+require the user to change the invocations of normal rules like
+\fIMain\fR, \fILibrary\fR, etc. to use non-local pathnames:  these
+rules continue to refer to files in the directory of the
+\fBJamfile\fR.  This section describes the rules and
+variables which support this.
+.PP
+To build a whole directory tree at a time, the user must do three
+things:
+.IP 1.
+Set an environment variable pointing to the root directory of the
+source tree.  The root variable's name is left up to the user, but in these
+examples we use TOP.
+.IP 2.
+Place at the root of the tree a file named \fBJamrules\fR.  (This file
+can alternately be named by the variable $(xxxRULES), where xxx is the
+name of the root variable).  This file could be empty, but in practice
+it contains user-provided rules and variable definitions that are
+shared throughout the tree.  Examples of such definitions are library
+names, header directories, install directories, compiler flags, etc.
+This file is good candidate for automatic customizing with
+\fBautoconf\fR(GNU).
+.IP 3.
+Preface the \fBJamfile\fR in each directory with an invocation of
+the \fISubDir\fR rule.
+.SS SubDir Rule
+.PP
+The \fISubDir\fR rule does two things:
+.IP 1.
+It reads in the \fBJamrules\fR at the root of the tree, if that file
+hasn't already been read in by a previous invocation of \fISubDir\fR.
+.IP 2.
+It sets a few variables that tell \fBjam\fR the name of the
+\fBJamfile\fR's directory, so that \fBjam\fR may find source files that
+are named local to the \fBJamfile\fR's directory.
+.PP
+The \fISubDir\fR rule takes as its first argument the root variable's
+name and takes as subsequent arguments the directory names leading from
+the root to the directory of the current \fBJamfile\fR.  Note that the
+name of the subdirectory is given as individual elements:  the
+\fISubDir\fR rule does not use system-specific directory name syntax.
+.PP
+The \fISubDir\fR rule must be invoked before any rules that refer to
+the contents of the directory - it is best to put it at the top of each
+\fBJamfile\fR.
+.XB
+# Mondo src/util directory.
+
+SubDir TOP src util ;
+
+Main $(TOP)/bin/testutil : test.c ;
+
+LinkLibraries $(TOP)/bin/testutil : $(TOP)/lib/libutil.a ;
+
+Library $(TOP)/lib/libutil.a : gadgets.c gizmos.c widgets.c ;
+.XE
+.PP
+This compiles four files in $(TOP)/src/util, archives three of the
+objects into libutil.a, and links the whole thing into $(TOP)/bin/testutil.
+.SS SubInclude Rule
+.PP
+The \fISubInclude\fR rule sources the \fBJamfile\fR from the named
+subdirectory.  Its arguments are in the same format as \fISubDir\fR's, and
+its only reason for being is to allow including a subdirectory
+\fBJamfile\fR without having to use system-specific directory name
+syntax.
+.PP
+The recommended practice is only to include one level of subdirectories
+at a time, and let the \fBJamfile\fR in each subdirectory include its
+own subdirectories.  This allows a user to sit in any arbitrary directory
+of the source tree and build that subtree.
+.XB
+# Top level Jamfile for mondo project.  
+# 
+# $(TOP) points to root of mondo tree (set in environment).
+
+SubInclude TOP src ;    
+SubInclude TOP man ;
+SubInclude TOP misc ;
+SubInclude TOP util ;
+.XE
+.PP
+If a directory has both subdirectories of its own as well as files that
+need building, the \fISubIncludes\fR should be either before the
+\fISubDir\fR rule or be at the end of the \fBJamfile\fR - \fInot\fR
+between the \fISubDir\fR and other rule invocations.
+.XB
+# Mondo src code.
+
+SubDir TOP src ;
+
+Main mondo : mondo.c ;
+LinkLibraries mondo : $(TOP)/lib/libmisc.a $(TOP)/lib/libutil.a ;
+
+SubInclude TOP src misc ;
+SubInclude TOP src util ;
+.XE
+.SS Variables
+The following variables are used when \fBjam\fR spans multiple directories:
+.BB
+$(LOCATE_TARGET)   Directory to place targets.
+$(SEARCH_SOURCE)   Directory to find sources.
+$(SOURCE_GRIST)    Something to perturb source file names.
+.BE
+.PP
+\fISubDir\fR sets $(LOCATE_TARGET) and $(SEARCH_SOURCE) to be the
+directory given to \fISubDir\fR.  These variables are used extensively
+by rules in \fBJambase\fR: most rules that generate targets (like
+\fIMain\fR, \fIObject\fR, etc.) set $(LOCATE) to be $(LOCATE_TARGET)
+for the targets they generate, and rules that use sources (most all of
+them) set $(SEARCH) to be $(SEARCH_SOURCE) for the sources they use.
+.PP
+$(LOCATE) and $(SEARCH) are better explained in \fBjam\fR(1), but in
+brief they tell \fBjam\fR where to create new targets and where to find
+existing ones, respectively.
+.PP
+\fISubDir\fR sets $(SOURCE_GRIST) to be a value derived from the
+directory name.  $(SOURCE_GRIST) is used by the rules that take
+source files to perturb file names in different directories that
+would otherwise be the same.
+.PP
+It should be noted that the user can set these variables independently
+of \fISubDir\fR, or after it.  The most profitable example is setting
+$(LOCATE_TARGET) to be a directory outside the source tree: in this
+case, \fBjam\fR can build into a target directory (tree) without ever
+modifying the source tree.
+.SS VMS Notes
+.PP
+On VMS, the logical name table is not imported as is the environment
+on UNIX.  To use the \fISubDir\fR and related rules, you must 
+set the value of the variable that names the root directory.
+.XB
+TOP = USR_DISK:[JONES.SRC] ;
+
+SubInclude TOP util ;
+.XE
+.PP
+The variable must have a value that looks like a directory or device.
+If you choose, you can use a concealed logical.
+.XB
+TOP = TOP: ;
+
+SubInclude TOP util ;
+.XE
+.PP
+The \fB:\fR at the end of TOP makes the value of $(TOP) look like a
+device name, which \fBjam\fR respects as a directory name and will use
+when trying to access files.  TOP must then be defined from DCL:
+.BB
+$ define/job/translation=concealed TOP DK100:[USERS.JONES.SRC.]
+.BE
+.PP
+Note three things: the concealed translation allows the logical to be
+used as a device name; the device name in the logical (here DK100)
+cannot itself be concealed logical (VMS rules, man); and the directory
+component of the definition must end in a period (more VMS rules).
 .SH MISCELLANEOUS
 .SS Clean Rule
 .PP
@@ -770,10 +773,10 @@ using \fISpecialUserRuleB\fR.  Once that is done, remove "foo".
 .PP
 \fBJam\fR has only one special target: \fIall\fR, which it tries
 to build if no targets are on the command line.  \fBJambase\fR defines
-several special targets which are dependents of \fIall\fR:
+several special targets which are dependencies of \fIall\fR:
 .BB
 all             - parent of first, shell, files, lib, exe
-first           - first dependent of 'all', for potential initialization
+first           - first dependency of 'all', for potential initialization
 shell           - parent of all Shell targets 
 files           - parent of all File targets
 lib             - parent of all Library targets
@@ -813,47 +816,46 @@ the \fBJambase\fR is built.  A \fBJamfile\fR, or (more likely) a
 variables as well.
 .SS DEPENDS, INCLUDES Rules
 .PP
-These two rules build the dependency graph, in two slightly different
-ways.  \fIDEPENDS\fR simply makes its sources dependents of its
-targets.  \fIINCLUDES\fR makes its sources dependents of anything of
-which its targets are dependents.  This reflects the dependencies that
-arise when one source file includes another: the object built from the
-source file depends both on the original and included source file, but
-the two sources files don't depend on each other.
+These two rules build the dependency graph.  \fIDEPENDS\fR simply makes
+its sources dependencies of its targets.  \fIINCLUDES\fR makes its
+sources dependencies of anything of which its targets are
+dependencies.  This reflects the dependencies that arise when one
+source file includes another: the object built from the source file
+depends both on the original and included source file, but the two
+sources files don't depend on each other.
 .XB
-DEPENDS foo.o : foo.c ; 
-INCLUDES foo.c : foo.h ;
+DEPENDS foo.o : foo.c ; INCLUDES foo.c : foo.h ;
 .XE
 .PP
-Both "foo.c" and "foo.h" become dependents of "foo.o" in this example.
+Both "foo.c" and "foo.h" become dependencies of "foo.o" in this example.
 .SS ALWAYS, LAURA, NOCARE, NOTFILE, NOUPDATE, TEMPORARY Rules
 .PP
-These six rules modify targets so that \fBjam\fR treats them
-differently during its target binding and updating phase.  Normally,
-\fBjam\fR updates a target if it is missing, if its filesystem
-modification time is older than any of its sources (recursively), or if
-any of its sources are being updated.  This basic behavior can be
-changed by invoking the following rules with the target file as the
-rule's target:
+These six rules mark targets so that \fBjam\fR treats them differently
+during its target binding and updating phase.  Normally, \fBjam\fR
+updates a target if it is missing, if its filesystem modification time
+is older than any of its dependencies (recursively), or if any of its
+dependencies are being updated.  This basic behavior can be changed by
+invoking the following rules with the target file as the rule's
+target:
 .PP
 The \fIALWAYS\fR rule causes its targets to be always updated.  This is
 used for the \fIclean\fR and \fIuninstall\fR targets, as they have no
-dependents and would otherwise appear never to need building.  It is
+dependencies and would otherwise appear never to need building.  It is
 best applied to targets that are also \fINOTFILE\fR targets, but it
 can also be used to force a real file to be updated as well.
 .PP
 The \fINOCARE\fR rule causes \fBjam\fR to ignore its targets if they
-can't be found and have no updating actions, and thus can't be built.
-Normally, \fBjam\fR issues a warning about a target that can't be built
-and then refuses to build anything that depends on that target.  The
-\fIHdrRule\fR uses \fINOCARE\fR on the header file names found during
-header file scanning, to let \fBjam\fR know that the included files may
-not exist.  For example, if a #include is within an #ifdef, the
-included file may not actually be around.
+can't be found and have no updating actions.  Normally, \fBjam\fR
+issues a warning about a target that can't be built and then refuses to
+build anything that depends on that target.  The \fIHdrRule\fR uses
+\fINOCARE\fR on the header file names found during header file
+scanning, to let \fBjam\fR know that the included files may not exist.
+For example, if a #include is within an #ifdef, the included file may
+not actually be around.
 .PP
 The \fINOTFILE\fR rule marks its targets as being pseudo targets, that
 is, targets that aren't really files.  The actions on such a target are
-only executed if the target's dependents are updated, or if the target
+only executed if the target's dependencies are updated, or if the target
 is also marked with \fIALWAYS\fR.  The \fIall\fR and \fIclean\fR
 targets are examples of such targets.
 .PP
@@ -870,10 +872,11 @@ it will use the target's parent's time when determining if the target
 needs updating.  Object files that are also archived in a library are
 marked as such, and they are deleted after they are archived.
 .PP
-The \fILAURA\fR rule makes each of the targets depend only on its "leaf" 
-sources.  This makes it immune to its dependents being updated, as the
-"leaf" soures are those without dependents or updating actions.
-This allows a target to be updated only if original source files change.
+The \fILAURA\fR rule makes each of the targets depend only on its
+"leaf" dependencies.  This makes it immune to its dependencies being
+updated, as the "leaf" dependencies are those without dependencies or
+updating actions.  This allows a target to be updated only if original
+source files change.
 .SS ECHO, EXIT Rules
 .PP
 These two rules help during the \fBJamfile\fR compiling phase.
@@ -885,12 +888,13 @@ The \fIEXIT\fR rule does the same and then does a brutal, fatal exit of
 These two variables control the binding of target names to real files:
 they indicate what path name is to be prepended to the target name to
 get to the real file.  $(SEARCH) provides a list of directories along
-which \fBjam\fR scans looking for a target.  $(LOCATE) overrides 
-$(SEARCH), indicating the directory where the target must be.  Normally,
-$(SEARCH) is used for existing targets which $(LOCATE) is use for targets
-that \fBjam\fR must build.  If neither $(SEARCH) nor $(LOCATE) are set,
-or if the name of the target is a rooted file name (i.e. on UNIX beginning
-with "/"), then the file name is assumed to be the target name.
+which \fBjam\fR scans looking for a target.  $(LOCATE) overrides
+$(SEARCH), indicating the directory where the target must be.
+Normally, $(SEARCH) is set for existing targets while $(LOCATE) is set
+for the targets which \fBjam\fR must build.  If neither $(SEARCH) nor
+$(LOCATE) are set, or if the name of the target is a rooted file name
+(i.e. on UNIX beginning with "/"), then the file name is assumed to be
+the target name.
 .PP
 Both $(SEARCH) and $(LOCATE) should be set target-specific and not
 globally.  If they were set globally, \fBjam\fR would use them for all
@@ -925,7 +929,7 @@ would be scanned for header file include statements.
 The scanning for header file inclusions is not exact, but it is at
 least dynamic.  That is, there is no need to run something like
 \fBmakedepend\fR(GNU) to create a static dependency file.  Because
-\fBjam\fR uses a regular expressions to find include files, it can't
+\fBjam\fR uses regular expressions to find include files, it can't
 know when an include is within #ifdefs or other conditional logic.  To
 make up for this, \fIHdrRule\fR applies the \fINOCARE\fR rule to each
 header file, just in case it is bogus.  Also, regular expressions only
@@ -989,72 +993,72 @@ This section enumerate the rules and variables defined or used by
 \fBJambase\fR.
 .SS Rules
 .de RP
-.IP "\\$1"
+.IP "\fI\\$1\fR \\$2"
 .IP
 ..
-.RP "As obj.o : source.s ;"
+.RP As "obj.o : source.s ;"
 Assemble the file \fIsource.s\fR.  Called by the \fIObject\fR rule.
-.RP "Bulk directory : sources ;"
-Copies \fIsources\fR into \fIdirectory\fR. Dependents of \fIfiles\fR.
-.RP "Cc object : source ;"
+.RP Bulk "directory : sources ;"
+Copies \fIsources\fR into \fIdirectory\fR. Dependencies of \fIfiles\fR.
+.RP Cc "object : source ;"
 Compile the file \fIsource\fR into \fIobject\fR, using the C compiler
 $(CC), its flags $(CCFLAGS) and $(OPTIM), and the header file
 directories $(HDRS).  Called by the \fIObject\fR rule.
-.RP "C++ obj.o : source.cc ;"
+.RP C++ "obj.o : source.cc ;"
 Compile the C++ source file \fIsource.cc\fR.  Called by the
 \fIObject\fR rule.
-.RP "Clean clean : targets ;"
+.RP Clean "clean : targets ;"
 Removes existing \fItargets\fR when \fIclean\fR is built.  \fIclean\fR
 is not a dependency of \fIall\fR, and must be built explicitly for
 \fItargets\fR to be removed.
-.RP "File target : source ;"
-Copies \fIsource\fR into \fItarget\fR.  Dependent of \fIfiles\fR.
-.RP "Fortran obj.o : source.f ;"
+.RP File "target : source ;"
+Copies \fIsource\fR into \fItarget\fR.  Dependency of \fIfiles\fR.
+.RP Fortran "obj.o : source.f ;"
 Compile the Fortran source file \fIsource.f\fR.  Called by the
 \fIObject\fR rule.
-.RP "HardLink target : source ;"
+.RP HardLink "target : source ;"
 Makes \fItarget\fR a hard link to \fIsource\fR, if it isn't one
 already.
-.RP "HdrRule source : headers ;"
+.RP HdrRule "source : headers ;"
 Arranges the proper dependencies when the file \fIsource\fR includes
 the files \fIheaders\fR through the "#include" C preprocessor
 directive.  The \fIObject\fR rule arranges for this rule to be called
 when \fBjam\fR does its header file scan of \fIsource\fR.
-.RP "Install target : source ;"
+.RP Install "target : source ;"
 Copies \fIsource\fR into \fItarget\fR, using \fIinstall\fR(1).  Used by
 the other \fIInstall\fR* rules.
-.RP "InstallBin dir : sources ; "
-Copy \fIsources\fR into \fIdir\fR with mode $(EXEMODE).  Dependents of
+.RP InstallBin "dir : sources ; "
+Copy \fIsources\fR into \fIdir\fR with mode $(EXEMODE).  Dependencies of
 \fIinstall\fR.
-.RP "InstallLib dir : sources ;"
-Copy \fIsources\fR into \fIdir\fR with mode $(FILEMODE).  Dependents of
+.RP InstallLib "dir : sources ;"
+Copy \fIsources\fR into \fIdir\fR with mode $(FILEMODE).  Dependencies of
 \fIinstall\fR.
-.RP "InstallMan dir : sources ;"
+.RP InstallMan "dir : sources ;"
 Copy \fIsources\fR into the appropriate subdirectory of \fIdir\fR with
 mode $(FILEMODE).  The subdirectory is \fBman\fIs\fR, where \fIs\fR
-is the suffix of each of \fIsources\fR.  Dependents of \fIinstall\fR.
-.RP "InstallShell dir : sources ;"
-Copy \fIsources\fR into \fIdir\fR with mode $(SHELLMODE).  Dependents
+is the suffix of each of \fIsources\fR.  Dependencies of \fIinstall\fR.
+.RP InstallShell "dir : sources ;"
+Copy \fIsources\fR into \fIdir\fR with mode $(SHELLMODE).  Dependencies
 of \fIinstall\fR.
-.RP "Lex source.c : source.l ;"
+.RP Lex "source.c : source.l ;"
 Process the \fBlex\fR(1) source file \fIsource.l\fR and rename the
 lex.yy.c to \fIsource.c\fR.  Called by the \fIObject\fR rule.
-.RP "Library library : sources ;"
+.RP Library "library : sources ;"
 Compiles \fIsources\fR and archives them into \fIlibrary\fR.  The
 intermediate objects are deleted.  Calls \fIObjects\fR and
-\fILibraryFromObjects\fR.  Dependent of \fIlib\fR.
-.RP "LibraryFromObjects library : objects ;"
+\fILibraryFromObjects\fR.  Dependency of \fIlib\fR.
+.RP LibraryFromObjects "library : objects ;"
 Archives \fIobjects\fR into \fIlibrary\fR.  The \fIobjects\fR are then
-deleted.  Dependent of \fIlib\fR.
-.RP "LinkLibraries image : libraries ;"
+deleted.  Dependency of \fIlib\fR.
+.RP LinkLibraries "image : libraries ;"
 Makes \fIimage\fR depend on \fIlibraries\fR and includes them during
 the linking.
-.RP "Main image : sources ;"
+.RP Main "image : sources ;"
 Compiles \fIsources\fR and links them into \fIimage\fR.  Calls
-\fIObjects\fR and \fIMainFromObjects\fR.  Dependent of \fIexe\fR.
-.RP "MainFromObjects image : objects ;"
-Links \fIobjects\fR into \fIimage\fR.  Dependent of \fIexe\fR.
-.RP "Object object : source ;"
+\fIObjects\fR and \fIMainFromObjects\fR.  Dependency of \fIexe\fR.
+.RP MainFromObjects "image : objects ;"
+Links \fIobjects\fR into \fIimage\fR.  Dependency of \fIexe\fR.
+.RP Object "object : source ;"
 Compiles a single source file \fIsource\fR into \fIobject\fR.  Makes
 \fIobject\fR depend on all header files included by \fIsource\fR.  Such
 dependencies are "soft": missing headers are not an error.
@@ -1079,39 +1083,42 @@ source.*: \fIUserObject\fR
 .RE
 .IP
 This rule is used by \fBObjects\fR.
-.RP "ObjectCcFlags source : flags ;"
+.RP ObjectCcFlags "source : flags ;"
 Add \fIflags\fR to the \fIsource\fR-specific value of $(CCFLAGS) when
 compiling \fIsource\fR.  Any file suffix on \fIsource\fR is ignored.
-.RP "ObjectHdrs source : dirs ;"
+.RP ObjectHdrs "source : dirs ;"
 Add \fIdirs\fR to the \fIsource\fR-specific value of $(HDRS) when
 scanning and compiling \fIsource\fR.  Any file suffix on \fIsource\fR
 is ignored.
-.RP "Objects sources ;"
+.RP Objects "sources ;"
 For each source file in \fIsources\fR,
 calls \fIObject\fR to compile the source file into a similarly named 
 object file.
-.RP "RmTemps targets : sources ;"
+.RP RmTemps "targets : sources ;"
 Marks \fIsources\fR as temporary with the \fBTEMPORARY\fR rule, and
 deletes \fIsources\fR once \fItargets\fR are built.  Must be the last
 rule invoked on \fItargets\fR.  Used internally by \fBObject\fR.
-.RP "Setuid images ;"
+.RP Setuid "images ;"
 Sets the setuid bit on each of \fIimages\fR after linking.
-.RP "Shell image : source ;"
+.RP Shell "image : source ;"
 Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR.
 Ensures that the first line of the script is $(SHELLHEADER) (default
-\fI#!/bin/sh\fR).  Dependent of \fIshell\fR.
-.RP "Undefines images : symbols ;"
+\fI#!/bin/sh\fR).  Dependency of \fIshell\fR.
+.RP Undefines "images : symbols ;"
 Tries to convince the linker that symbols need to be "undefined" for
 the linking of \fIimages\fR.
-.RP "UserObject object : source ;"
+.RP UserObject "object : source ;"
 Complains that the suffix on \fIsource\fR is unknown.  This rule is called
 by \fIObject\fR for source files with unknown suffixes, and should be replaced
 with a user-provided rule to handle the source file types.
-.RP "Yacc source.c : source.y ;"
+.RP Yacc "source.c : source.y ;"
 Process the \fByacc\fR(1) file \fIsource.y\fR and renamed the resulting
 y.tab.c and y.tab.h to \fIsource.c\fR.  Produces a y.tab.h and renames it
 to \fIsource\fR.h.  Called by the \fIObject\fR rule.
 .SS Variables
+.PP
+These variables are set in \fBJambase\fR only if they are not set in the
+user's environment, and so can be overridden with environment settings.
 .PP
 AR (default \fI"ar ru"\fR)
 .IP

@@ -332,6 +332,8 @@ rule File
 	DEPENDS files : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
+	MODE on $(<) = $(FILEMODE) ;
+	Chmod $(<) ;
 }
 
 rule Fortran
@@ -385,6 +387,14 @@ rule Install
 	# Arrange for jam uninstall
 
 	Clean uninstall : $(<) ;
+
+	if ! $(INSTALL)
+	{
+	    Chmod $(<) ;
+
+	    if $(OWNER) { Chown $(<) ; OWNER on $(<) = $(OWNER) ; }
+	    if $(GROUP) { Chgrp $(<) ; GROUP on $(<) = $(GROUP) ; }
+	}
 }
 
 rule InstallBin
@@ -392,7 +402,7 @@ rule InstallBin
 	for i in $(>)
 	{
 	    Install $(i:D=$(<)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(<)) = $(EXEMODE) ;
+	    MODE on $(i:D=$(<)) = $(EXEMODE) ;
 	}
 }
 
@@ -401,7 +411,7 @@ rule InstallLib
 	for i in $(>)
 	{
 	    Install $(i:D=$(<)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(<)) = $(FILEMODE) ;
+	    MODE on $(i:D=$(<)) = $(FILEMODE) ;
 	}
 }
 
@@ -422,7 +432,7 @@ rule InstallMan
 	    D = $(i:D=man$(S):S=.$(S)) ;
 
 	    Install $(D:R=$(<)) : $(i) ;
-	    INSTALLMODE on $(D:R=$(<)) = $(FILEMODE) ;
+	    MODE on $(D:R=$(<)) = $(FILEMODE) ;
 	}
 }
 
@@ -431,7 +441,7 @@ rule InstallShell
 	for i in $(>)
 	{
 	    Install $(i:D=$(<)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(<)) = $(SHELLMODE) ;
+	    MODE on $(i:D=$(<)) = $(SHELLMODE) ;
 	}
 }
 
@@ -490,6 +500,12 @@ rule LibraryFromObjects
 	RmTemps $(L) : $(S) ;
 
 	if $(RANLIB) { Ranlib $(L) ; }
+}
+
+rule Link
+{
+	MODE on $(<) = $(EXEMODE) ;
+	Chmod $(<) ;
 }
 
 rule LinkLibraries
@@ -699,6 +715,8 @@ rule Shell
 	DEPENDS shell : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
+	MODE on $(<) = $(SHELLMODE) ;
+	Chmod $(<) ;
 }
 
 rule SubDir
@@ -716,7 +734,6 @@ rule SubDir
 	# d1 ... are the directory elements that lead to this directory 
 	# from $(TOP).  We construct the system dependent path from these
 	# directory elements in order to set search&locate stuff.
-	#
 	# 
 
 	if ! $($(<[1]))
@@ -893,6 +910,21 @@ if $(UNIX)
 	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
     }
 
+    actions Chgrp
+    {
+	chgrp $(GROUP) $(<)
+    }
+
+    actions Chmod
+    {
+	chmod $(MODE) $(<)
+    }
+
+    actions Chown
+    {
+	chown $(OWNER) $(<)
+    }
+
     actions piecemeal together existing Clean
     {
 	$(RM) $(>)
@@ -902,7 +934,6 @@ if $(UNIX)
     {
 	$(RM) $(<)
 	$(CP) $(>) $(<) &&
-	$(CHMOD) $(FILEMODE) $(<)
     }
 
     actions Fortran
@@ -919,15 +950,14 @@ if $(UNIX)
     {
 	actions Install
 	{
-	$(INSTALL) -m $(INSTALLMODE) $(>) $(<)
+	$(INSTALL) -m$(MODE) -o$(OWNER) -g$(GROUP) $(>) $(<)
 	}
     }
     else
     {
 	actions Install
 	{
-	$(CP) $(>) $(<) &&
-	$(CHMOD) $(INSTALLMODE) $(<)
+	$(CP) $(>) $(<) 
 	}
     }
 
@@ -938,10 +968,8 @@ if $(UNIX)
 
     actions Link
     {
-	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
-	then $(CHMOD) $(EXEMODE) $(<)
-	else $(RM) $(<); exit 1
-	fi
+	$(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) ||
+	$(RM) $(<) && exit 1
     }
 
     actions MkDir1
@@ -966,7 +994,7 @@ if $(UNIX)
 		NR == 1 && /^[#:]/ { next }
 		/^##/ { next }
 		{ print }
-	' < $(>) > $(<) && $(CHMOD) $(SHELLMODE) $(<)
+	' < $(>) > $(<)
     }
 
     actions Yacc1
@@ -1010,6 +1038,10 @@ else if $(NT)
 	$(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
     }
 
+    actions Chmod
+    {
+    }
+
     actions piecemeal together existing Clean
     {
 	$(RM) $(>) /f /q
@@ -1038,6 +1070,11 @@ else if $(VMS)
 	cc/obj=$(<) $(CCFLAGS) $(OPTIM) $(SLASHINC) $(>) 
     }
 
+    actions Chmod
+    {
+	set file/prot=$(MODE) $(<)
+    }
+
     actions piecemeal together existing Clean
     {
 	$(RM) $(>[1]);* ,$(>[2-]);*
@@ -1051,13 +1088,11 @@ else if $(VMS)
     actions File
     {
 	copy $(>) $(<)
-	set file/prot=$(FILEMODE) $(<)
     }
 
     actions Install
     {
 	copy $(>) $(<)
-	set file/prot=$(INSTALLMODE) $(<)
     }
 
     actions Lex
@@ -1069,7 +1104,6 @@ else if $(VMS)
     actions Link 
     {
 	$(LINK)/exe=$(<) $(LINKFLAGS) $(>[1]) ,$(>[2-]) ,$(NEEDLIBS)/lib ,$(LINKLIBS)
-	set file/prot=$(EXEMODE) $(<)
     }
 
     actions MkDir1
@@ -1085,7 +1119,6 @@ else if $(VMS)
     actions Shell
     {
 	copy $(>) $(<)
-	set file/prot=$(SHELLMODE) $(<)
     }
 
     actions Yacc1

@@ -3,50 +3,10 @@ Release notes for Jam 2.0.
 1.  Release info:
 	Jam 2.0 
 	March 1, 1994
-	VERSION 2
-	PATCHLEVEL 3
+	VERSION 2.0
+	PATCHLEVEL 4
 
-2.  Limitations/Known Bugs
-
-	The new Windows/NT support has only been marginally tested.  It
-	is dependent on certain variables being set depending on which
-	compiler you are using.  You'll need to look in the file
-	Jambase and see what variables are expected to be set.
-
-	The VMS support has been tested, courtesy of the DEC guest
-	machine, but has not been hammered fully in release 2.0.  It
-	was used quite a bit in Jam 1.0.
-
-	Jam clean when there is nothing to clean claims it is updating
-	a target.
-
-	Because the include statement works by pushing a new file in
-	the input stream of the scanner rather than recursively
-	invoking the parser on the new file, multiple include
-	statements in a rule's procedure causes the files to be
-	included in reverse order.
-
-	If the include statement appears inside an if block, the
-	parser's attempt to find the else will cause the text of the
-	included file to appear after the first token following the
-	statement block.  This is rarely what is intended.
-
-	In a rule's actions, only $(<) and $(>) refer to the bound file
-	names:  all other variable references get the unbound names.
-	This is a pain for $(NEEDLIBS), because it means that library
-	path can't be bound using $(SEARCH) and $(LOCATE).
-
-	With the -j flag, errors from failed commands can get
-	staggeringly mixed up.  Also, because targets tend to get built
-	in a quickest-first ordering, dependency information must be
-	quite exact.  Finally, beware of parallelizing commands that
-	drop fixed-named files into the current directory, like yacc(1)
-	does.
-
-	A poorly set $(JAMSHELL) is likely to result in silent
-	failure.
-
-3.  Porting
+2.  Porting
 
 	Windows/NT is now (crudely) supported, courtesy of Brett Taylor
 	and Laura Wingerd.  
@@ -56,7 +16,7 @@ Release notes for Jam 2.0.
 	Solaris archive string table for long archive names is now
 	supported, thanks to Mike Matrigali.
 
-4.  Compatibility
+3.  Compatibility
 
 	Jam 2.0 syntax is a superset of Jam 1.0 syntax, and thus it can
 	interpret a Jam 1.0 Jambase.
@@ -64,9 +24,9 @@ Release notes for Jam 2.0.
 	The Jam 2.0 Jambase is a superset of the Jam 1.0 Jambase, and
 	thus it can include a Jamfile written for Jam 1.0.
 
-5.  Changes from Jam 1.0 to Jam 2.0
+4.  Changes from Jam 1.0 to Jam 2.0
 
-5.1.  Documentation changes
+4.1.  Documentation changes
 
 	New Jamfile.5 manual page, with lots of examples and easy
 	reading.  It replaces both the old "Examples" file as well as
@@ -74,9 +34,9 @@ Release notes for Jam 2.0.
 
 	jam.1 edited by Stephen W. Liddle and Diane Holt.
 
-5.2.  Jambase Changes (see Jamfile.5)
+4.2.  Jambase Changes (see Jamfile.5)
 
-5.2.1.  New rules:
+4.2.1.  New rules:
 
 	There are new rules to make handling subdirectories easier:
 	SubDir, SubInclude, SubDirCcFlags, SubDirHdrs.
@@ -91,7 +51,7 @@ Release notes for Jam 2.0.
 
 	New rules for handling suffixes .s, .f, .cc, .cpp, .C.
 
-5.2.2.  Old rules:
+4.2.2.  Old rules:
 
 	The InstallBin, Lib, Man, and the new Shell rules now take the
 	destination directory as the target and the files to be copied
@@ -115,7 +75,7 @@ Release notes for Jam 2.0.
 	Jambase now purturbs library sources with a "grist" of
 	SOURCE_GRIST.
 
-5.2.3.  Misc:
+4.2.3.  Misc:
 
 	The names of the default rules defined in Jambase have been
 	lowercased and un-abbreviated, to be more imake(1) like.
@@ -126,9 +86,9 @@ Release notes for Jam 2.0.
 	The Jambase has been relocated on UNIX from /usr/local/lib/jam
 	to /usr/local/lib.
 
-5.3.  Jam changes (see jam.1)
+4.3.  Jam changes (see jam.1)
 
-5.3.1.   Flags:
+4.3.1.   Flags:
 
 	New -a (anyhow) flag: means build everything.
 
@@ -142,7 +102,7 @@ Release notes for Jam 2.0.
 
 	New -v to dump version.
 
-5.3.2.  Rules:
+4.3.2.  Rules:
 
 	New ALWAYS rule behaves like -t: always builds target.
 
@@ -156,10 +116,10 @@ Release notes for Jam 2.0.
 	NOTIME has been renamed NOTFILE, to more accurately reflect its
 	meaning (it says a target is not to be bound to a file).
 
-5.3.3.  Variables:
+4.3.3.  Variables:
 
-	New special variable JAMSHELL: path and argv template for
-	command execution shell.
+	New special variable JAMSHELL: argv template for command execution 
+	shell.
 
 	Variables, both normal and target-specific, can have their
 	value appended with the syntax "var += value" or "var on target
@@ -171,7 +131,7 @@ Release notes for Jam 2.0.
 	(:'s if the variable name ends in PATH), so that they become
 	proper list values.
 
-5.3.4.  Misc:
+4.3.4.  Misc:
 
 	Files to be sourced with "include" are now bound first, so
 	$(SEARCH) and $(LOCATE) affect them.  They still can't be
@@ -180,7 +140,7 @@ Release notes for Jam 2.0.
 	New modifier on "actions": "existing" causes $(>) to expand
 	only those files that currently exist.
 
-5.3.5.  Bug fixes:
+4.3.5.  Bug fixes:
 
 	When scanning tokens known to be argument lists (such as the
 	arguments to rule invocations and variable assignment), the
@@ -234,3 +194,43 @@ Release notes for Jam 2.0.
 	This was fixed.
 
 	Various tracing adjustments were made.
+
+5.  Limitations/Known Bugs
+
+	The new Windows/NT support has only been marginally tested.  It
+	is dependent on certain variables being set depending on which
+	compiler you are using.  You'll need to look in the file
+	Jambase and see what variables are expected to be set.
+
+	The VMS support has been tested, courtesy of the DEC guest
+	machine, but has not been hammered fully in release 2.0.  It
+	was used quite a bit in Jam 1.0.
+
+	Jam clean when there is nothing to clean claims it is updating
+	a target.
+
+	Because the include statement works by pushing a new file in
+	the input stream of the scanner rather than recursively
+	invoking the parser on the new file, multiple include
+	statements in a rule's procedure causes the files to be
+	included in reverse order.
+
+	If the include statement appears inside an if block, the
+	parser's attempt to find the else will cause the text of the
+	included file to appear after the first token following the
+	statement block.  This is rarely what is intended.
+
+	In a rule's actions, only $(<) and $(>) refer to the bound file
+	names:  all other variable references get the unbound names.
+	This is a pain for $(NEEDLIBS), because it means that library
+	path can't be bound using $(SEARCH) and $(LOCATE).
+
+	With the -j flag, errors from failed commands can get
+	staggeringly mixed up.  Also, because targets tend to get built
+	in a quickest-first ordering, dependency information must be
+	quite exact.  Finally, beware of parallelizing commands that
+	drop fixed-named files into the current directory, like yacc(1)
+	does.
+
+	A poorly set $(JAMSHELL) is likely to result in silent
+	failure.
