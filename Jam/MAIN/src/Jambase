@@ -62,7 +62,7 @@
 # Lex source.c : source.l ;		.l -> .c
 # Library lib : source ;		archive library from compiled sources
 # LibraryFromObjects lib : objects ;	archive library from objects
-# LinkLibraries image : libraries ;	bag libraries onto a Main
+# LinkLibraries images : libraries ;	bag libraries onto Mains
 # Main image : source ;			link executable from compiled sources
 # MainFromObjects image : objects ;	link executable from objects
 # Object object : source ;		compile object from source
@@ -71,14 +71,14 @@
 # ObjectHdrs source : dirs ;		add include directories for object
 # Objects sources ;			compile sources
 # RmTemps target : sources ;		remove temp sources after target made
-# Setuid image ;			mark an executable Setuid
+# Setuid images ;			mark executables Setuid
 # SubDir TOP d1 d2 ... ;		start a subdirectory Jamfile
 # SubDirCcFlags flags ;			add compiler flags until next SubDir
 # SubDirC++Flags flags ;		add compiler flags until next SubDir
 # SubDirHdrs dirs ;			add include dirs until next SubDir
 # SubInclude TOP d1 d2 ... ;		include a subdirectory Jamfile
 # Shell exe : source ;			make a shell executable
-# Undefines image : symbols ;		save undef's for linking
+# Undefines images : symbols ;		save undef's for linking
 # UserObject object : source ;		handle unknown suffixes for Object
 # Yacc source.c : source.y ;		.y -> .c
 #

@@ -101,6 +101,8 @@ You can provide multiple libraries to a single invocation of the
 \fILinkLibraries\fR rule, or you can provide them in multiple
 invocations.  In both cases, the libraries appear on the link command
 line in the order in which they were encountered.
+You can also provide multiple executables to the \fILinkLibraries\fR
+rule, if all the executables need the same libraries.
 .SS Variables
 .PP
 The following variables control the linking of executables and the
@@ -952,15 +954,15 @@ object file.
 Marks \fIsources\fR as temporary with the \fBTEMPORARY\fR rule, and
 deletes \fIsources\fR once \fItargets\fR are built.  Must be the last
 rule invoked on \fItargets\fR.  Used internally by \fBObject\fR.
-.RP "Setuid image ;"
-Sets the setuid bit on \fIimage\fR after linking.
+.RP "Setuid images ;"
+Sets the setuid bit on each of \fIimages\fR after linking.
 .RP "Shell image : source ;"
 Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR.
 Ensures that the first line of the script is $(SHELLHEADER) (default
 \fI#!/bin/sh\fR).  Dependent of \fIshell\fR.
-.RP "Undefines image : symbols ;"
+.RP "Undefines images : symbols ;"
 Tries to convince the linker that symbols need to be "undefined" for
-the linking of \fIimage\fR.
+the linking of \fIimages\fR.
 .RP "UserObject object : source ;"
 Complains that the suffix on \fIsource\fR is unknown.  This rule is called
 by \fIObject\fR for source files with unknown suffixes, and should be replaced
