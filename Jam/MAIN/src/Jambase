@@ -33,6 +33,7 @@
 # 02/08/95 (seiwald) - SubDir works on VMS.
 # 02/14/95 (seiwald) - MkDir and entourage.
 # 04/30/95 (seiwald) - Use install -c flag so that it copies, not moves.
+# 07/10/95 (taylor) - Support for Microsoft C++.
 
 # Special targets defined in this file:
 #
@@ -229,7 +230,7 @@ else if $(NT)
 	ECHO "Compiler is Microsoft Visual C++" ;
 
 	AR		default = lib ;
-	CC		default = cl ;
+	CC		default = cl /nologo ;
 	CCFLAGS		default = /D \"NT\" ;
 	RW		default = $(MSVCNT)\\lib\\rw ;
 	RWLIBPATH	default = $(RW)\\lib ;
@@ -244,6 +245,32 @@ else if $(NT)
 	STDHDRS		default = $(MSVCNT)\\include ;
 	UNDEFFLAG	default = "/u _" ;
     }
+    else if $(Mstools)
+    {
+	ECHO "Compiler is Microsoft SDK C++" ;
+
+	AR		default = lib ;
+	CC		default = cl /nologo ;
+	CCFLAGS		default = /D \"NT\" ;
+	RW		default = $(Mstools)\\lib\\rw ;
+	RWLIBPATH	default = $(RW)\\lib ;
+	LINK		default = $(CC) ;
+	LINKFLAGS	default = $(CCFLAGS) ;
+	LINKLIBS	default = $(Mstools)\\lib\\advapi32.lib
+				$(Mstools)\\lib\\libcmt.lib
+				$(Mstools)\\lib\\libc.lib
+				$(Mstools)\\lib\\oldnames.lib
+				$(Mstools)\\lib\\kernel32.lib ;
+	OPTIM		default =  ;
+	STDHDRS		default = $(Mstools)\\h ;
+	UNDEFFLAG	default = "/u _" ;
+    }
+    else
+    {
+	EXIT On NT, set BCCROOT, MSVCNT, or Mstools to the root of the
+		Borland or Microsoft directories. ;
+    }
+
 }
 else if $(VMS)
 {
@@ -1091,13 +1118,8 @@ else if $(NT)
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o$(<) $(>)
         }
     }
-    else if $(MSVCNT)
+    else if $(MSVCNT) || $(Mstools)
     {
-	actions Link
-	{
-	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
-	}
-
 	actions updated together piecemeal Archive
 	{
 	$(AR) /out:$(<) $(>)
@@ -1105,7 +1127,12 @@ else if $(NT)
 
 	actions Cc
 	{
-	    $(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
+	$(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
+	}
+
+	actions Link
+	{
+	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
     }
 

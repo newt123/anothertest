@@ -26,7 +26,11 @@ struct keyword {
 	char *word;
 	int type;
 } keywords[] = {
+#ifdef FATFS
+# include "jamgramt.h"
+#else
 # include "jamgramtab.h"
+#endif
 	0, 0
 } ;
 

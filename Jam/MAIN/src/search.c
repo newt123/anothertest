@@ -7,7 +7,11 @@
 # include "jam.h"
 # include "lists.h"
 # include "search.h"
+#ifdef FATFS
+# include "timestam.h"
+#else
 # include "timestamp.h"
+#endif
 # include "filesys.h"
 # include "variable.h"
 # include "newstr.h"

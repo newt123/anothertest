@@ -38,6 +38,7 @@
  *                    well as "\" when parsing pathnames.
  * 02/14/95 (seiwald) - parse and build /xxx properly
  * 03/16/95 (seiwald) - fixed accursed typo on line 69.
+ * 07/10/95 (taylor)  Findfirst() returns the first file on NT.
  */
 
 /*
@@ -185,6 +186,7 @@ void	(*func)();
 	char filespec[ MAXPATH ];
 	char filename[ MAXPATH ];
 	long handle;
+	int ret;
 	struct _finddata_t fileinfo[1];
 
 	/* First enter directory itself */
@@ -205,13 +207,15 @@ void	(*func)();
 
 	sprintf( filespec, "%s/*", dir );
 
-	if( ( handle = _findfirst( filespec, fileinfo ) ) < 0 )
-		return;
-
 	if( DEBUG_BINDSCAN )
 	    printf( "scan directory %s\n", dir );
 
-	while( _findnext( handle, fileinfo ) >= 0 )
+	handle = _findfirst( filespec, fileinfo );
+
+	if( ret = ( handle < 0L ) )
+	    return;
+
+	while( !ret )
 	{
 	    f.f_base.ptr = fileinfo->name;
 	    f.f_base.len = strlen( fileinfo->name );
@@ -219,6 +223,8 @@ void	(*func)();
 	    file_build( &f, filename );
 
 	    (*func)( filename, 1 /* stat()'ed */, fileinfo->time_write );
+
+		ret = _findnext( handle, fileinfo );
 	}
 
 	_findclose( handle );

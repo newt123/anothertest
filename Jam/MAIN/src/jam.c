@@ -15,7 +15,11 @@
 # include "jam.h"
 # include "option.h"
 # include "make.h"
+# ifdef FATFS
+# include "patchlev.h"
+# else
 # include "patchlevel.h"
+# endif
 
 /* These get various function declarations. */
 
@@ -25,7 +29,11 @@
 # include "rules.h"
 # include "newstr.h"
 # include "scan.h"
+# ifdef FATFS
+# include "timestam.h"
+# else
 # include "timestamp.h"
+# endif
 
 /*
  * jam.c - make redux

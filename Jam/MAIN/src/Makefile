@@ -14,12 +14,21 @@ OPTIM = -O
 #CFLAGS = -DAIX
 
 # NT (with Microsoft compiler)
-#CC = cl
-#CFLAGS = -DNT 
+# Use FATFS if building on a DOS FAT file system
+#Lib = $(MSTOOLS)/lib
+#Include = $(MSTOOLS)/h
+#Lib = $(MSVCNT)/lib
+#Include = $(MSVCNT)/include
+#CC = cl /nologo
+#CFLAGS = -I $(Include) -DNT 
 #TARGET = /Fejam0
+#LINKLIBS = $(Lib)/kernel32.lib $(Lib)/libc.lib
+
+# Use FATFS if building on a DOS FAT file system
+#CFLAGS = $(CFLAGS) -DFATFS
 
 install: jam0
 	jam0 -f Jambase install
 
 jam0:
-	cc $(TARGET) $(OPTIM) $(CFLAGS) *.c $(LINKLIBS)
+	$(CC) $(TARGET) $(OPTIM) $(CFLAGS) *.c $(LINKLIBS)
