@@ -32,6 +32,7 @@
 # 02/07/95 (seiwald) - Iron out when HDRSEARCH uses "" or SEARCH_SOURCE.
 # 02/08/95 (seiwald) - SubDir works on VMS.
 # 02/14/95 (seiwald) - MkDir and entourage.
+# 04/30/95 (seiwald) - Use install -c flag so that it copies, not moves.
 
 # Special targets defined in this file:
 #
@@ -168,7 +169,7 @@ if $(UNIX)
 	FORTRAN		default = f77 ;
 	FORTRANFLAGS	default = ;
 	HDRS		default = ;
-	INSTALL		default = install ;
+	INSTALL		default = install -c ;
 	LEX		default = lex ;
 	LIBDIR		default = /usr/local/lib ;
 	LINK		default = $(CC) ;

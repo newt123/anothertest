@@ -13,6 +13,7 @@
  * 11/01/94 (wingerd) - let us define path of Jambase at compile time.
  * 12/30/94 (wingerd) - changed command buffer size for NT (MS-DOS shell).
  * 02/22/95 (seiwald) - Jambase now in /usr/local/lib.
+ * 04/30/95 (seiwald) - FreeBSD added.  Live Free or Die.
  */
 
 # ifdef VMS
@@ -83,7 +84,9 @@
 # include <stdio.h>
 # include <ctype.h>
 # ifndef __bsdi__
+# ifndef __FreeBSD__
 # include <malloc.h>
+# endif
 # endif
 # include <memory.h>
 # include <signal.h>
@@ -124,6 +127,9 @@
 # endif
 # if defined (COHERENT) && defined (_I386)
 # define OTHERSYMS "UNIX=true","OS=COHERENT/386"
+# endif
+# ifdef __FreeBSD__
+# define OTHERSYMS "UNIX=true","OS=FreeBSD"
 # endif
 # ifndef OTHERSYMS
 # define OTHERSYMS "UNIX=true"
