@@ -1,4 +1,4 @@
-Release notes for Jammin 2.1.
+Release notes for Jamming 2.1.
 
 1.  Release info:
 	Jammin 2.1
@@ -6,7 +6,7 @@ Release notes for Jammin 2.1.
 	VERSION 2.1
 	PATCHLEVEL 0
 
-	N.B. As of this release, this package is named "Jammin" to
+	N.B. As of this release, this package is named "Jamming" to
 	avoid conflict with JYACC's JAM product.  The command name
 	and manual pages remain unchanged.
 
@@ -53,11 +53,7 @@ Release notes for Jammin 2.1.
 	To handle Linux's wacko yacc, jamgram.h is now included after
 	scan.h so that YYSTYPE is define.
 
-4.  Changes from Jam 1.0 to Jam 2.0
-
-4.1.  Documentation changes
-
-4.2.  Jambase Changes (see Jamfile.5)
+3.  Jambase Changes (see Jamfile.5)
 
 	SubDir now computes the root directory for the source tree, if
 	the variable naming the root directory isn't set in the environment.
@@ -77,7 +73,7 @@ Release notes for Jammin 2.1.
 	The File rule now calls the Clean rule, so that installed files
 	get cleaned.
 
-4.3.  Jam changes (see jam.1)
+4.  Jam changes (see jam.1)
 
 	Targets marked with NOUPDATE are now immune to the -a (anyhow) 
 	flag.  Previously, the MkDir rule would try to recreate directories
