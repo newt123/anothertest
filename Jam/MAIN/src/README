@@ -1,10 +1,10 @@
-jammin - make(1) redux 
+jam - make(1) redux 
 
     /+\
-    +\	Copyright 1993, 1995 Christopher Seiwald.
+    +\	Copyright 1993, 1996 Christopher Seiwald.
     \+/
 
-    This is Release 2.1 of jammin, a make-like program.
+    This is Release 2.1 of jam, a make-like program.
     The next release will be Release 2.2.
 
     License is hereby granted to use this software and distribute it
@@ -13,39 +13,34 @@ jammin - make(1) redux
 
     ALL WARRANTIES ARE HEREBY DISCLAIMED.
 
-    N.B.  This package was previously known as "jam - make(1) redux".
-    To avoid infringing on JYACC's trademark of JAM, this package
-    has been renamed to "jammin".  The command name and manual pages
-    remain the same.
-
 FEATURES
 
-   ->	Jammin is a make(1) replacement that makes building simple things
+   ->	Jam is a make(1) replacement that makes building simple things
 	simple and building complicated things manageable.
 
-   ->	Jammin's language is expressive, making Jamfiles (c.f. Makefiles) 
+   ->	Jam's language is expressive, making Jamfiles (c.f. Makefiles) 
 	compact.  Here's a sample:
 
 	    Main smail : main.c map.c resolve.c deliver.c
 			 misc.c parser.y alias.c pw.c headers.c
 			 scanner.l getpath.c str.c ;
 
-	This builds "smail" from a dozen source files.  Jammin handles 
+	This builds "smail" from a dozen source files.  Jam handles 
 	header file dependencies automatically and on-the-fly.
 
-   ->	Jammin is very portable: it runs on UNIX, VMS, and NT.  Most
+   ->	Jam is very portable: it runs on UNIX, VMS, and NT.  Most
 	Jamfiles themselves are portable, like the sample above.
 
-   ->   Jammin is unintrusive: it is small, it has negligible CPU 
+   ->   Jam is unintrusive: it is small, it has negligible CPU 
 	overhead, and it doesn't create any of its own funny files
 	(c.f. Odin, nmake, SunOS make).
 
-   ->	Jammin can build large projects spread across many directories
+   ->	Jam can build large projects spread across many directories
 	in one pass, without recursing, tracking the relationships
-	among all files.  See the accompanying paper.  On UNIX, Jammin 
+	among all files.  See the accompanying paper.  On UNIX, Jam 
 	can do this with multiple, concurrent processes.
 
-   ->   Jammin isn't under the blinkin GNU copyright, so you can 
+   ->   Jam isn't under the blinkin GNU copyright, so you can 
 	incorporate it into commercial products.
 
 
@@ -57,15 +52,15 @@ INFORMATION GUIDE
     Jambase.5	Reference for the rule boilerplate file.
     Jambase.ps
 
-    Jamfile.5	Easy reading on creating a Jamfile and using jammin.
+    Jamfile.5	Easy reading on creating a Jamfile and using jam.
     Jamfile.ps
 
     Paper.ps    The 1994 UNIX Application Development Symposium paper 
-		on jammin (reflects Release 1 - see RELNOTES for diffs).
+		on jam (reflects Release 1 - see RELNOTES for diffs).
 
-    RELNOTES	Release 2.0 release notes.
+    RELNOTES	Release 2.1 release notes.
 
-    Porting	Notes on porting jammin to wildcat platforms.
+    Porting	Notes on porting jam to wildcat platforms.
 
     README	This file.  Includes installation instructions.
 
@@ -75,7 +70,10 @@ INFORMATION GUIDE
 
 INSTALLING
 
-    Build jammin with make(1) on:
+    The Makefile (UNIX, NT) and build.com (VMS) are for bootstrapping.
+    Once jam is built, it can rebuild itself.
+
+    Build jam with make(1) on:
 
 	    BSDI	    BSD/386 1.0
 	    COHERENT	    COHERENT/386
@@ -98,22 +96,39 @@ INSTALLING
 	    * requires editing Makefile
 	    + only works with SUNSwpro CC (dirent confusion) 
 
-    Build jammin with @build.com on:
+    Build jam with @build.com on:
 
 	    VAX		    VMS 5.4
 	    DEC 3000/500    OPENVMS	
 
-    The Makefile (UNIX, NT) and build.com (VMS) are for bootstrapping.
+    Special instructions for NT and VMS:
 
-    Once jammin is built, read the Jamfile man page and give it a try.
+	    On both VMS and NT, there isn't an standard place where the
+	    Jambase can be installed, and so it is assumed to be in the
+	    current directory.  This isn't practical for normal use 
+	    (because you want the Jambase to be shared for all projects),
+	    so you either need to edit jam.h to tell it where the Jambase
+	    should like or make an alias (NT using MKS shell) or symbol
+	    (on VMS) that is something like:
 
+		jam = jam -f _path_to_Jambase_
+
+	    On NT, a variable must be set before invoking jam to tell
+	    it where the C compiler lives.  The name of this variable
+	    depends on which compiler you are using:
+
+		BCCROOT:	The Borland C compiler
+		MSVCNT:		The Microsoft Compiler 2.0 (for NT)
+		MSVC:		The Microsoft Compiler 1.5 (for Windows)
+
+	    Only MSVCNT has really been tested and is known to work.
 
 Comments to the author!
 
 November, 1993 - release 1.0
 March, 1995 - release 2.0 
-January, 1996 - release 2.1
+February, 1996 - release 2.1
 
 Christopher Seiwald
 
-seiwald@tea.org
+seiwald@p3.com

@@ -265,7 +265,7 @@ else if $(NT)
 	CC		default = cl /nologo ;
 	CCFLAGS		default = /D \"NT\" ;
 	C++		default = $(CC) ;
-	C++FLAGS	default = $(CCLFAGS) ;
+	C++FLAGS	default = $(CCFLAGS) ;
 	CRELIB		default = true ;
 	LINK		default = link ;
 	LINKFLAGS	default = ;
@@ -277,29 +277,9 @@ else if $(NT)
 	STDHDRS		default = $(MSVCNT)\\include ;
 	UNDEFFLAG	default = "/u _" ;
     }
-    else if $(Mstools)
-    {
-	ECHO "Compiler is Microsoft SDK C++" ;
-
-	AR		default = lib ;
-	CC		default = cl /nologo ;
-	CCFLAGS		default = /D \"NT\" ;
-	C++		default = $(CC) ;
-	C++FLAGS	default = $(CCLFAGS) ;
-	LINK		default = $(CC) ;
-	LINKFLAGS	default = $(CCFLAGS) ;
-	LINKLIBS	default = $(Mstools)\\lib\\advapi32.lib
-				$(Mstools)\\lib\\libcmt.lib
-				$(Mstools)\\lib\\libc.lib
-				$(Mstools)\\lib\\oldnames.lib
-				$(Mstools)\\lib\\kernel32.lib ;
-	OPTIM		default =  ;
-	STDHDRS		default = $(Mstools)\\h ;
-	UNDEFFLAG	default = "/u _" ;
-    }
     else
     {
-	EXIT On NT, set BCCROOT, MSVCNT, MSVC, or Mstools to the root of the
+	EXIT On NT, set BCCROOT, MSVCNT, or MSVC to the root of the
 		Borland or Microsoft directories. ;
     }
 
@@ -1177,7 +1157,7 @@ else if $(NT)
 	$(LINK) $(LINKFLAGS) /out:$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
     }
-    else if $(MSVCNT) || $(Mstools)
+    else if $(MSVCNT)
     {
 	actions updated together piecemeal Archive
 	{

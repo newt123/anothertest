@@ -1,6 +1,6 @@
 /*
  * /+\
- * +\	Copyright 1993, 1995 Christopher Seiwald.
+ * +\	Copyright 1993, 1996 Christopher Seiwald.
  * \+/
  *
  * This file is part of jam.
@@ -156,7 +156,7 @@ char	**argv;
 	{
 	    printf( "Jam - make(1) redux.  " );
 	    printf( "Version %s.%s.  ", VERSION, PATCHLEVEL );
-	    printf( "Copyright 1993, 1995 Christopher Seiwald.\n" );
+	    printf( "Copyright 1993, 1996 Christopher Seiwald.\n" );
 
 	    return EXITOK;
 	}

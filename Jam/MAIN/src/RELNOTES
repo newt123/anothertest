@@ -1,14 +1,10 @@
-Release notes for Jamming 2.1.
+Release notes for Jam 2.1.
 
 1.  Release info:
-	Jammin 2.1
-	January 1, 1996
+	Jam 2.1
+	February 1, 1996
 	VERSION 2.1
 	PATCHLEVEL 0
-
-	N.B. As of this release, this package is named "Jamming" to
-	avoid conflict with JYACC's JAM product.  The command name
-	and manual pages remain unchanged.
 
 2.  Porting
 
@@ -81,8 +77,8 @@ Release notes for Jamming 2.1.
 	flag.  Previously, the MkDir rule would try to recreate directories
 	that already exist when jam was invoked with -a.
 
-	A new variable, $(JAM), joins the small list of built-in variables.
-	It it set to the release of jam, currently "2.1".
+	A new variable, $(JAMVERSION), joins the small list of built-in 
+	variables.  It it set to the release of jam, currently "2.1".
 
 	If an actions fails, jam now deletes the target(s).  It won't
 	delete libraries or other targets that are composites.  This is

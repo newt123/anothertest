@@ -2,5 +2,5 @@
 /* It can be accessed as $(JAM) in the Jamfile. */
 
 #define VERSION "2"
-#define PATCHLEVEL "0.5"
-#define JAMVERSYM "JAM=2.0"
+#define PATCHLEVEL "1.0"
+#define JAMVERSYM "JAMVERSION=2.1"

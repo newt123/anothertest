@@ -15,8 +15,6 @@ OPTIM = -O
 
 # NT (with Microsoft compiler)
 # Use FATFS if building on a DOS FAT file system
-#Lib = $(MSTOOLS)/lib
-#Include = $(MSTOOLS)/h
 #Lib = $(MSVCNT)/lib
 #Include = $(MSVCNT)/include
 #CC = cl /nologo
