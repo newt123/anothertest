@@ -1,5 +1,6 @@
 Release notes for Jam 2.1.
 
+Failed actions now delete the targets.
 InstallFIle an alias for InstallLib.
 NOUPDATE immune to -a (anyhow) flag, so jam -a works on MkDir.
 wording for 'actions existing' in jam.1

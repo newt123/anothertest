@@ -339,27 +339,23 @@ int	status;
 	if( status == EXEC_CMD_FAIL && ( cmd->rule->flags & RULE_IGNORE ) )
 	    status = EXEC_CMD_OK;
 
-	if( status == EXEC_CMD_FAIL )
-	{
-	    if( DEBUG_MAKE )
-	    {
-		printf( "...failed %s ", cmd->rule->name );
-		list_print( cmd->targets );
-		printf( "...\n" );
-	    }
-	}
-	else if( status == EXEC_CMD_INTR )
-	{
-	    /* If the command was interrupted and the target is not */
-	    /* "precious", remove the targets */
+	/* On interrupt, set intr so _everything_ fails */
 
-	    if( !( cmd->rule->flags & RULE_TOGETHER ) )
-		make1remove( cmd->targets );
-
-	    /* Set intr so _everything_ fails */
-
+	if( status == EXEC_CMD_INTR )
 	    ++intr;
+
+	if( status == EXEC_CMD_FAIL && DEBUG_MAKE )
+	{
+	    printf( "...failed %s ", cmd->rule->name );
+	    list_print( cmd->targets );
+	    printf( "...\n" );
 	}
+
+	/* If the command was interrupted or failed and the target */
+	/* is not "precious", remove the targets */
+
+	if( status != EXEC_CMD_OK && !( cmd->rule->flags & RULE_TOGETHER ) )
+	    make1remove( cmd->targets );
 
 	t->status = status;
 	t->cmds = (char *)cmd_next( cmd );
@@ -557,6 +553,6 @@ LIST *targets;
 	for( ; targets; targets = list_next( targets ) )
 	{
 	    if( !unlink( targets->string ) )
-		printf( "%s removed\n", targets->string );
+		printf( "...removing %s\n", targets->string );
 	}
 }
