@@ -1170,7 +1170,7 @@ else if $(NT)
 
 	actions Link
 	{
-	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	$(LINK) $(LINKFLAGS) /out:$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
     }
     else if $(MSVCNT) || $(Mstools)
@@ -1203,7 +1203,7 @@ else if $(NT)
 
 	actions Link
 	{
-	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	$(LINK) $(LINKFLAGS) /out:$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
     }
 
