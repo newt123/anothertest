@@ -79,8 +79,13 @@ char **e;
 
 		/* Split *PATH at :'s, not spaces */
 
-		if( val - 4 >= *e && !strncmp( val - 4, "PATH", 4 ) )
-		    split = SPLITPATH;
+		if( val - 4 >= *e )
+		{
+		    if( !strncmp( val - 4, "PATH", 4 ) ||
+		        !strncmp( val - 4, "Path", 4 ) ||
+		        !strncmp( val - 4, "path", 4 ) )
+			    split = SPLITPATH;
+		}
 
 		/* Do the split */
 

@@ -37,7 +37,7 @@ option *optv;
 
 	if( !optc-- )
 	{
-	    printf( "too many options\n" );
+	    printf( "too many options (%d max)\n", N_OPTS );
 	    return -1;
 	}
 

@@ -578,7 +578,7 @@ int	flags;
 	if( ( flags & RULE_EXISTING ) && t->binding != T_BIND_EXISTS )
 	    continue;
 
-	if( ( flags & RULE_NEWSRCS ) && t->fate < T_FATE_SPOIL )
+	if( ( flags & RULE_NEWSRCS ) && t->fate <= T_FATE_STABLE )
 	    continue;
 
 	/* Build new list */

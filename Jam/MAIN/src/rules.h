@@ -129,9 +129,9 @@ struct _target {
 # define 	T_FATE_MAKING	1	/* make0(target) on stack */
 
 # define 	T_FATE_STABLE	2	/* target didn't need updating */
-
-# define	T_FATE_SPOIL	3	/* >= SPOIL rebuilds parents */
 # define	T_FATE_NEWER	3	/* target newer than parent */
+
+# define	T_FATE_SPOIL	4	/* >= SPOIL rebuilds parents */
 # define 	T_FATE_ISTMP	4	/* unneeded temp target oddly present */
 
 # define	T_FATE_BUILD	5	/* >= BUILD rebuilds target */

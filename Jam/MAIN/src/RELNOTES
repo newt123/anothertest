@@ -84,6 +84,9 @@ Changes since 2.1
     $(>) for 'actions updated'.  Now any source that causes the target
     to be updated shows up in $(>) for 'actions updated'.
 
+    New HDRGRIST variable in Jambase to allow for headers with the same
+    name to be distinguished.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
