@@ -6,6 +6,9 @@ Changes since 2.1
     The 'if' statement now compares all elements in expressions;
     previously, it only compared the first element of each list.
 
+    Header file includes now happen in the proper order.  The limit
+    of 10 include files has been eliminated.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

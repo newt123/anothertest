@@ -36,20 +36,19 @@ struct keyword {
 	0, 0
 } ;
 
-# define MAX_INCLUDES 10
+struct include {
+	struct include *next;	/* next serial include file */
+	char 	*string;
+	FILE 	*file;
+	char 	*fname;
+	int 	line;
+	char 	buf[ 512 ];
+} ;
 
-static struct {
-	char *string;
-	FILE *file;
-	char *fname;
-	int line;
-	char buf[ 512 ];
-} includes[ MAX_INCLUDES ] = {0}, *incp = includes;
-
-static int incdepth = 0;
+static struct include *incp = 0; /* current file; head of chain */
+static struct include *inci = 0; /* where next include file gets inserted */
 
 static int scanmode = SCAN_NORMAL;
-
 static char *symdump();
 
 /* 
@@ -65,7 +64,7 @@ int n;
 yyerror( s )
 char *s;
 {
-	if( incdepth )
+	if( incp )
 	    printf( "%s: line %d: ", incp->fname, incp->line );
 
 	printf( "%s at %s\n", s, symdump( &yylval ) );
@@ -75,84 +74,128 @@ void
 yyfparse( s )
 char *s;
 {
-	FILE *f = stdin;
+	struct include *i = (struct include *)malloc( sizeof( *i ) );
 
-	if( incdepth == MAX_INCLUDES )
+	i->string = "";
+	i->file = 0;
+	i->fname = copystr( s );
+	i->line = 0;
+
+	/* Incp is the head of the include chain, and we need to keep */
+	/* the chain in order.  Thus when one file includes another, we */
+	/* insert it at the head of the chain and point incp at the new */
+	/* head.  If one statement includes many files, we use inci */
+	/* to insert these files one after another on the chain. */
+
+	/* Inci is reset to 0 by yyline() to mean that the next include */
+	/* should go at the head.  Once is it non-zero, it points to the */
+	/* last file included, after which the next include file will go. */
+
+	if( !inci )
 	{
-	    printf( "%s: too many levels of nested includes\n", s );
-	    return;
+	    i->next = incp;
+	    inci = i;
+	    incp = i;
 	}
-
-	if( strcmp( s, "-" ) && !( f = fopen( s, "r" ) ) )
-	    perror( s );
-
-	incp = &includes[ incdepth++ ];
-	incp->string = "";
-	incp->file = f;
-	incp->fname = s;
-	incp->line = 0;
+	else
+	{
+	    i->next = inci->next;
+	    inci->next = i;
+	    inci = i;
+	}
 }
 
 /*
- * get character routine
+ * yyline() - read new line and return first character
+ *
+ * Fabricates a continuous stream of characters across include files,
+ * returning EOF at the bitter end.
  */
 
 yyline()
 {
-top:
-	if( incp->file )
+	struct include *i;
+
+	/* Once we start reading from the input stream, we reset the */
+	/* include insertion point so that the next include file becomes */
+	/* the head of the list. */
+
+	inci = 0;
+
+	while( i = incp )
 	{
-	    if( fgets( incp->buf, sizeof( incp->buf ), incp->file ) )
+	    /* If there is more data in this line, return it. */
+
+	    if( *i->string )
+		return *i->string++;
+
+	    /* If necessary, open the file */
+
+	    if( !i->file )
 	    {
-		incp->line++;
-		incp->string = incp->buf;
-		return *incp->string++;
+		FILE *f = stdin;
+
+		if( strcmp( i->fname, "-" ) && !( f = fopen( i->fname, "r" ) ) )
+		    perror( i->fname );
+
+		i->file = f;
 	    }
 
-	    if( incp->file != stdin )
-		    fclose( incp->file );
-	} 
+	    /* If there's another line in this file, start it. */
 
-	/* Last include file? */
+	    if( i->file && fgets( i->buf, sizeof( i->buf ), i->file ) )
+	    {
+		i->line++;
+		i->string = i->buf;
+		return *i->string++;
+	    }
 
-	if( incdepth <= 1  )
-	{
-	    /* Make sure subsequent calls get EOF, too */
+	    /* Got to next sequential include. */
 
-	    incdepth = 0;
-	    incp->string = "";
+	    incp = i->next;
 
-	    return EOF;
+	    /* Close file, free name */
+
+	    if( i->file && i->file != stdin )
+		fclose( i->file );
+	    freestr( i->fname );
+	    free( (char *)i );
 	}
 
-	/* Pop to previous include */
-
-	incp = &includes[ --incdepth - 1 ];
-
-	if( !*incp->string )
-	    goto top;
-
-	return *incp->string++;
+	return EOF;
 }
 
 /*
  * yylex() - set yylval to current token; return its type
+ *
+ * Macros to move things along:
+ *
+ *	yychar() - return and advance character; invalid after EOF
+ *	yyprev() - back up one character; invalid before yychar()
+ *
+ * yychar() returns a continuous stream of characters, regardless of
+ * include file boundaries.  At the end of the last file it returns EOF.
  */
 
 # define yychar() ( *incp->string ? *incp->string++ : yyline() )
+# define yyprev() ( incp->string-- )
 
 yylex()
 {
-	int c = *incp->string;
+	int c;
 	char buf[10240];
+
+	if( !incp )
+	    goto eof;
+
+	/* Get first character (whitespace or of token) */
+
+	c = yychar();
+
+	/* Eat white space */
 
 	for( ;; )
 	{
-		/* Skip past the "" that yyfparse() points incp->string at. */
-
-		if( !c )
-		    c = yychar();
-
 		/* Skip past white space */
 
 		while( c != EOF && isspace( c ) )
@@ -250,7 +293,7 @@ yylex()
 
 		/* We looked ahead a character - back up. */
 
-		incp->string--;
+		yyprev();
 
 		/* scan token table */
 		/* don't scan if it's "anything", $anything, */

@@ -520,11 +520,6 @@ Jamfile
 
 .SH BUGS, LIMITATIONS
 .PP
-Because the \fBinclude\fR statement works by pushing a new file in the
-input stream of the scanner rather than recursively invoking the parser
-on the new file, multiple include statements in a rule's procedure
-causes the files to be included in reverse order.
-.PP
 If the \fBinclude\fR statement appears inside an \fBif\fR block, the
 parser's attempt to find the \fBelse\fR will cause the text of the
 included file to appear after the first token following the statement
