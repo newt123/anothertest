@@ -23,10 +23,17 @@ Example:
 \fBJamfile\fR \- per-directory \fBjam\fR(1) instructions
 .SH DESCRIPTION
 .PP
-\fBJamfile\fR tells the build tool \fBjam\fR what to
-do in the current directory.  This man page gives examples for a
-\fBJamfile\fR.  Once you have created a \fBJamfile\fR, you can
-invoke \fBjam\fR to build things.  The simplest way is:
+This manual page gives instructions and examples for writing a
+\fBJamfile\fR.  A \fBJamfile\fR is a file that tells the build tool
+\fBjam\fR what to do in the current directory.  It consists of
+invocations of rules, rules which are defined by the \fBjam\fR
+boilerplate file \fBJambase\fR.  The rules \fBJambase\fR defines
+provide the roughly \fBmake\fR(1)-like functionality shown here.  This
+description goes with \fBjam\fR release 2.
+.PP
+Each example is all or part of a \fBJamfile\fR.  Once you have created
+a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
+simplest way is:
 .BB
 jam
 .BE
@@ -37,11 +44,6 @@ jam -n
 .BE
 .PP
 The \fB-n\fR tells \fBjam\fR to do a verbose dry-run.
-.PP
-The rules used here are defined by \fBJambase\fR, the \fBjam\fR
-boilerplate.  \fBJambase\fR contains a set of \fBjam\fR rule
-definitions that provide the roughly \fBmake\fR(1)-like functionality
-shown here.
 .SH WHITESPACE NOTE
 .PP
 \fBJam\fR requires whitespace (blanks, tabs, or newlines) to surround
@@ -49,33 +51,36 @@ all tokens, including the \fB:\fR (colon) and \fB;\fR (semicolon)
 tokens.  This is because \fBjam\fR runs on many platforms and no
 characters, save whitespace, are uncommon in the file names on all of
 those platforms.
+.PP
+More information about the syntax of a \fBJamfile\fR can be found in
+\fBjam\fR(1).
 .SH EXECUTABLES AND LIBRARIES
 .SS Main Rule
 .PP
-The \fIMain\fR rule handles the compiling of one or more files and linking
-the resulting objects into an executable.
+The \fIMain\fR rule compiles one or more files and links the resulting
+objects into an executable.
 .XB
 Main myprog : main.c util.c ;
 .XE
 .PP
 This compiles main.c and util.c and links main.o and util.o into myprog.
-As with all rules that compile source files, header file dependencies are
-automatically handled.
+As with all rules that compile source files, \fBjam\fR hanles header file 
+dependencies automatically.
 .SS Library Rule
 .PP
-The \fILibrary\fR rule handles the compiling of one or more sources,
-archiving the resulting objects, and then deleting the objects.
+The \fILibrary\fR rule compiles one or more sources, archives the
+resulting objects into library, and then deletes the objects.
 .XB
-Library libstring.a : strcmp.c strcpy.c strlen.c ;
+Library libstring.a : strcmp.c strcpy.c strlen.c ; 
 Library libtree.a : treemake.c treetrav.c ;
 .XE
 .PP
-This compiles five source files, and archives three of the resulting
-object files into libstring.a and the other two into libtree.a.  Once
-the archiving of the objects is complete, they are deleted.
+This compiles five source files, archives three of the object files
+into libstring.a, and archives the other two into libtree.a.  Once the
+objects are safely in the libraries, the objects are deleted.
 .SS LinkLibraries Rule
 .PP
-To link executables against libraries that are built, indicate this
+To link executables against libraries that are built, you indicate it
 with the \fILinkLibraries\fR rule.
 .XB
 Main myprog : main.c util.c ;
@@ -91,12 +96,12 @@ The ordering of the lines above is not critical.
 The following variables control the linking of executables and the
 archiving of libraries.
 .BB
-AR              archive command (ar ru)
-EXEMODE         permission set on executable after linking (711)
-LINK            linker command (cc)
-LINKFLAGS       linker flags ()
-LINKLIBS        additional libraries that aren't dependents ()
-RANLIB          name of ranlib program, if any (ranlib)
+$(AR)              archive command (ar ru)
+$(EXEMODE)         permission set on executable after linking (711)
+$(LINK)            linker command (cc)
+$(LINKFLAGS)       linker flags ()
+$(LINKLIBS)        additional libraries that aren't dependents ()
+$(RANLIB)          name of ranlib program, if any (ranlib)
 .BE
 .PP
 The difference between and the arguments to \fILinkLibraries\fR
@@ -113,9 +118,9 @@ LINKLIBS on xprog = -lXext -lX11 ;
 Library libxutil.a : xtop.c xbottom.c xutil.c ;
 .XE
 .PP
-This example uses the \fBjam\fR syntax "variable \fIon\fR Itarget",
+This example uses the \fBjam\fR syntax "variable \fIon\fR target",
 which sets the variable's value only for use when updating the named
-target.  The actual link line look like this:
+target.  The actual link command line looks like this:
 .BB
 cc -Bstatic -o xprog xprog.o libuxtil.a -lXext -lX11
 .BE
@@ -150,9 +155,9 @@ Shell /usr/local/bin/add : add.sh ;
 .SS Variables
 The following variables are used when copying files:
 .BB
-FILEMODE        permissions for target file (644)
-SHELLHEADER     first line of shell scripts (#!/bin/sh)
-SHELLMODE       permissions for shell scripts (755)
+$(FILEMODE)        permissions for target file (644)
+$(SHELLHEADER)     first line of shell scripts (#!/bin/sh)
+$(SHELLMODE)       permissions for shell scripts (755)
 .BE
 .PP
 These can be set target-specific.
@@ -201,18 +206,18 @@ sure the script begins with the magic string (#!/bin/sh); the latter uses
 .PP
 The following variables control the installation rules:
 .BB
-BINDIR          InstallBin directory (/usr/local/bin)
-LIBDIR          InstallLib directory (/usr/local/lib)
-MANDIR          InstallMan directory (/usr/local/man)
-INSTALL         The install program; uses cp if not set (install)
-FILEMODE        generic permissions for InstallLib, InstallMan (644)
-EXEMODE         generic permissions for InstallBin (711)
-SHELLMODE       generic permissions for InstallShell (755)
+$(BINDIR)          InstallBin directory (/usr/local/bin)
+$(LIBDIR)          InstallLib directory (/usr/local/lib)
+$(MANDIR)          InstallMan directory (/usr/local/man)
+$(INSTALL)         The install program; uses cp if not set (install)
+$(FILEMODE)        generic permissions for InstallLib, InstallMan (644)
+$(EXEMODE)         generic permissions for InstallBin (711)
+$(SHELLMODE)       generic permissions for InstallShell (755)
 .BE
 .PP
 The directory variables are just defined for convenience: they must
 be passed as the target the appropriate \fIInstall\fR rule.
-The \fIINSTALL\fR and mode variables must be set (globally) before 
+The $(INSTALL) and mode variables must be set (globally) before 
 calling the \fIInstall\fR rules in order to take effect.
 .SH HANDLING DIRECTORY TREES
 .PP
@@ -221,8 +226,8 @@ one pass, tracking the relationships among all files.  It doesn't
 require the user to change the invocations of normal rules like
 \fIMain\fR, \fILibrary\fR, etc. to use non-local pathnames:  these
 rules continue to refer to files in the directory of the
-\fBJamfile\fR.  This section describes the \fBJambase\fR rules and
-variables that supports this.
+\fBJamfile\fR.  This section describes the rules and
+variables which support this.
 .PP
 To build a whole directory tree at a time, the user must do three
 things:
@@ -249,7 +254,7 @@ The \fISubDir\fR rule does two things:
 It reads in the \fBJamrules\fR at the root of the tree, if that file
 hasn't already been read in by a previous invocation of \fISubDir\fR.
 .IP 2.
-It sets a few variables that tell \fBjam\fR the name of the
+It sets a few variables which tell \fBjam\fR the name of the
 \fBJamfile\fR's directory, so that \fBjam\fR may find source files that
 are named local to the \fBJamfile\fR's directory.
 .PP
@@ -317,9 +322,9 @@ SubInclude TOP src util ;
 .SS Variables
 The following variables are used when \fIJam\fR spans multiple directories:
 .BB
-LOCATE_TARGET   Directory to put targets.
-SEARCH_SOURCE   Directory to find sources.
-SOURCE_GRIST    Something to perturb source file names.
+$(LOCATE_TARGET)   Directory to put targets.
+$(SEARCH_SOURCE)   Directory to find sources.
+$(SOURCE_GRIST)    Something to perturb source file names.
 .BE
 .PP
 \fISubDir\fR sets $(LOCATE_TARGET) and $(SEARCH_SOURCE) to be the
@@ -505,18 +510,18 @@ ObjectCcFlags w.c : -DW_CODE ;
 .PP
 The following variables control the compiling of source files.
 .BB
-CC              The C Compiler (cc)
-C++             The C++ Compiler (gcc)
-CCFLAGS         C compiler flags()
-C++FLAGS        C++ compiler flags()
-HDRS            non-standard header directories ()
-LEX             The Lex program (lex)
-OPTIM           optimization flag, if desired (-O)
-STDHDRS         standard header directories (/usr/include)
-SUBDIRCCFLAGS   Per-directory CCFLAGS.
-SUBDIRC++FLAGS  Per-directory C++FLAGS.
-SUBDIRHDRS      Per-directory HDRS.
-YACC            The Yacc program (yacc -d)
+$(CC)              The C Compiler (cc)
+$(C++)             The C++ Compiler (gcc)
+$(CCFLAGS)         C compiler flags()
+$(C++FLAGS)        C++ compiler flags()
+$(HDRS)            non-standard header directories ()
+$(LEX)             The Lex program (lex)
+$(OPTIM)           optimization flag, if desired (-O)
+$(STDHDRS)         standard header directories (/usr/include)
+$(SUBDIRCCFLAGS)   Per-directory CCFLAGS.
+$(SUBDIRC++FLAGS)  Per-directory C++FLAGS.
+$(SUBDIRHDRS)      Per-directory HDRS.
+$(YACC)            The Yacc program (yacc -d)
 .BE
 .PP
 $(CC), $(C++), $(CCFLAGS), $(C++FLAGS), $(OPTIM), and $(HDRS) all affect 
@@ -626,12 +631,12 @@ by the program "mkhdr", which can be built from "mkhdr.c".  By calling
 .PP
 The complete list of variables used by the \fIHdrRule\fR coterie are:
 .BB
-HDRRULE         scan rule, when set activates scanning (HdrRule)
-HDRSCAN         scan pattern ($(HDRPATTERN))
-HDRSEARCH       search list for HdrRule ($(HDRS) $(STDHDRS))
-HDRS            non-standard directories for headers ()
-STDHDRS         standard directories for headers (/usr/include)
-HDRPATTERN      scan pattern for $(HDRSCAN) (ugly egrep expression)
+$(HDRRULE)         scan rule, when set activates scanning (HdrRule)
+$(HDRSCAN)         scan pattern ($(HDRPATTERN))
+$(HDRSEARCH)       search list for HdrRule ($(HDRS) $(STDHDRS))
+$(HDRS)            non-standard directories for headers ()
+$(STDHDRS)         standard directories for headers (/usr/include)
+$(HDRPATTERN)      scan pattern for $(HDRSCAN) (ugly egrep expression)
 .BE
 .PP
 The \fIObject\fR rule sets HDRRULE and HDRSCAN specifically for the
@@ -982,7 +987,7 @@ HDRPATTERN (default ^#[\\t ]*include[\\t ]*[<"](.*)[">].*$)
 .IP
 The \fBregexp\fR(3) pattern for finding header file includes in source
 files.  The \fBObject\fR rule sets the \fBjam\fR-special variable
-\fBHDRSCAN\fR to $(\fBHDRPATTERN\fR) for all of its sources.  The
+\fBHDRSCAN\fR to $(HDRPATTERN) for all of its sources.  The
 corresponding target of the \fBObject\fR rule invocation depends on all
 header files found.
 .PP
@@ -1008,7 +1013,7 @@ LINK (default \fIcc\fR)
 .IP
 The linker.
 .PP
-LINKFLAGS (default \fI$(CCFLAGS)\fR)
+LINKFLAGS (default $(CCFLAGS))
 .IP
 Flags handed to the linker.
 .PP
@@ -1021,7 +1026,7 @@ LOCATE_TARGET (no default)
 .IP
 The directory for object modules and other intermediate files generated
 by \fBObject\fR.  This works by setting the \fBjam\fR-special variable
-\fBLOCATE\fR to the value of $(\fBLOCATE_TARGET\fR) for each of
+\fBLOCATE\fR to the value of $(LOCATE_TARGET) for each of
 \fBObject\fR's targets.
 .PP
 LN (default \fIln\fR)
@@ -1055,7 +1060,7 @@ The directory to find sources listed with \fBMain\fR, \fBLibrary\fR,
 \fBObject\fR, \fBBulk\fR, \fBFile\fR, \fBShell\fR, \fBInstallBin\fR,
 \fBInstallLib\fR, and \fBInstallMan\fR rules.  This works by setting
 the \fBjam\fR-special variable \fBSEARCH\fR to the value of
-$(\fBSEARCH_SOURCE\fR) for each of the rules' sources.
+$(SEARCH_SOURCE) for each of the rules' sources.
 .PP
 SHELLHEADER (default \fI#!/bin/sh\fR)
 .IP
@@ -1082,8 +1087,8 @@ The \fByacc\fR(1) command and flags.
 .SH BUGS
 .PP
 Because libraries are passed unbound to the \fBLink\fR rule as
-$(\fBNEEDLIBS\fR), they cannot be located with $(\fBLOCATE\fR), because
-$(\fBLOCATE\fR) only changes the bound file name.
+$(NEEDLIBS), they cannot be located with $(LOCATE), because
+$(LOCATE) only changes the bound file name.
 .PP
 There's no \fByacc\fR(1) on VMS, so the guts of the rules are commented
 out.
