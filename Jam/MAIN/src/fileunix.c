@@ -113,7 +113,7 @@ void	(*func)();
 
 	while( dirent = readdir( d ) )
 	{
-# ifdef sinix
+# ifdef old_sinix
 	    /* Broken structure definition on sinix. */
 	    f.f_base.ptr = dirent->d_name - 2;
 # else
