@@ -51,6 +51,7 @@ static struct include *incp = 0; /* current file; head of chain */
 static struct include *inci = 0; /* where next include file gets inserted */
 
 static int scanmode = SCAN_NORMAL;
+static int anyerrors = 0;
 static char *symdump();
 
 /* 
@@ -70,6 +71,14 @@ char *s;
 	    printf( "%s: line %d: ", incp->fname, incp->line );
 
 	printf( "%s at %s\n", s, symdump( &yylval ) );
+
+	++anyerrors;
+}
+
+int
+yyanyerrors()
+{
+	return anyerrors != 0;
 }
 
 void

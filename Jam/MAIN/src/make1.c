@@ -79,7 +79,7 @@ static struct {
 
 static int intr = 0;
 
-void
+int
 make1( t )
 TARGET *t;
 {
@@ -104,6 +104,8 @@ TARGET *t;
 
 	if( DEBUG_MAKE && counts->made )
 	    printf( "...updated %d target(s)...\n", counts->made );
+
+	return counts->total != counts->made;
 }
 
 /*

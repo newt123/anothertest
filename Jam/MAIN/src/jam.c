@@ -130,6 +130,7 @@ char	**argv;
 	struct option	optv[N_OPTS];
 	char		*all = "all";
 	int		anyhow = 0;
+	int		status;
 
 	argc--, argv++;
 
@@ -224,6 +225,8 @@ char	**argv;
 	    yyparse();
 	}
 
+	status = yyanyerrors();
+
 	/* Manually touch -t targets */
 
 	for( n = 0; s = getoptval( optv, 't', n ); n++ )
@@ -231,10 +234,7 @@ char	**argv;
 
 	/* Now make target */
 
-	if( argc )
-	    make( argc, argv, anyhow );
-	else
-	    make( 1, &all, anyhow );
+	status |= make( argc ? argc : 1, argc ? argv : &all, anyhow );
 
 	/* Widely scattered cleanup */
 
@@ -243,5 +243,5 @@ char	**argv;
 	donestamps();
 	donestr();
 
-	return EXITOK;
+	return status ? EXITBAD : EXITOK;
 }

@@ -35,6 +35,10 @@ Changes since 2.1
     The NT command executor now handles multiple line actions, by sending
     the actions one line at time to the DOS shell.
 
+    Jam now exits non-zero if it doesn't have a total success.  A parse
+    error, sources that can't be found, and targets that can't be built
+    all generate non-zero exit status.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

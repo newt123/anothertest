@@ -83,7 +83,7 @@ static char *target_fate[] =
  * make() - make a target, given its name
  */
 
-void
+int
 make( n_targets, targets, anyhow )
 int	n_targets;
 char	**targets;
@@ -91,6 +91,7 @@ int	anyhow;
 {
 	int i;
 	COUNTS counts[1];
+	int status = 0;		/* 1 if anything fails */
 
 	memset( (char *)counts, 0, sizeof( *counts ) );
 
@@ -115,8 +116,12 @@ int	anyhow;
 		printf( "...can't make %d target(s)...\n", counts->cantmake );
 	}
 
+	status = counts->cantfind || counts->cantmake;
+
 	for( i = 0; i < n_targets; i++ )
-	    make1( bindtarget( targets[i] ) );
+	    status |= make1( bindtarget( targets[i] ) );
+
+	return status;
 }
 
 /*

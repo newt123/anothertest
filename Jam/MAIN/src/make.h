@@ -8,5 +8,5 @@
  * make.h - bring a target up to date, once rules are in place
  */
 
-void make();
-void make1();
+int make();
+int make1();
