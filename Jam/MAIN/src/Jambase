@@ -176,10 +176,10 @@ case SOLARIS :	RANLIB default = "" ;
 case UNIXWARE :	RANLIB default = "" ; RELOCATE = true ;
 }
 
-if $(OS) = SUNOS && $(TZ)
-{
-	Echo Warning: you are running the SunOS jam on Solaris. ;
-}
+#if $(OS) = SUNOS && $(TZ)
+#{
+#	Echo Warning: you are running the SunOS jam on Solaris. ;
+#}
 
 if $(UNIX)
 {
