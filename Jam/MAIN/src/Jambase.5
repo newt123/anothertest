@@ -48,6 +48,9 @@ Arranges the proper dependencies when the file \fIsource\fR
 includes the files \fIheaders\fR through the "#include" C preprocessor
 directive.  The \fIObject\fR rule arranges for this rule to be called
 when \fBJam\fI does its header file scan of \fIsource\fR.
+.RP "Install target : source ;"
+Copies \fIsource\fR into \fItarget\fR.
+Used by the other \fIInstall\fR* rules.
 .RP "InstallBin sources ; "
 Copy \fIsources\fR into $(BINDIR).  Dependents of \fIinstall\fR.
 .RP "InstallLib sources ;"
@@ -59,40 +62,46 @@ $(MANDIR).  Dependents of \fIinstall\fR.
 Process the \fBlex\fR(1) source file \fIsource.l\fR and rename the 
 lex.yy.c to \fIsource.c\fR.  Called by the \fIObject\fR rule.
 .RP "Library library : sources ;"
-Compiles \fIsources\fR and archives them into \fIlibrary\fR.  The
-intermediate objects are deleted.  Dependent of \fIlib\fR.
+Compiles \fIsources\fR and archives them into \fIlibrary\fR.  
+The intermediate objects are deleted.  
+Calls \fIObjects\fR and \fILibraryFromObjects\fR.
+Dependent of \fIlib\fR.
+.RP "LibraryFromObjects library : objects ;"
+Archives \fIobjects\fR into \fIlibrary\fR.
+The \fIobjects\fR are then deleted.  Dependent of \fIlib\fR.
 .RP "LinkLibraries image : libraries ;"
 Makes \fIimage\fR depend on \fIlibraries\fR and includes them during
 the linking.
 .RP "Main image : sources ;"
 Compiles \fIsources\fR and links them into \fIimage\fR.
+Calls \fIObjects\fR and \fIMainFromObjects\fR.
+Dependent of \fIexe\fR.
+.RP "MainFromObjects image : objects ;"
+Links \fIobjects\fR into \fIimage\fR.
 Dependent of \fIexe\fR.
 .RP "Object object : source ;"
-Compiles a single source file \fIsource\fR into \fIobject\fR.  This
-rule is used by \fBMain\fR and \fBLibrary\fR.  Makes \fIobject\fR
-depend on all header files included by \fIsource\fR.  Such dependencies
-are "soft": missing headers are not an error.
+Compiles a single source file \fIsource\fR into \fIobject\fR.  
+Makes \fIobject\fR depend on all header files included by \fIsource\fR.
+Such dependencies are "soft": missing headers are not an error.
 .IP
-For \fIsource\fR, the following suffixes are recognized:
+Calls one of the rules listed to do the actual compiling, depending
+on the suffix of \fIsource\fR:
 .RS
-.IP .c
-C source file
-.IP .C
-C++ source file
-.IP .l
-\fIlex\fR(1) source file.  The resulting lex.yy.c is 
-renamed to the same base as \fIsource\fR.
-\fIobject\fR.
-.IP .y
-\fIyacc\fR(1) source file.  The resulting y.tab.c and y.tab.h are
-renamed to the same base as \fIsource\fR.
-.PP
-All other suffixes are passed to the rule
 .IP
-UserObject object : source ;
-.PP
-to be defined in the user's \fBJamfile\fR (or elsewhere).
+source.c: \fICc\fR
+.br
+source.l: \fILex\fR
+.br
+source.y: \fIYacc\fR
+.br
+source.*: \fIUserObject\fR
 .RE
+.IP
+This rule is used by \fBObjects\fR.
+.RP "Objects sources ;"
+For each source file in \fIsources\fR,
+calls \fIObject\fR to compile the source file into a similarly named 
+object file.
 .RP "RmTemps targets : sources ;"
 Marks \fIsources\fR as temporary with the \fBTEMPORARY\fR rule, and
 deletes \fIsources\fR once \fItargets\fR are built.  Must be the last
@@ -105,6 +114,10 @@ Dependent of \fIshell\fR.
 .RP "Undefines image : symbols ;"
 Tries to convince the loader that symbols need to be "undefined" for
 the linking of \fIimage\fR.
+.RP "UserObject object : source ;"
+Complains that the suffix on \fIsource\fR is unknown.  This rule is called
+by \fIObject\fR for source files with unknown suffixes, and should be replaced
+with a user-provided rule to handle the source file types.
 .RP "Yacc source.c : source.y ;"
 Process the \fByacc\fR(1) file \fIsource.y\fR and renamed the resulting
 y.tab.c and y.tab.h to \fIsource.c\fR.  Produces a y.tab.h and renames it
@@ -148,6 +161,15 @@ HDRS (no default)
 Directories to be scanned for header files and handed to the C compiler
 with -I.  The \fBObject\fR rule sets \fBHDRS\fR to $(HDRS) for each of
 its sources.
+.PP
+JAMFILE (default \fIJamfile\fR)
+.IP
+The user provided file listing the sources to be built.
+.PP
+JAMRULES (no default)
+.IP
+The user provided file listing additional rules.  Read just before 
+$(JAMFILE).
 .PP
 LEX (default \fIlex\fR )
 .IP
@@ -220,13 +242,9 @@ UNDEFFLAG (default \fI-u _\fR)
 .IP
 The flag prefixed to each symbol for the \fBUndefines\fR rule.
 .PP
-YACc (default \fIyacc -d\fR)
+YACC (default \fIyacc -d\fR)
 .IP
 The \fByacc\fR(1) command and flags.
-.PP
-JAMFILE (default \fIJamfile\fR)
-.IP
-The user provided file listing the sources to be built.
 
 .SH BUGS
 .PP

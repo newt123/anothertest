@@ -21,26 +21,31 @@
 
 # Rules defined by this file:
 #
-# Main image : source ;		link executable from compiled sources
+# Bulk dir : files ;			populate directory with many files
+# Cc obj.o : source.c ;			.c -> .o
+# CcAddFlags source : flags ;		add compiler flags for object
+# CcAddHdrs source : dirs ;		add include directories for object
+# Clean clean : sources ;		remove sources with 'jam clean'
+# File dest : source ;			copy file
+# HdrRule source : headers ;		handle #includes
+# Install target : source ;		install any single file
+# InstallBin sources ;			install binaries
+# InstallLib sources ;			install files
+# InstallMan source ;			install man pages
+# Lex source.c : source.l ;		.l -> .c
+# Library lib : source ;		archive library from compiled sources
+# LibraryFromObjects lib : objects ;	archive library from objects
 # LinkLibraries image : libraries ;	bag libraries onto a Main
-# Undefines image : symbols ;	save undef's for linking
-# Setuid image ;		mark an executable Setuid
-# Library lib : source ;	archive library from compiled sources
-# Object objname : source ;	compile object from source
-# HdrRule source : headers ;	handle #includes
-# CcAddFlags source : flags ;	add compiler flags for object
-# CcAddHdrs source : dirs ;	add include directories for object
-# Cc obj.o : source.c ;		.c -> .o
-# Lex source.c : source.l ;	.l -> .c
-# Yacc source.c : source.y ; 	.y -> .c
-# Bulk dir : files ;		populate directory with many files
-# File dest : source ;		copy file
-# Shell exe : source ;		install a shell executable
-# RmTemps target : sources ;	remove temp sources after target made
-# InstallBin sources ;		install binaries
-# InstallLib sources ;		install files
-# InstallMan source ;		install man pages
-# Clean clean : sources ;	remove sources with 'jam clean'
+# Main image : source ;			link executable from compiled sources
+# MainFromObjects image : objects ;	link executable from objects
+# Object object : source ;		compile object from source
+# Objects sources ;			compile sources
+# RmTemps target : sources ;		remove temp sources after target made
+# Setuid image ;			mark an executable Setuid
+# Shell exe : source ;			install a shell executable
+# Undefines image : symbols ;		save undef's for linking
+# UserObject object : source ;		handle unknown suffixes for Object
+# Yacc source.c : source.y ; 		.y -> .c
 #
 
 # Brief review of the jam language:
@@ -108,6 +113,8 @@ CHMOD 		default = chmod ;
 EXEMODE 	default = 711 ;
 FILEMODE 	default = 644 ;
 HDRS 		default = ;
+JAMFILE		default = Jamfile ;
+JAMRULES	default = 
 LEX		default = lex ;
 LIBDIR		default = /usr/local/lib ;
 LINK 		default = $(CC) ;
@@ -123,7 +130,6 @@ SHELLMODE 	default = 755 ;
 STDHDRS 	default = /usr/include ;
 UNDEFFLAG	default = "-u _" ;
 YACC 		default = yacc -d ;
-JAMFILE		default = Jamfile ;
 
 HDRPATTERN = "^#[ 	]*include[ 	]*[<\"](.*)[\">].*$" ;
 
@@ -303,6 +309,12 @@ rule Object
 	}
 }
 
+rule UserObject
+{
+	ECHO "Unknown source file suffix on" $(>) "-"
+		"try defining your own UserObject rule."
+}
+
 rule HdrRule
 {
 	# HdrRule source : headers ;
@@ -330,11 +342,11 @@ rule HdrRule
 
 rule CcAddFlags
 {
-	S = $(>:S=.o) ;
+	S = $(<:S=.o) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(>:G=$(SOURCE_GRIST):S=.o) ;
+	    S = $(S:G=$(SOURCE_GRIST)) ;
 	}
 
 	CCFLAGS on $(S) += $(>) ;
@@ -342,11 +354,11 @@ rule CcAddFlags
 
 rule CcAddHdrs
 {
-	S = $(>:S=.o) ;
+	S = $(<:S=.o) ;
 
 	if $(SOURCE_GRIST)
 	{
-	    S = $(>:G=$(SOURCE_GRIST):S=.o) ;
+	    S = $(S:G=$(SOURCE_GRIST)) ;
 	}
 
 	HDRS on $(S) += $(>) ;
@@ -542,8 +554,9 @@ rule SHELL { Shell $(<) : $(>) ; }
 rule UNDEFINES { Undefines $(<) : $(>) ; }
 
 #
-# Now include the Jamfile.
+# Now include the user's Jam rules and Jamfile.
 # 
 
+include $(JAMRULES) ;
 include $(JAMFILE) ;
 
