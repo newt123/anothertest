@@ -156,6 +156,7 @@ extern struct globs globs;
 # define DEBUG_MAKEQ	( globs.debug >= 2 )	/* show even quiet actions */
 # define DEBUG_EXEC	( globs.debug >= 2 )	/* show text of actons */
 # define DEBUG_MAKEPROG	( globs.debug >= 3 )	/* show progress of make0 */
+# define DEBUG_EXECCMD	( globs.debug >= 3 )	/* show execcmds()'s work */
 
 # define DEBUG_BIND	( globs.debug >= 4 )	/* show when files bound */
 # define DEBUG_COMPILE	( globs.debug >= 5 )	/* show rule invocations */

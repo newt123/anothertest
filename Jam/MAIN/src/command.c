@@ -36,11 +36,12 @@
  */
 
 CMD *
-cmd_new( chain, rule, targets, sources )
+cmd_new( chain, rule, targets, sources, shell )
 CMD	*chain;
 RULE	*rule;
 LIST	*targets;
 LIST	*sources;
+LIST	*shell;
 {
 	int     len;
 
@@ -49,6 +50,7 @@ LIST	*sources;
 	cmd->rule = rule;
 	cmd->targets = targets;
 	cmd->sources = sources;
+	cmd->shell = shell;
 
 	len = var_string( rule->actions, cmd->buf, targets, sources );
 	
@@ -77,6 +79,7 @@ CMD	*cmd;
 {
 	list_free( cmd->sources );
 	list_free( cmd->targets );
+	list_free( cmd->shell );
 
 	free( (char *)cmd );
 }

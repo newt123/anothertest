@@ -6,6 +6,7 @@
 
 # include "jam.h"
 # include "execcmd.h"
+# include "lists.h"
 # include <errno.h>
 
 # ifdef unix
@@ -17,6 +18,20 @@
 /*
  * execunix.c - execute a shell script on UNIX
  *
+ * If $(JAMSHELL) is defined, uses that to formulate execv().
+ * The default is:
+ *
+ *	/bin/sh sh -c %
+ *
+ * The first word is the pathname of the executable, the subsequent
+ * words are the argv[].  % expands to the command string and ! 
+ * expands to the slot number for multiprocess (-j) invocations.
+ *
+ * The words are not part of a single string, but rather individual 
+ * elements in a jam variable value.
+ *
+ * Don't just set JAMSHELL to /bin/sh - it won't work!
+ *
  * External routines:
  *	execcmd() - launch an async command execution
  * 	execwait() - wait and drive at most one execution completion
@@ -26,9 +41,11 @@
  *
  * 04/08/94 (seiwald) - Coherent/386 support added.
  * 05/04/94 (seiwald) - async multiprocess interface
+ * 01/22/95 (seiwald) - $(JAMSHELL) support
  */
 
 # define PMAX 64
+# define ARGMAX 32
 
 static int intr = 0;
 
@@ -59,24 +76,67 @@ onintr()
  */
 
 void
-execcmd( string, func, closure  )
+execcmd( string, func, closure, shell )
 char *string;
 void (*func)();
 void *closure;
+LIST *shell;
 {
-	int i;
 	int pid;
+	int slot;
+	char *argv[ ARGMAX + 1 ];	/* +1 for NULL */
 
 	/* Find a slot in the running commands table for this one. */
 
-	for( i = 0; i < PMAX; i++ )
-	    if( !cmdtab[ i ].pid )
+	for( slot = 0; slot < PMAX; slot++ )
+	    if( !cmdtab[ slot ].pid )
 		break;
 
-	if( i == PMAX )
+	if( slot == PMAX )
 	{
 	    printf( "no slots for child!\n" );
 	    exit( 1 );
+	}
+
+	/* Forumulate argv */
+	/* If shell was defined, be prepared for % and ! subs. */
+	/* Otherwise, use stock /bin/sh. */
+
+	if( shell )
+	{
+	    int i;
+	    char jobno[4];
+	    int ok = 0;
+
+	    sprintf( jobno, "%d", slot );
+
+	    for( i = 0; shell && i < ARGMAX; i++, shell = list_next( shell ) )
+	    {
+		switch( shell->string[0] )
+		{
+		case '%':	argv[i] = string; ok++; break;
+		case '!':	argv[i] = jobno; break;
+		default:	argv[i] = shell->string;
+		}
+		if( DEBUG_EXECCMD )
+		    printf( "argv[%d] = '%s'\n", i, argv[i] );
+	    }
+
+	    argv[i] = 0;
+
+	    if( !ok || i <= 1 )
+	    {
+		printf( "bungled JAMSHELL value!\n" );
+		exit( 1 );
+	    }
+	}
+	else
+	{
+	    argv[0] = "/bin/sh";
+	    argv[1] = "sh";		/* argv[1] is base for execv */
+	    argv[2] = "-c";
+	    argv[3] = string;
+	    argv[4] = 0;
 	}
 
 	/* Catch interrupts whenever commands are running. */
@@ -86,8 +146,9 @@ void *closure;
 
 	/* Start the command */
 
-	if ((pid = vfork()) == 0) {
-		execl("/bin/sh", "sh", "-c", string, 0);
+	if ((pid = vfork()) == 0) 
+   	{
+		execv( argv[0], argv + 1 );
 		_exit(127);
 	}
 
@@ -99,9 +160,9 @@ void *closure;
 
 	/* Save the operation for execwait() to find. */
 
-	cmdtab[ i ].pid = pid;
-	cmdtab[ i ].func = func;
-	cmdtab[ i ].closure = closure;
+	cmdtab[ slot ].pid = pid;
+	cmdtab[ slot ].func = func;
+	cmdtab[ slot ].closure = closure;
 
 	/* Wait until we're under the limit of concurrent commands. */
 	/* Don't trust globs.jobs alone. */

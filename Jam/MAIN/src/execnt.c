@@ -8,6 +8,7 @@
 
 # include "jam.h"
 # include "execcmd.h"
+# include "lists.h"
 
 /*
  * execunix.c - execute a shell script on UNIX
@@ -25,10 +26,11 @@ onintr()
 }
 	
 void
-execcmd( string, func, closure  )
+execcmd( string, func, closure, shell )
 char *string;
 void (*func)();
 void *closure;
+LIST *shell;
 {
 	int status, pid, w, rstat;
 	void (*istat)();

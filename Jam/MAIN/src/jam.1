@@ -305,13 +305,10 @@ previous value.
 The final two forms set \fI<variable>\fR globally, but only if it was 
 previously unset.  The two forms are synonymous.
 .PP
-On program start-up,
-.B jam
-imports the environment variable settings into
-.B jam
-variables;
-.B jam
-variables are not re-exported.
+On program start-up, \fBjam\fR imports the environment variable
+settings into \fBjam\fR variables.  Environment variables are not split
+at whitespace (or anywhere else): each imported variable's value is a
+single element list.  \fBJam\fR variables are not re-exported.
 .SS "Variable Expansion"
 .PP
 Before executing a statement,
@@ -461,6 +458,22 @@ again recursively descends the dependency graph, this time executing the
 update actions for each target marked for update during the
 binding phase.  If a target's updating actions fail, then all targets
 which depend on it are skipped.
+.PP
+(UNIX only).  The \fB-j\fR flag instructs \fBjam\fR to build more than
+one target at a time.  If there are multiple actions on a single
+target, they are run sequentially.
+.PP
+(UNIX only).  The special variable $(\fBJAMSHELL\fR) gives \fBjam\fR
+the path and arguments to a command execution shell to be used instead
+of /bin/sh.  This variable's value must be a multi-element list: the
+first element is the pathname of the executable.  Subsequent elements
+make up the argument vector (including argv[0]).  An element "\fB%\fR"
+is replaced with the command string to execute.  An element "\fB!\fR"
+is replaced with the multiprocess slot number, beginning at 0.  If
+\fB-j\fR is not given, the slot number is always 0.  One element of the
+list must be "\fB%\fR" (so that the command string is passed).  The
+default value is: /bin/sh sh -c %.  Because the value of $(\fBJAMSHELL\fR)
+is a multi-element list, it cannot be imported from the enviroment.
 
 .SH DIAGNOSTICS
 .PP
@@ -542,9 +555,13 @@ all other variable references get the unbound names.
 .PP
 Searching for include files is slow.
 .PP
-With the 
-.B \-j 
-flag, errors from failed commands can get staggeringly mixed up.
+With the \fB-j\fR flag, errors from failed commands can get
+staggeringly mixed up.  Also, because targets tend to get built in a
+quickest-first ordering, dependency information must be quite exact.
+Finally, beware of parallelizing commands that drop fixed-named files
+into the current directory, like \fByacc\fR(1) does.
+.PP
+A poorly set $(JAMSHELL) is likely to result in silent failure.
 
 .SH SEE ALSO
 .BR Jambase (5),

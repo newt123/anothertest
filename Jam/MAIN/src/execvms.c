@@ -8,6 +8,7 @@
 
 # include "jam.h"
 # include "execcmd.h"
+# include "lists.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -34,10 +35,11 @@
 	(name) = { 0, DSC$K_DTYPE_T, DSC$K_CLASS_D, NULL }
 
 void
-execcmd( string, func, closure  )
+execcmd( string, func, closure, shell )
 char *string;
 void (*func)();
 void *closure;
+LIST *shell;
 {
     int rstat = EXEC_CMD_OK;
 

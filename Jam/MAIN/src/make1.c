@@ -35,6 +35,7 @@
  * 06/01/94 (seiwald) - new 'actions existing' does existing sources
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
+ * 01/22/94 (seiwald) - pass per-target JAMSHELL down to execcmd().
  */
 
 # include "jam.h"
@@ -259,7 +260,7 @@ TARGET	*t;
 	    } 
 	    else 
 	    {
-		execcmd( cmd->buf, make1d, t );
+		execcmd( cmd->buf, make1d, t, cmd->shell );
 	    }
 	}
 	else
@@ -338,6 +339,7 @@ make1cmds( a0 )
 ACTIONS	*a0;
 {
 	CMD *cmds = 0;
+	LIST *shell = var_get( "JAMSHELL" );	/* shell is per-target */
 
 	/* Step through actions */
 	/* Actions may be shared with other targets or grouped with */
@@ -402,7 +404,9 @@ ACTIONS	*a0;
 		     somes = list_sublist( ns, start, chunk );
 		     start += chunk )
 		{
-		    cmds = cmd_new( cmds, rule, list_copy( L0, nt ), somes );
+		    cmds = cmd_new( cmds, rule, 
+				list_copy( L0, nt ), somes, 
+				list_copy( L0, shell ) );
 		}
 
 		list_free( nt );
@@ -410,7 +414,7 @@ ACTIONS	*a0;
 	    }
 	    else
 	    {
-		cmds = cmd_new( cmds, rule, nt, ns );
+		cmds = cmd_new( cmds, rule, nt, ns, list_copy( L0, shell ) );
 	    }
 	}
 

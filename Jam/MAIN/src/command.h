@@ -30,6 +30,7 @@ struct _cmd
 	RULE	*rule;		/* rule->actions contains shell script */
 	LIST	*targets;	/* LIST for $(<) */
 	LIST	*sources;	/* LIST for $(>) */
+	LIST	*shell;		/* $(SHELL) value */
 	char	buf[ MAXCMD ];	/* actual commands */
 } ;
 
