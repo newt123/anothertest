@@ -201,6 +201,7 @@ else if $(NT)
 	DOT		default	= . ;
 	DOTDOT		default	= .. ;
     	MV		default = move ;
+	OS			= NT ;		# replace Windows_NT
     	RM		default = del/f/q ;
     	SLASH		default = \\ ;
     	SUFLIB		default = .lib ;
@@ -232,12 +233,15 @@ else if $(NT)
 	AR		default = lib ;
 	CC		default = cl /nologo ;
 	CCFLAGS		default = /D \"NT\" ;
+	C++		default = $(CC) ;
+	C++FLAGS	default = $(CCLFAGS) ;
+	CRELIB		default = true ;
 	RW		default = $(MSVCNT)\\lib\\rw ;
 	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
 	LINKLIBS	default = $(MSVCNT)\\lib\\advapi32.lib
-				$(MSVCNT)\\lib\\libcmt.lib
+				#$(MSVCNT)\\lib\\libcmt.lib
 				$(MSVCNT)\\lib\\libc.lib
 				$(MSVCNT)\\lib\\oldnames.lib
 				$(MSVCNT)\\lib\\kernel32.lib ;
@@ -252,6 +256,8 @@ else if $(NT)
 	AR		default = lib ;
 	CC		default = cl /nologo ;
 	CCFLAGS		default = /D \"NT\" ;
+	C++		default = $(CC) ;
+	C++FLAGS	default = $(CCLFAGS) ;
 	RW		default = $(Mstools)\\lib\\rw ;
 	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
@@ -547,7 +553,7 @@ rule LibraryFromObjects
 
 	Clean clean : $(l) ;
 
-	if $(CRELIB) { CreLib $(l) ; }
+	if $(CRELIB) { CreLib $(l) : $(s[1]) ; }
 
 	Archive $(l) : $(s) ;
 	RmTemps $(l) : $(s) ;
@@ -1122,12 +1128,28 @@ else if $(NT)
     {
 	actions updated together piecemeal Archive
 	{
-	$(AR) /out:$(<) $(>)
+	$(AR) /out:$(<) $(<) $(>) 
+	}
+
+	# DOS has a pretty poor shell, without the benefit of 'else'
+	# or multiline statements.  Further, the MS lib program requires
+	# different invocations for creating or updating an archive.
+	# Finally, you can't just create an empty archive.  So CreLib
+	# quietly takes care of creating an archive for the first time.
+
+	actions together quietly CreLib
+	{
+	if not exist $(<) $(AR) /out:$(<) $(>)
 	}
 
 	actions Cc
 	{
-	$(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
+	$(CC) /c $(CCFLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) $(>)
+	}
+
+	actions C++
+	{
+	$(C++) /c $(C++FLAGS) $(OPTIM) /Fo$(<) /I$(HDRS) /Tp$(>)
 	}
 
 	actions Link

@@ -272,6 +272,7 @@ char *archive;
 void (*func)();
 {
 	struct ar_hdr ar_hdr;
+	char *string_table = 0;
 	char buf[ MAXPATH ];
 	long offset;
 	int fd;
@@ -294,25 +295,65 @@ void (*func)();
 	while( read( fd, &ar_hdr, SARHDR ) == SARHDR &&
 	       !memcmp( ar_hdr.ar_fmag, ARFMAG, SARFMAG ) )
 	{
-	    char    lar_name[16];
 	    long    lar_date;
 	    long    lar_size;
-	    char *c;
-
-	    strncpy( lar_name, ar_hdr.ar_name, sizeof(ar_hdr.ar_name) );
-	    c = lar_name + sizeof( lar_name );
-	    while( *--c == ' ' || *c == '\\' || *c == '/' )
-		    ;
-	    *++c = '\0';
+	    char    *name = 0;
+ 	    char    *endname;
+	    char    *c;
 
 	    sscanf( ar_hdr.ar_date, "%ld", &lar_date );
 	    sscanf( ar_hdr.ar_size, "%ld", &lar_size );
 
-	    sprintf( buf, "%s(%s)", archive, lar_name );
+	    lar_size = ( lar_size + 1 ) & ~1;
 
+	    if (ar_hdr.ar_name[0] == '/' && ar_hdr.ar_name[1] == '/' )
+	    {
+		/* this is the "string table" entry of the symbol table,
+		** which holds strings of filenames that are longer than
+		** 15 characters (ie. don't fit into a ar_name
+		*/
+
+		string_table = malloc(lar_size);
+		if (read(fd, string_table, lar_size) != lar_size)
+		    printf("error reading string table\n");
+		offset += SARHDR + lar_size;
+		continue;
+	    }
+	    else if (ar_hdr.ar_name[0] == '/' && ar_hdr.ar_name[1] != ' ')
+	    {
+		/* Long filenames are recognized by "/nnnn" where nnnn is
+		** the offset of the string in the string table represented
+		** in ASCII decimals.
+		*/
+
+		name = string_table + atoi( ar_hdr.ar_name + 1 );
+		endname = name + strlen( name );
+	    }
+	    else
+	    {
+		/* normal name */
+		name = ar_hdr.ar_name;
+		endname = name + sizeof( ar_hdr.ar_name );
+	    }
+
+	    /* strip trailing space, slashes, and backslashes */
+
+	    while( endname-- > name )
+		if( *endname != ' ' && *endname != '\\' && *endname != '/' )
+		    break;
+	    *++endname = 0;
+
+	    /* strip leading directory names, an NT specialty */
+
+	    if( c = strrchr( name, '/' ) )
+		name = c + 1;
+	    if( c = strrchr( name, '\\' ) )
+		name = c + 1;
+
+	    sprintf( buf, "%s(%.*s)", archive, endname - name, name );
 	    (*func)( buf, 1 /* time valid */, (time_t)lar_date );
 
-	    offset += SARHDR + ( ( lar_size + 1 ) & ~1 );
+	    offset += SARHDR + lar_size;
 	    lseek( fd, offset, 0 );
 	}
 

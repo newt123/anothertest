@@ -15,6 +15,9 @@ SPLITPATH now set up for UNIX (:), NT (;), VMS (,)
 SubDir now computes TOP.
 filent.c no longer skips first dir entry.
 Support for Mstools.
+Support for string table archives under msc.
+C++ support in msc.
+warning for NT if root variables not set.
 
 Release notes for Jam 2.0.
 
