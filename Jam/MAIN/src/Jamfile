@@ -22,11 +22,16 @@ if $(UNIX)
 
 }
 
-MAIN 		jam : jam.c ;
-LIBS 		jam : $(JAMLIB) ;
+if $(NT)	
+{ 
+	JAMLIB = libjam.lib ; 
+	OSFILES = execnt.c filent.c ; 
+}
 
-LIBRARY         $(JAMLIB) : compile.c expand.c hash.c lists.c make.c 
-		    newstr.c option.c parse.c rules.c scan.c search.c 
-		    timestamp.c variable.c jamgram.yy headers.c regexp.c 
-		    $(OSFILES) ;
+Main 		jam : jam.c ;
+LinkLibraries 	jam : $(JAMLIB) ;
 
+Library         $(JAMLIB) : command.c compile.c expand.c hash.c glob.c lists.c 
+		    make.c make1.c newstr.c option.c parse.c rules.c scan.c 
+		    search.c timestamp.c variable.c jamgram.yy headers.c 
+		    regexp.c $(OSFILES) ;

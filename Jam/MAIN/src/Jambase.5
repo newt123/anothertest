@@ -1,10 +1,11 @@
-.TH JAM 5 "30 August 1993"
+.TH JAMBASE 5 "30 August 1993"
 .SH NAME
-Jambase \- 
+.B Jambase
+\- 
 .BR jam (1)
 boilerplate
-.SH SYNOPSIS
-.B /usr/share/lib/jam/Jambase
+.SH FILES
+.B /usr/local/lib/jam/Jambase
 .br
 .B Jamfile
 .SH DESCRIPTION
@@ -21,76 +22,97 @@ reads
 which in turn includes the
 .B Jamfile
 from the current directory.
+.PP
+There are a number of built-in
+.B jam
+targets, including
+.IR all ,
+.IR exe ,
+.IR files ,
+.IR install ,
+.IR lib ,
+and
+.IR shell .
+The target
+.I all
+depends on
+.IR exe ,
+.IR files ,
+.IR install ,
+.IR lib ,
+and
+.IR shell .
+.PP
 The rules defined and variables used for the 
 .B Jamfile 
 are as follows:
 .SS Rules
 .PP
-.IP "MAIN image : sources ;"
+.IP "Main image : sources ;"
 .IP
 Compiles
 .I sources
 and links them into
+.IR image ,
+and makes
+.I exe
+depend on
 .IR image .
-.I Image
-becomes a dependency of 
-.IR exe ,
-itself a dependency of
-.IR all .
-.IP "LIBS image : libraries ;"
+.IP "LinkLibraries image : libraries ;"
 .IP
-Adds 
-.I libraries
-as dependencies of
+Makes 
 .I image
+depend on
+.I libraries
 and includes them during the linking.
-.IP "SETUID image ;"
+.IP "Setuid image ;"
 .IP
 Sets the setuid bit on
 .I image
 after linking.
-.IP "UNDEFINES image : symbols ;"
+.IP "Undefines image : symbols ;"
 .IP
-Tries to convice the loader that symbols need to be "undefined" for
+Tries to convince the loader that symbols need to be "undefined" for
 the linking to work.
-.IP "LIBRARY library : sources ;"
+.IP "Library library : sources ;"
 .IP
 Compiles
 .I sources
 and archives them into 
 .IR library .
 The intermediate objects are deleted.
-.I Library 
-becomes a dependency of 
-.IR lib ,
-itself a dependency of
-.IR all .
-.IP "OBJECT object : source ;"
+Makes
+.I lib 
+depend on
+.IR libraries .
+.IP "Object object : source ;"
 .IP
 Compiles a single source file
 .I source
 into
 .IR object .
 This rule is used by
-.B MAIN
+.B Main
 and 
-.BR LIBRARY .
-Arranges for 
-.I source
-to be scanned for header file includes when then become dependencies of
-.IR object .
+.BR Library .
+Makes
+.I object
+depend on all header files included by
+.IR source .
 Such dependencies are "soft": missing headers are not an error.
 .IP
 For 
 .IR source , 
-the following suffixes are recognised:
+the following suffixes are recognized:
 .RS
 .IP .c
 C source file
+.IP .C
+C++ source file
 .IP .l
 .IR lex (1)
 source file.
-The resuling lex.yy.c is renamed to be the same base as the
+The resulting lex.yy.c is renamed to be the same base as the
 .IR source .
 .IP .y
 .IR yacc (1)
@@ -100,73 +122,73 @@ The resulting y.tab.c and y.tab.h are renamed to the same base as
 .PP
 All other suffixes are passed to the rule
 .IP
-CCUSER object : source ;
+UserObject object : source ;
 .PP
 to be defined in the user's
-.I Jamfile
+.B Jamfile
 (or elsewhere).
 .RE
-.IP "BULK directory : sources ;"
+.IP "Bulk directory : sources ;"
 .IP
 Copies
 .I sources
 into 
-.IR directory .
-All targets become dependencies of
-.IR files ,
-itself a dependency of
-.IR all .
-.IP "FILE target : source ;"
+.I directory
+and makes
+.I files
+depend on all the targets.
+.IP "File target : source ;"
 .IP
 Copies 
 .I source
 into 
-.IR target .
-.I Target
-become a dependency of
-.IR files ,
-itself a dependency of
-.IR all .
-.IP "SHELL image : source ;"
+.I target
+and makes
+.I files
+depend on
+.IR target.
+.IP "Shell image : source ;"
 .IP
 Copies 
 .I source
 into the executable 
-.IR sh(1)
+.BR sh (1)
 script
+.I image
+and makes
+.I shell
+depend on
 .IR image .
-.I Image
-become a dependency of
-.IR shell ,
-itself a dependency of
-.IR all .
-.IP "INSTALLBIN sources ; "
+.IP "InstallBin sources ; "
 .IP
 Copy
 .I sources
 into /usr/local/bin.
-All targets become dependencies of
-.IR install .
-.IP "INSTALLLIB sources ;"
+Makes
+.I install
+depend on all targets.
+.IP "InstallLib sources ;"
 .IP
 Copy
 .I sources
 into /usr/local/lib.
-All targets become dependencies of
-.IR install .
-.IP "INSTALLMAN sources ;"
+Makes
+.I install
+depend on all targets.
+.IP "InstallMan sources ;"
 .IP
 Copy
 .I sources
 into the appropriate subdirectory of /usr/local/man.
-All targets become dependencies of
-.IR install .
-.IP "RMTEMPS targets : sources ;"
+Makes
+.I install
+depend on all targets.
+.IP "RmTemps targets : sources ;"
 .IP
 Marks
 .I sources
 as temporary with the
-.I TEMPORARY 
+.B TEMPORARY 
 rule, and deletes
 .I sources
 once
@@ -175,89 +197,87 @@ are built.
 Must be the last rule invoked on
 .IR targets .
 Used internally by
-.BR OBJECT .
+.BR Object .
 .SS Variables
 .PP
 AR (default
 .IR "ar ru" )
 .IP
 The archiver used for
-.BR LIBRARY .
+.BR Library .
 .PP 
 BINDIR (default
 .IR "/usr/local/bin" )
 .IP
 The install directory for 
-.BR INSTALLBIN .
+.BR InstallBin .
 .PP 
 CC (default
 .IR cc )
 .IP
 C compiler used for
-.BR OBJECT .
+.BR Object .
 .PP 
 CCFLAGS (no default)
 .IP
 Flags handed to the C compiler for
-.BR OBJECT .
-N.B. 
-.I OPTIM
+.BR Object .
+.B OPTIM
 is also handed to the C compiler.
 .PP 
 EXEMODE (default 
 .IR 711 )
 .IP
 Permissions for executables linked with
-.BR MAIN .
+.BR Main .
 .PP 
 FILEMODE (default
 .IR 644 )
 .IP
 Permissions for files copied by
-.B FILE 
+.B File 
 or
-.BR BULK .
+.BR Bulk .
 .PP
 HDRPATTERN (default ^#[\\t ]*include[\\t ]*[<"](.*)[">].*$)
 .IP
 The
-.IR regexp (3)
+.BR regexp (3)
 pattern for finding header file includes in source files.
 The 
-.B OBJECT
+.B Object
 rule sets the 
-.I Jam
+.B jam
 special variable
-.I HDRSCAN
+.B HDRSCAN
 to
-.I $(HDRPATTERN)
-for all of its sources.
-The found header files are made dependencies of the target to
-.BR OBJECT .
+.RB $( HDRPATTERN )
+for all of its sources.  The
+.B Object
+target depends on all header files found.
 .PP 
 HDRS (no default)
 .IP
 Directories to be scanned for header files and handed to the C
 compiler with -I.  The
-.B OBJECT
+.B Object
 rule sets
-.I HDRS
-to 
-.I $(HDRS)
+.B HDRS
+to $(HDRS)
 for each of its sources.
 .PP
 LEX (default 
 .IR lex  )
 .IP
 The 
-.IR lex (1)
+.BR lex (1)
 command and flags.
 .PP 
 LIBDIR (default 
 .IR /usr/local/lib )
 .IP
 The target directory for 
-.BR INSTALLLIB .
+.BR InstallLib .
 .PP
 LINK (default 
 .IR cc )
@@ -269,23 +289,23 @@ LINKFLAGS (default
 .IP
 Flags handed to the linker.
 .PP
-LINKLIBS (no default)
+LINKLinkLibraries (no default)
 .IP
 Libraries to hand to the linker.
-These libraries are not dependencies of the target image.
+The target image does not depend on these libraries.
 .PP
 LOCATE_TARGET (no default)
 .IP
 The directory for object modules and other intermediate files generated by
-.BR OBJECT .
+.BR Object .
 This works by setting the
-.I Jam
+.B jam
 special variable
-.I LOCATE 
-to the value of 
-.I $(LOCATE_TARGET)
+.B LOCATE 
+to the value of
+.RB $( LOCATE_TARGET )
 for each of 
-.BR OBJECT 's 
+.BR Object 's 
 targets.
 .PP
 MV (default 
@@ -311,37 +331,37 @@ The command and options to remove a file.
 SEARCH_SOURCE (no default)
 .IP
 The directory to find sources listed with
-.BR MAIN ,
-.BR LIBRARY ,
-.BR OBJECT ,
-.BR BULK ,
-.BR FILE ,
-.BR SHELL ,
-.BR INSTALLBIN ,
-.BR INSTALLLIB ,
+.BR Main ,
+.BR Library ,
+.BR Object ,
+.BR Bulk ,
+.BR File ,
+.BR Shell ,
+.BR InstallBin ,
+.BR InstallLib ,
 and
-.BR INSTALLMAN
+.BR InstallMan
 rules.
 This works by setting the
-.I Jam
+.B jam
 special variable
-.I SEARCH 
+.B SEARCH 
 to the value of 
-.I $(SEARCH_SOURCE)
+.RB $( SEARCH_SOURCE )
 for each of the rules' sources.
 .PP
 SHELLHEADER (default 
 .IR "#!/bin/sh" )
 .IP
 A string inserted to the first line of every file created by the
-.B SHELL
+.B Shell
 rule.
 .PP
 SHELLMODE (default 
 .IR 755 )
 .IP
 Permissions for files installed by
-.BR SHELL .
+.BR Shell .
 .PP
 STDHDRS (default 
 .IR /usr/include )
@@ -353,17 +373,17 @@ UNDEFFLAG (default
 .IR "\-u _" )
 .IP
 The flag prefixed to each symbol for the
-.B UNDEFINES 
+.B Undefines 
 rule.
 .PP
-YACC (default 
+YACc (default 
 .IR "yacc -d" )
 .IP
 The 
-.IR yacc (1)
+.BR yacc (1)
 command and flags.
 .PP
-JAMFILE (default
+JAMFile (default
 .IR Jamfile )
 .IP
 The user provided file listing the sources to be built.
@@ -371,15 +391,52 @@ The user provided file listing the sources to be built.
 .SH BUGS
 .PP
 Because libraries are passed unbound to the 
-.B LINK 
+.B Link 
 rule as
-.IR $(NEEDLIBS) , 
+.RB $( NEEDLIBS ), 
 they cannot be located with 
-.IR $(LOCATE) , 
+.RB $( LOCATE ), 
 because 
-.I $(LOCATE)
-affects only changes the bound file name.
+.RB $( LOCATE )
+only changes the bound file name.
 .PP
 There's no 
-.IR yacc (1)
+.BR yacc (1)
 on VMS, so the guts of the rules are commented out.
+
+.SH EXAMPLES
+.PP
+.de XB
+Example:
+.RS
+.IP
+.ft CW
+..
+.de XE
+.RE
+.ft R
+..
+.XB
+Main myprog : main.c util.c ;
+.XE
+.XB
+LinkLibraries myprog : libstring.a libtree.a ;
+.XE
+.XB
+Setuid myprog ;
+.XE
+.XB
+Undefines myprog : treeinit ;
+.XE
+.XB
+Library libstring.a : strcmp.c strcpy.c strlen.c ;
+.XE
+.XB
+Object strcmp.o : strcmp.c ;
+.XE
+.XB
+Bulk /usr/local/man/man1 : jam.1 myprog.1 ;
+.XE
+.XB
+File /usr/local/lib/help.txt : help.txt ;
+.XE

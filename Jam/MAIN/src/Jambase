@@ -7,27 +7,40 @@
 #
 # JAMBASE - jam ruleset providing make(1)-like functionality
 #
+# 12/27/93 (seiwald) - purturb library sources with SOURCE_GRIST
+# 04/18/94 (seiwald) - use 'default =' when setting OS specific vars
+# 04/21/94 (seiwald) - do RmTemps together 
+# 05/05/94 (seiwald) - all supported C compilers support -o: relegate
+#		       RELOCATE as an option; set Ranlib to "" to disable it
+# 06/01/94 (seiwald) - new 'actions existing' to do existing sources
+# 08/25/94 (seiwald) - new CcAddFlags rule to append to per-target CCFLAGS
+# 08/29/94 (seiwald) - new CcAddHdrs rule to append to per-target HDRS
+# 09/19/94 (seiwald) - LinkLibraries and Undefs now append
+# 		     - Rule names downshifted.
 
 # Rules defined by this file:
 #
-# MAIN image : source ;		link executable from compiled sources
-# LIBS image : libraries ;	bag libraries onto a MAIN
-# UNDEFINES image : symbols ;	save undef's for linking
-# SETUID image ;		mark an executable SETUID
-# LIBRARY lib : source ;	archive library from compiled sources
-# OBJECT objname : source ;	compile object from source
-# HDRRULE source : headers ;	handle #includes
-# CC obj.o : source.c ;		.c -> .o
-# LEX source.c : source.l ;	.l -> .c
-# YACC source.c : source.y ; 	.y -> .c
-# YYACC source.y : source.yy ; 	.yy -> .y
-# BULK dir : files ;		populate directory with many files
-# FILE dest : source ;		copy file
-# SHELL exe : source ;		install a shell executable
-# RMTEMPS target : sources ;	remove temp sources after target made
-# INSTALLBIN sources ;		install binaries
-# INSTALLLIB sources ;		install files
-# INSTALLMAN source ;		install man pages
+# Main image : source ;		link executable from compiled sources
+# LinkLibraries image : libraries ;	bag libraries onto a Main
+# Undefines image : symbols ;	save undef's for linking
+# Setuid image ;		mark an executable Setuid
+# Library lib : source ;	archive library from compiled sources
+# Object objname : source ;	compile object from source
+# HdrRule source : headers ;	handle #includes
+# CcAddFlags source : flags ;	add compiler flags for object
+# CcAddHdrs source : dirs ;	add include directories for object
+# Cc obj.o : source.c ;		.c -> .o
+# Lex source.c : source.l ;	.l -> .c
+# Yacc source.c : source.y ; 	.y -> .c
+# YYacc source.y : source.yy ; 	.yy -> .y
+# Bulk dir : files ;		populate directory with many files
+# File dest : source ;		copy file
+# Shell exe : source ;		install a shell executable
+# RmTemps target : sources ;	remove temp sources after target made
+# InstallBin sources ;		install binaries
+# InstallLib sources ;		install files
+# InstallMan source ;		install man pages
+# Clean clean : sources ;	remove sources with 'jam clean'
 #
 
 # Brief review of the jam language:
@@ -43,6 +56,7 @@
 #	ignore - ignore return status of command
 #	quietly - don't trace its execution unless verbose
 #	piecemeal - iterate command each time with a small subset of $(>)
+#	existing - refers to currently existing sources ($(>)) only
 #
 # Special rules:
 #	DEPENDS - builds the dependency graph
@@ -72,6 +86,20 @@
 #
 # "default =" - set only if unset
 
+#
+# OS specific variable settings
+#
+
+switch $(OS) 
+{
+case AIX :	LINKLIBS default = -lbsd ;
+case DGUX :	RANLIB default = "" ;
+case IRIX :	RANLIB default = "" ;
+case HPUX :	RANLIB default = "" ;
+case PTX :	RANLIB default = "" ;
+case SOLARIS :	RANLIB default = "" ;
+}
+
 AR 		default = ar ru ;
 BINDIR		default = /usr/local/bin ;
 CC 		default = cc ;
@@ -84,7 +112,7 @@ LEX		default = lex ;
 LIBDIR		default = /usr/local/lib ;
 LINK 		default = $(CC) ;
 LINKFLAGS 	default = $(CCFLAGS) ;
-LINKLIBS 	default = ;
+LINLIBS 	default = ;
 MANDIR		default = /usr/local/man ;
 MV 		default = mv -f ;
 OPTIM		default = -O ;
@@ -100,20 +128,6 @@ JAMFILE		default = Jamfile ;
 HDRPATTERN = "^#[ 	]*include[ 	]*[<\"](.*)[\">].*$" ;
 
 #
-# OS specific variable settings
-#
-
-switch $(OS) 
-{
-case AIX : LINKLIBS = -lbsd ;
-case DGUX : RANLIB = ;
-case IRIX : RANLIB = ;
-case HPUX : RANLIB = ;
-case PTX : RANLIB = ;
-case SOLARIS : RANLIB = ;
-}
-
-#
 # Base dependencies - first for "bootstrap" kinds of rules
 #
 
@@ -124,97 +138,137 @@ NOTIME all first shell files lib exe ;
 # The rules
 #
 
-rule MAIN 
+rule Main 
+{
+	MainFromObjects $(<) : $(>:S=.o) ;
+	Objects $(>) ;
+}
+
+rule MainFromObjects
 {
 	# make compiled sources a dependency of target
 
+	S = $(>) ;
+
+	if $(SOURCE_GRIST)
+	{
+	    S = $(>:G=$(SOURCE_GRIST)) ;
+	}
+
 	DEPENDS exe : $(<) ;
-	DEPENDS	$(<) : $(>:S=.o) ;
+	DEPENDS	$(<) : $(S) ;
 	LOCATE on $(<) = $(LOCATE_TARGET) ;
 
-	LINK $(<) : $(>:S=.o) ;
+	Clean clean : $(<) ;
 
-	# each object gets compiled from sources
+	Link $(<) : $(S) ;
 
-	for i in $(>) 
-	{ 
-		OBJECT $(i:S=.o) : $(i) ;
-	}
 }
 
-actions LINK 
+actions Link 
 {
-	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS) 
+	if $(LINK) $(LINKFLAGS) -o $(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINLIBS) 
 	then chmod $(EXEMODE) $(<) 
 	else $(RM) $(<); exit 1
 	fi
 }
 
-rule LIBS 
+rule LinkLibraries 
 {
 	# make library dependencies of target
-	# set NEEDLIBS variable used by 'actions MAIN'
+	# set NEEDLIBS variable used by 'actions Main'
 
 	DEPENDS $(<) : $(>) ;
-	NEEDLIBS on $(<) = $(>) ;
+	NEEDLIBS on $(<) += $(>) ;
 }
 
-rule UNDEFINES
+rule Undefines
 {
-	UNDEFS on $(<) = $(UNDEFFLAG)$(>) ;
+	UNDEFS on $(<) += $(UNDEFFLAG)$(>) ;
 }
 
-rule SETUID
+rule Setuid
 {
-	EXEMODE on $(<) = 4711 ;
+	EXEMODE on $(<) = 4755 ;
 }
 
-rule LIBRARY 
+rule Library
+{
+	LibraryFromObjects $(<) : $(>:S=.o) ;
+	Objects $(>) ;
+}
+
+rule LibraryFromObjects
 {
 	# library depends on its member objects
 
+	S = $(>) ;
+
+	if $(SOURCE_GRIST)
+	{
+	    S = $(>:G=$(SOURCE_GRIST)) ;
+	}
+
 	DEPENDS lib : $(<) ;
-	DEPENDS $(<) : $(<)($(>:BS=.o)) ;
+	DEPENDS $(<) : $(<)($(S:BS)) ;
+
+	Clean clean : $(<) ;
 
 	# We wish we could locate the library and it's contents,
-	# but the reference to $(NEEDLIBS) in MAIN's actions
+	# but the reference to $(NEEDLIBS) in Main's actions
 	# get the unbound names.  Only $(<) and $(>) refer to
 	# bound file name in rule actions.  Sigh.
 	# 
-	# LOCATE on $(<) $(<)($(>:BS=.o)) = $(LOCATE_TARGET) ;
+	# LOCATE on $(<) $(<)($(S:BS)) = $(LOCATE_TARGET) ;
 
 	# each archive member object depends on real object
 	# each real object gets compiled from sources
 
-	for i in $(>) 
+	for i in $(S) 
 	{
-	    DEPENDS $(<)($(i:BS=.o)) : $(i:S=.o) ; 
-	    OBJECT $(i:S=.o) : $(i) ;
+	    DEPENDS $(<)($(i:BS)) : $(i) ; 
 	}
 
-	# must call separate ARCHIVE rule so that 'updated' modifier
+	# must call separate Archive rule so that 'updated' modifier
 	# on 'actions' refers to updated .o's.
 	# delete objects after archive is made
 
-	ARCHIVE $(<) : $(>:S=.o) ;
-	RMTEMPS $(<) : $(>:S=.o) ;
+	Archive $(<) : $(S) ;
+	RmTemps $(<) : $(S) ;
 
-	if $(RANLIB) { RANLIB $(<) ; }
+	if $(RANLIB) { Ranlib $(<) ; }
 }
 
-actions updated together piecemeal ARCHIVE 
+actions updated together piecemeal Archive 
 {
 	$(AR) $(<) $(>)
 }
 
-actions together RANLIB
+actions together Ranlib
 {
 	$(RANLIB) $(<)
 }
 
-rule OBJECT 
+rule Objects
+{
+	S = $(<) ;
+
+	if $(SOURCE_GRIST)
+	{
+	    S = $(<:G=$(SOURCE_GRIST)) ;
+	}
+
+	for i in $(S) 
+	{ 
+		Object $(i:S=.o) : $(i) ;
+	}
+}
+
+rule Object 
 {
 	# locate object and search for source, if wanted
+
+	Clean clean : $(<) ;
 
 	LOCATE on $(<) = $(LOCATE_TARGET) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
@@ -230,9 +284,9 @@ rule OBJECT
 	# handle #includes for source: Jam scans for headers with
 	# the regexp pattern $(HDRSCAN) and then invokes $(HDRRULE)
 	# with the scanned file as the target and the found headers
-	# as the sources.  HDRSEARCH is just grist for HDRRULE.
+	# as the sources.  HDRSEARCH is just grist for HdrRule.
 
-	HDRRULE on $(>) = HDRRULE ;
+	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
 	HDRSEARCH on $(>) = $(HDRS) $(STDHDRS) $(SEARCH_SOURCE) ;
 
@@ -240,21 +294,21 @@ rule OBJECT
 
 	switch $(>:S)
 	{
-	    case .c : 	CC $(<) : $(>) ;
-	    case .l :	CC $(<) : $(<:S=.c) ;
-			LEX $(<:S=.c) : $(>) ;
-	    case .y : 	CC $(<) : $(<:S=.c) ; 
-			YACC $(<:S=.c) : $(>) ;
-	    case .yy : 	CC $(<) : $(<:S=.c) ; 
-			YACC $(<:S=.c) : $(<:S=.y) ;
-			YYACC $(<:S=.y) : $(>) ;
-	    case * :	CCUSER $(<) : $(>) ;
+	    case .c : 	Cc $(<) : $(>) ;
+	    case .l :	Cc $(<) : $(<:S=.c) ;
+			Lex $(<:S=.c) : $(>) ;
+	    case .y : 	Cc $(<) : $(<:S=.c) ; 
+			Yacc $(<:S=.c) : $(>) ;
+	    case .yy : 	Cc $(<) : $(<:S=.c) ; 
+			Yacc $(<:S=.c) : $(<:S=.y) ;
+			YYacc $(<:S=.y) : $(>) ;
+	    case * :	UserObject $(<) : $(>) ;
 	}
 }
 
-rule HDRRULE
+rule HdrRule
 {
-	# HDRRULE source : headers ;
+	# HdrRule source : headers ;
 
 	# N.B.  This rule is called during binding, potentially after 
 	# the fate of many targets has been determined, and must be 
@@ -277,46 +331,86 @@ rule HDRRULE
 	HDRRULE on $(>) = $(HDRRULE) ;
 }
 
-rule CC
+rule CcAddFlags
+{
+	S = $(>:S=.o) ;
+
+	if $(SOURCE_GRIST)
+	{
+	    S = $(>:G=$(SOURCE_GRIST):S=.o) ;
+	}
+
+	CCFLAGS on $(S) += $(>) ;
+}
+
+rule CcAddHdrs
+{
+	S = $(>:S=.o) ;
+
+	if $(SOURCE_GRIST)
+	{
+	    S = $(>:G=$(SOURCE_GRIST):S=.o) ;
+	}
+
+	HDRS on $(S) += $(>) ;
+}
+
+rule Cc
 {
 	DEPENDS $(<) : $(>) ;
-	RELOCATE $(<) ;
+
+	if $(RELOCATE)
+	{
+	    "Cc -mv" $(<) : $(>) ;
+	}
+	else
+	{
+	    "Cc -o" $(<) : $(>) ;
+	}
+
+	# Just to clarify here: this sets the per-target CCFLAGS to
+	# be the current value of (global) CCFLAGS and CCDIRFLAGS.
+
+	CCFLAGS on $(<) += $(CCFLAGS) $(CCDIRFLAGS) ;
 }
 
-actions CC
+actions "Cc -o"
+{
+	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o $(<) $(>)
+}
+
+actions "Cc -mv"
 {
 	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) $(>)
-}
-
-actions quietly ignore RELOCATE
-{
 	[ $(<) != $(<:D=) ] && $(MV) $(<:D=) $(<)
 }
 
-rule LEX
+rule Lex
 {
 	DEPENDS $(<) : $(>) ;
 	LOCATE on $(<) = $(LOCATE_TARGET) ;
+	Clean clean : $(<) ;
 }
 
-actions LEX
+actions Lex
 {
 	$(LEX) $(>) && $(MV) lex.yy.c $(<)
 }
 
-rule YACC 
+rule Yacc 
 {
 	h = $(<:BS=.h) ;
 
 	DEPENDS $(<) $(h) : $(>) ;
-	YACC1 $(<) $(h) : $(>) ;
+	Yacc1 $(<) $(h) : $(>) ;
+	Clean clean : $(<) $(h) ;
 	# make sure someone includes $(h) else it will be
 	# a deadly independent target
 	INCLUDES $(<) : $(h) ;
 	LOCATE on $(<) $(h) = $(LOCATE_TARGET) ;
 }
 
-actions YACC1
+actions Yacc1
 {
 	$(YACC) $(>) &&
 	{
@@ -325,84 +419,86 @@ actions YACC1
 	}
 }
 
-rule YYACC
+rule YYacc
 {
 	DEPENDS $(<) $(<:B)tab.h : $(>) ;
-	YYACC1 $(<) $(<:B)tab.h : $(>) ;
+	YYacc1 $(<) $(<:B)tab.h : $(>) ;
 	LOCATE on $(<) $(<:B)tab.h = $(LOCATE_TARGET) ;
+	Clean clean : $(<) $(<:B)tab.h ;
 }
 
-actions YYACC1
+actions YYacc1
 {
 	sh yyacc $(>) $(<)
 }
 
-rule BULK 
+rule Bulk 
 {
 	for i in $(>) 
 	{ 
-	    FILE $(i:D=$(<)) : $(i) ; 
+	    File $(i:D=$(<)) : $(i) ; 
 	}
 }
 
-rule FILE
+rule File
 {
 	DEPENDS files : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 }
 
-actions FILE
+actions File
 {
+	$(RM) $(<)
 	cp $(>) $(<) &&
 	chmod $(FILEMODE) $(<)
 }
 
-rule SHELL
+rule Shell
 {
 	DEPENDS shell : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 }
 
-actions SHELL
+actions Shell
 {
 	( 
 	echo "$(SHELLHEADER)"
-	sed '/^: /d;/^##/d' $(>)
+	sed '1d;/^##/d' $(>)
 	) > $(<)
 	chmod $(SHELLMODE) $(<)
 }
 
-rule RMTEMPS
+rule RmTemps
 {
 	TEMPORARY $(>) ;
 }
 
-actions quietly updated piecemeal RMTEMPS
+actions quietly updated piecemeal together RmTemps
 {
 	$(RM) $(>)
 }
 
-rule INSTALLBIN
+rule InstallBin
 {
 	for i in $(<)
 	{
-	    INSTALL $(i:D=$(BINDIR)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(BINDIR)) = $(EXEMODE) ;
+	    Install $(i:D=$(BINDIR)) : $(i) ;
+	    InstallMODE on $(i:D=$(BINDIR)) = $(EXEMODE) ;
 	}
 }
 
-rule INSTALLLIB
+rule InstallLib
 {
 	for i in $(<) 
 	{
-	    INSTALL $(i:D=$(LIBDIR)) : $(i) ;
-	    INSTALLMODE on $(i:D=$(LIBDIR)) = $(FILEMODE) ;
+	    Install $(i:D=$(LIBDIR)) : $(i) ;
+	    InstallMODE on $(i:D=$(LIBDIR)) = $(FILEMODE) ;
 	}
 }
 
-rule INSTALLMAN
+rule InstallMan
 {
 	# Really this just strips the . from the suffix
 
@@ -418,27 +514,52 @@ rule INSTALLMAN
 
 	    D = $(i:D=$(MANDIR)/man$(S):S=.$(S)) ;
 
-	    INSTALL $(D) : $(i) ;
-	    INSTALLMODE on $(D) = $(FILEMODE) ;
+	    Install $(D) : $(i) ;
+	    InstallMODE on $(D) = $(FILEMODE) ;
 	}
 }
 
-rule INSTALL
+rule Install
 {
 	DEPENDS install : $(<) ;
 	DEPENDS $(<) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
 }
 
-actions INSTALL
+actions Install
 {
 	[ -d "$(<:D)" ] || mkdir $(<:D)
 	cp $(>) $(<) &&
 	chmod $(INSTALLMODE) $(<) 
 }
 
+actions piecemeal together existing Clean
+{
+	rm -f $(>)
+}
+
+#
+# Backwards compatibility with jam 1, where rules were uppercased.
+#
+
+rule BULK { Bulk $(<) : $(>) ; }
+rule FILE { File $(<) : $(>) ; }
+rule HDRRULE { HdrRule $(<) : $(>) ; }
+rule INSTALL { Install $(<) : $(>) ; }
+rule INSTALLBIN { InstallBin $(<) : $(>) ; }
+rule INSTALLLIB { InstallLib $(<) : $(>) ; }
+rule INSTALLMAN { InstallMan $(<) : $(>) ; }
+rule LIBRARY { Library $(<) : $(>) ; }
+rule LIBS { LinkLibraries $(<) : $(>) ; }
+rule LINK { Link $(<) : $(>) ; }
+rule MAIN { Main $(<) : $(>) ; }
+rule SETUID { Setuid $(<) ; }
+rule SHELL { Shell $(<) : $(>) ; }
+rule UNDEFINES { Undefines $(<) : $(>) ; }
+
 #
 # Now include the Jamfile.
 # 
 
 include $(JAMFILE) ;
+
