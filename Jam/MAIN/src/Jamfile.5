@@ -13,7 +13,7 @@
 .ad
 ..
 .de XB
-Example:
+For example:
 .BB
 ..
 .de XE
@@ -24,12 +24,13 @@ Example:
 .SH DESCRIPTION
 .PP
 This manual page gives instructions and examples for writing a
-\fBJamfile\fR.  A \fBJamfile\fR is a file that tells the build tool
-\fBjam\fR what to do in the current directory.  It consists of
-invocations of rules, rules which are defined by the \fBjam\fR
-boilerplate file \fBJambase\fR.  The rules \fBJambase\fR defines
-provide the roughly \fBmake\fR(1)-like functionality shown here.  This
-description goes with \fBjam\fR release 2.
+\fBJamfile\fR.  A \fBJamfile\fR is a file that tells \fBjam\fR what to
+build in the current directory.  It consists of invocations of rules
+which are defined by the \fBjam\fR boilerplate \fBJambase\fR.  The
+rules \fBJambase\fR defines provide roughly \fBmake\fR(1)-like
+functionality.
+.PP
+This description goes with \fBjam\fR release 2.
 .PP
 Each example is all or part of a \fBJamfile\fR.  Once you have created
 a \fBJamfile\fR, you can invoke \fBjam\fR to build things.  The
@@ -69,19 +70,19 @@ dependencies automatically.
 .SS Library Rule
 .PP
 The \fILibrary\fR rule compiles one or more sources, archives the
-resulting objects into library, and then deletes the objects.
+resulting objects into a library, and then deletes the objects.
 .XB
 Library libstring.a : strcmp.c strcpy.c strlen.c ; 
 Library libtree.a : treemake.c treetrav.c ;
 .XE
 .PP
 This compiles five source files, archives three of the object files
-into libstring.a, and archives the other two into libtree.a.  Once the
+into libstring.a and the other two into libtree.a.  Once the
 objects are safely in the libraries, the objects are deleted.
 .SS LinkLibraries Rule
 .PP
-To link executables against libraries that are built, you indicate it
-with the \fILinkLibraries\fR rule.
+To tell \fBjam\fR to link executables against libraries that have been
+built, you use the \fILinkLibraries\fR rule.
 .XB
 Main myprog : main.c util.c ;
 LinkLibraries myprog : libstring.a libtree.a ;
@@ -90,7 +91,10 @@ Library libstring.a : strcmp.c strcpy.c strlen.c ;
 Library libtree.a : treemake.c treetrav.c ;
 .XE
 .PP
-The ordering of the lines above is not critical.
+The \fILinkLibraries\fR rule does two things: it makes the libraries
+dependents of the executable, so that they get built first; and it
+makes the libriares show up on the command line that links the
+executable.  The ordering of the lines above is not critical.
 .SS Variables
 .PP
 The following variables control the linking of executables and the
@@ -120,12 +124,15 @@ Library libxutil.a : xtop.c xbottom.c xutil.c ;
 .PP
 This example uses the \fBjam\fR syntax "variable \fIon\fR target",
 which sets the variable's value only for use when updating the named
-target.  The actual link command line looks like this:
+target.  In this way, only xprog will be linked with these special
+$(LINKFLAGS) and $(LINKLIBS), even if other executables were going to
+be built by the same \fBJamfile\fR.  The actual link command line looks
+like this:
 .BB
 cc -Bstatic -o xprog xprog.o libuxtil.a -lXext -lX11
 .BE
 .PP
-Note that the link command is cc.
+Note that the default link command is cc.
 .SH COPYING FILES
 .SS File Rule
 The \fIFile\fR rule copies one file to another.
@@ -165,6 +172,8 @@ These can be set target-specific.
 Shell /usr/local/bin/add : add.awk ;
 SHELLHEADER on /usr/local/bin/add = "#!/bin/awk -f" ;
 .XE
+.PP
+This installs an \fBawk\fR(1) script.
 .SH INSTALLING FILES
 .SS InstallBin Rule
 .PP
@@ -200,8 +209,8 @@ InstallShell $(BINDIR) : bugs ;
 .PP
 The difference between \fIShell\fR and \fIInstallShell\fR is not much: they
 both copy the source to the target.  The former also makes
-sure the script begins with the magic string (#!/bin/sh); the latter uses
-\fIinstall\fR(1) for the copy.
+sure the script begins with the magic string "#!/bin/sh"; the latter uses
+\fBinstall\fR(1) for the copy.
 .SS Variables
 .PP
 The following variables control the installation rules:
@@ -216,7 +225,7 @@ $(SHELLMODE)       generic permissions for InstallShell (755)
 .BE
 .PP
 The directory variables are just defined for convenience: they must
-be passed as the target the appropriate \fIInstall\fR rule.
+be passed as the target to the appropriate \fIInstall\fR rule.
 The $(INSTALL) and mode variables must be set (globally) before 
 calling the \fIInstall\fR rules in order to take effect.
 .SH HANDLING DIRECTORY TREES
@@ -280,18 +289,18 @@ Library $(TOP)/lib/libutil.a : gadgets.c gizmos.c widgets.c ;
 .XE
 .PP
 This compiles four files in $(TOP)/src/util, archives three of the
-objects into libutil.a, and links the whole thing into testutil.
+objects into libutil.a, and links the whole thing into $(TOP)/bin/testutil.
 .SS SubInclude Rule
 .PP
 The \fISubInclude\fR rule sources the \fBJamfile\fR from the named
-subdirectory.  Its arguments are the same format as \fISubDir\fR's, and
+subdirectory.  Its arguments are in the same format as \fISubDir\fR's, and
 its only reason for being is to allow including a subdirectory
 \fBJamfile\fR without having to use system-specific directory name
 syntax.
 .PP
 The recommended practice is only to include one level of subdirectories
 at a time, and let the \fBJamfile\fR in each subdirectory include its
-subdirectories.  This allows a user to sit in any arbitrary directory
+own subdirectories.  This allows a user to sit in any arbitrary directory
 of the source tree and build that subtree.
 .XB
 # Top level Jamfile for mondo project.  
@@ -320,7 +329,7 @@ SubInclude TOP src misc ;
 SubInclude TOP src util ;
 .XE
 .SS Variables
-The following variables are used when \fIJam\fR spans multiple directories:
+The following variables are used when \fBjam\fR spans multiple directories:
 .BB
 $(LOCATE_TARGET)   Directory to put targets.
 $(SEARCH_SOURCE)   Directory to find sources.
@@ -346,7 +355,8 @@ would otherwise be the same.
 It should be noted that the user can set these variables independently
 of \fISubDir\fR, or after it.  The most profitable example is setting
 $(LOCATE_TARGET) to be a directory outside the source tree: in this
-case, \fBjam\fR can build without even modifying the source tree.
+case, \fBjam\fR can build into a target directory (tree) without ever
+modifying the source tree.
 .SS VMS Notes
 .PP
 On VMS, the logical name table is not imported as is the environment
@@ -365,17 +375,18 @@ TOP = TOP: ;
 
 SubInclude TOP util ;
 .XE
+.PP
 The \fB:\fR at the end of TOP makes the value of $(TOP) look like a
 device name, which \fBjam\fR respects as a directory name and uses it
 when trying to access files.  TOP must then be defined from DCL:
 .BB
-define/job/translation=concealed TOP DK100:[USERS.JONES.SRC.]
+$ define/job/translation=concealed TOP DK100:[USERS.JONES.SRC.]
 .BE
 .PP
 Note three things: the concealed translation allows the logical to be
 used as a device name; the device name in the logical (here DK100)
 cannot itself be concealed logical (VMS rules, man); and the directory
-component of the definition must end in period (more VMS rules).
+component of the definition must end in a period (more VMS rules).
 .SH COMPILING
 .PP
 Compiling of source files occurs normally as a byproduct of the
@@ -487,14 +498,13 @@ use of the \fIObjects\fR or \fIObject\fR rule for that.
 LibraryFromObjects libfoo.a : max.o min.o ;
 Object max.o : maxmin.c ;
 Object min.o : maxmin.c ;
-ObjectCcFlags max.c : -DUSEMAX ;
-ObjectCcFlags min.c : -DUSEMIN ;
+ObjectCcFlags max.o : -DUSEMAX ;
+ObjectCcFlags min.o : -DUSEMIN ;
 .XE
 .PP
 This compiles the same source file into two different objects, with
-different compile flags, and archives them.  Note that
-\fIObjectCcFlags\fR referred to the (nonexistent) source file names for
-the objects.
+different compile flags, and archives them.  The
+\fIObjectCcFlags\fR rule is described shortly.
 .SS MainFromObjects Rule
 .PP
 Similar to \fILibraryFromObjects\fR, \fIMainFromObjects\fR does the linking
@@ -506,6 +516,9 @@ Object w.o : uptime.c ;
 Object uptime.o : uptime.c ;
 ObjectCcFlags w.c : -DW_CODE ;
 .XE
+.PP
+This compiles two different programs, w and uptime, from the same
+source file with different C compiler flags.
 .SS Variables
 .PP
 The following variables control the compiling of source files.
@@ -626,7 +639,7 @@ rule BuiltHeaders
 This example just says that the files included by "ugly.c" are generated
 by the program "mkhdr", which can be built from "mkhdr.c".  By calling
 \fIHdrRule\fR at the end of \fIBuiltHeaders\fR, all the gadgetry of 
-\fIHdrRule\fR doesn't need to be duplicated.
+\fIHdrRule\fR takes effect and it doesn't need to be duplicated.
 .SS Variables
 .PP
 The complete list of variables used by the \fIHdrRule\fR coterie are:
@@ -643,20 +656,21 @@ The \fIObject\fR rule sets HDRRULE and HDRSCAN specifically for the
 source files to be scanned, rather than globally.  If they were set
 globally, \fBjam\fR would attempt to scan all files, even library
 archives and executables, for header file inclusions.  That would
-be slow, if nothing else.
+be slow and probably not yield desirable results.
 .SH MISCELLANEOUS
 .SS Clean Rule
 .PP
 The \fIClean\fR rule has only a simple action: to delete all of its
-sources.  It is normally invoked with intermediate files as sources, so
-that they can be cleaned out.  If \fIClean\fR is invoked with a target
-and some sources, instructing \fBjam\fR to make the target will cause
-it to delete the sources.
+sources.  It is normally invoked with generated files as sources, so
+that they can be cleaned out.  \fIClean\fR must invoked with a target
+as well, as different sets of files might be cleaned on with different
+targets.  To actually remove the files to be cleaned, you invoke
+\fBjam\fR with the target name on the command line.
 .XB
 Clean zap : junk1 junk2 junk3 ;
 .XE
 .PP
-Saying \f(CWjam zap\fP would cause it to delete junk1, junk2, and junk3.
+Saying "\f(CWjam zap\fP" would cause it to delete junk1, junk2, and junk3.
 .PP
 All rules listed in this manual page, except the \fIInstall\fR ones, invoke
 the following \fIClean\fR rule:
@@ -668,13 +682,13 @@ The \fIInstall\fR rules invoke the following:
 Clean uninstall : $(<) ;
 .BE
 .PP
-Thus a \f(CWjam uninstall\fP removes anything created with the \fIInstall\fR
-rules, and a \f(CWjam clean\fP removes anything created by the other rules
+Thus a "\f(CWjam uninstall\fP" removes anything created with the \fIInstall\fR
+rules, and a "\f(CWjam clean\fP" removes anything created by the other rules
 listed in this manual page.  It should be noted that \fBjam\fR's cleaning
 mechanism gets rid of exactly the files it created, not miscellaneous junk
 left around by the user.
 .PP
-Given other, user-defined targets, the \fIClean\fR rule selectively
+Given user-defined targets, the \fIClean\fR rule can selectively
 remove other generated files.
 .XB
 rule M4 
@@ -692,11 +706,11 @@ actions M4
 }
 .XE
 .PP
-Here a \f(CWjam m4clean\fR would remove all files created by \fBm4\fR.
+Here a "\f(CWjam m4clean\fR" would remove all files created by \fBm4\fR.
 .SS RmTemps Rule
 .PP
 Some intermediate files are meant to be temporary.  The \fIRmTemps\fR
-rule makes such files with the TEMPORARY attribute, and then deletes
+rule marks such files with the \fITEMPORARY\fR rule, and then deletes
 them after they are used.  To delete them only when they are finished
 being used, \fIRmTemps\fR must be the last rule (with actions) invoked on
 the target that uses the temporary files, and the sources to
@@ -712,7 +726,7 @@ using \fISpecialUserRuleB\fR.  Once that is done, remove "foo".
 .SH SPECIAL TARGETS
 .PP
 \fBJam\fR has only one special target: \fIall\fR, which it tries
-to build if no targets are on the command line.  \fBJambase\fR makes
+to build if no targets are on the command line.  \fBJambase\fR defines
 several special targets which are dependents of \fIall\fR:
 .BB
 all             - parent of first, shell, files, lib, exe
@@ -725,21 +739,24 @@ clean           - removes all Shell, File, Library, and Main targets
 uninstall       - removes all Install targets
 .BE
 .PP
-\fBJambase\fR marks all of these targets with \fBjam\fR's \fINOTFILE\fR 
-attribute, meaning that they aren't to be found in the filesystem.
-You can build selected components by using the \fIshell\fR, \fIfiles\fR,
-\fIlib\fR, or \fIexe\fR targets on the command line.  You can remove
-the files that \fBjam\fR built using the \fIclean\fR and \fIuninstall\fR
-targets on the command line.  And you can arrange for \fBjam\fR to run
-initialization commands by putting actions on the target \fIfirst\fR.
+\fBJambase\fR marks all of these targets with \fBjam\fR's \fINOTFILE\fR
+attribute, meaning that they aren't to be found in the filesystem.  You
+can build selected components by giving \fIshell\fR, \fIfiles\fR,
+\fIlib\fR, or \fIexe\fR as targets on the command line.  You can remove
+the files that \fBjam\fR built giving \fIclean\fR and \fIuninstall\fR
+as targets.  And you can arrange for \fBjam\fR to run initialization
+commands by putting actions on the target \fIfirst\fR.
 .XB
-actions Initialize
+actions Initialize 
 {
-	ECHO "This is a test of the jam initialization system."
+	ECHO "This is a test of the jam initialization system." 
 }
 
 Initialize first ;
 .XE
+.PP
+This only gets run if \fBjam\fR is invoked with the \fIall\fR or \fIfirst\fR
+targets, or no target at all.
 .SH JAM BUILT-IN RULES AND VARIABLES
 .PP
 This section describes \fBjam\fR's built-in rules and variables.   Built-in
