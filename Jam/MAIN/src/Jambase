@@ -155,7 +155,7 @@ DEPENDS all : first shell files lib exe ;
 NOTIME all first shell files lib exe ;
 
 #
-# The rules
+# Compiling and linking rules.
 #
 
 rule Main 
@@ -266,6 +266,16 @@ actions updated together piecemeal Archive
 actions together Ranlib
 {
 	$(RANLIB) $(<)
+}
+
+rule RmTemps
+{
+	TEMPORARY $(>) ;
+}
+
+actions quietly updated piecemeal together RmTemps
+{
+	$(RM) $(>)
 }
 
 rule Objects
@@ -475,6 +485,10 @@ actions Yacc1
 	}
 }
 
+# 
+# File copying/installing/linking rules.
+#
+
 rule Bulk 
 {
 	for i in $(>) 
@@ -523,16 +537,6 @@ actions Shell
 	sed '1d;/^##/d' $(>)
 	) > $(<)
 	chmod $(SHELLMODE) $(<)
-}
-
-rule RmTemps
-{
-	TEMPORARY $(>) ;
-}
-
-actions quietly updated piecemeal together RmTemps
-{
-	$(RM) $(>)
 }
 
 rule InstallBin
@@ -610,6 +614,75 @@ else
 actions piecemeal together existing Clean
 {
 	rm -f $(>)
+}
+
+#
+# Multidirectory support.
+#
+
+rule SubDir
+{
+	# Just a reminder here:
+	#	SubDir TOP d1 [ d2 [ d3 [ d4 ] ] ]
+	#
+	# TOP is the name of the (environment) variable that names the 
+	# TOP level directory of the build tree.  d1...d4 are the
+	# directory elements that lead to this directory.  The call
+	# to SubDir is system independent, in that it contains no OS
+	# path!
+
+	if ! $($(<[1])) 
+	{
+	    ECHO Top level of source tree has not been set with $(<[1]) ;
+	}
+
+	# Get the grist, search
+	# This is just hideous variable manipulation
+
+	if $(<[5]) { 
+		g = $(<[2])!$(<[3])!$(<[4])!$(<[5]) ;
+		s = /$(<[2])/$(<[3])/$(<[4])/$(<[5]) ;
+	} else if $(<[4]) {
+		g = $(<[2])!$(<[3])!$(<[4]) ;
+		s = /$(<[2])/$(<[3])/$(<[4]) ;
+	} else if $(<[3]) {
+		g = $(<[2])!$(<[3]) ;
+		s = /$(<[2])/$(<[3]) ;
+	} else if $(<[2]) {
+		g = $(<[2]) ;
+		s = /$(<[2]) ;
+	} else {
+		g = ;
+		s = ;
+	}
+
+	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
+
+	SEARCH_SOURCE = $($(<[1]))$(s) ;
+	LOCATE_TARGET = $($(<[1]))$(s) ;
+	SOURCE_GRIST = $(g) ;
+	CCDIRFLAGS = ;
+}
+
+rule SubInclude
+{
+	# That's
+	#	SubInclude TOP d1 [ d2 [ d3 [ d4 ] ] ]
+
+	if ! $($(<[1])) 
+	{
+	    ECHO Top level of source tree has not been set with $(<[1]) ;
+	}
+
+	if $(<[5]) { 
+		include $($(<[1]))/$(<[2])/$(<[3])/$(<[4])/$(<[5])/$(JAMFILE) ;
+	} else if $(<[4]) {
+		include $($(<[1]))/$(<[2])/$(<[3])/$(<[4])/$(JAMFILE) ;
+	} else if $(<[3]) {
+		include $($(<[1]))/$(<[2])/$(<[3])/$(JAMFILE) ;
+	} else if $(<[2]) {
+		include $($(<[1]))/$(<[2])/$(JAMFILE) ;
+	}
 }
 
 #
