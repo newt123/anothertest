@@ -77,8 +77,6 @@
 #include <memory.h>
 #endif
 
-#include <values.h>
-
 #ifdef __cplusplus
 
 #ifndef yyerror
