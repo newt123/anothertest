@@ -114,6 +114,15 @@ Changes since 2.1
     call rather than separate ones for each line.  This allows "dcl scripts"
     to be used.
 
+    The setting and extracting of grist has been regularized: normally,
+    if you set a component of a filename (using the :DBSMG= modifiers),
+    you are supposed to include the delimiters that set off the component:
+    that is, you say "$(x:S=.suffix)", including the ".".  But with
+    grist it was inconsistent between setting and getting: setting grist
+    required no <>'s, while getting grist included them.   Getting grist
+    continues to return the <>'s, but now setting grist can either
+    include them (the new way) or not (the old way).  (2.1.16)
+
 Release notes for Jam 2.1.
 
 1.  Release info:

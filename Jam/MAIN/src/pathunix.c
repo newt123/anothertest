@@ -37,6 +37,8 @@
  *                    well as "\" when parsing pathnames.
  * 03/16/95 (seiwald) - fixed accursed typo on line 69.
  * 05/03/96 (seiwald) - split from filent.c, fileunix.c
+ * 12/20/96 (seiwald) - when looking for the rightmost . in a file name,
+ *		      don't include the archive member name.
  */
 
 /*
@@ -48,7 +50,7 @@ file_parse( file, f )
 char		*file;
 FILENAME	*f;
 {
-	char *p; 
+	char *p, *q;
 	char *end;
 	
 	memset( (char *)f, 0, sizeof( *f ) );
@@ -57,8 +59,8 @@ FILENAME	*f;
 
 	if( file[0] == '<' && ( p = strchr( file, '>' ) ) )
 	{
-	    f->f_grist.ptr = file + 1;
-	    f->f_grist.len = p - file - 1;
+	    f->f_grist.ptr = file;
+	    f->f_grist.len = p - file;
 	    file = p + 1;
 	}
 
@@ -106,8 +108,15 @@ FILENAME	*f;
 	} 
 
 	/* Look for .suffix */
+	/* This would be memrchr() */
 
-	if( ( p = strrchr( file, '.' ) ) && p < end )
+	p = 0;
+	q = file;
+
+	while( q = memchr( q, '.', end - q ) )
+	    p = q++;
+
+	if( p )
 	{
 	    f->f_suffix.ptr = p;
 	    f->f_suffix.len = end - p;
@@ -129,12 +138,15 @@ file_build( f, file )
 FILENAME	*f;
 char		*file;
 {
+	/* Start with the grist.  If the current grist isn't */
+	/* surrounded by <>'s, add them. */
+
 	if( f->f_grist.len )
 	{
-	    *file++ = '<';
+	    if( f->f_grist.ptr[0] != '<' ) *file++ = '<';
 	    memcpy( file, f->f_grist.ptr, f->f_grist.len );
 	    file += f->f_grist.len;
-	    *file++ = '>';
+	    if( file[-1] != '>' ) *file++ = '>';
 	}
 
 	/* Don't prepend root if it's . or directory is rooted */

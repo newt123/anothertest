@@ -46,8 +46,8 @@ FILENAME	*f;
 
 	if( file[0] == '<' && ( p = strchr( file, '>' ) ) )
 	{
-	    f->f_grist.ptr = file + 1;
-	    f->f_grist.len = p - file - 1;
+	    f->f_grist.ptr = file;
+	    f->f_grist.len = p - file;
 	    file = p + 1;
 	}
 
@@ -157,13 +157,17 @@ char		*file;
 	int dir_flags = HAS_DEV;
 	int root_flags = 0;
 
+	/* Start with the grist.  If the current grist isn't */
+	/* surrounded by <>'s, add them. */
+
 	if( f->f_grist.len )
 	{
-	    *file++ = '<';
+	    if( f->f_grist.ptr[0] != '<' ) *file++ = '<';
 	    memcpy( file, f->f_grist.ptr, f->f_grist.len );
 	    file += f->f_grist.len;
-	    *file++ = '>';
+	    if( file[-1] != '>' ) *file++ = '>';
 	}
+
 
 	if( f->f_root.len )
 	{
@@ -223,6 +227,10 @@ char		*file;
 	    memcpy( file, f->f_base.ptr, f->f_base.len );
 	    file += f->f_base.len;
 	}
+
+	/* If there is no suffix, we append a "." onto all generated */
+	/* names.  This keeps VMS from appending its own (wrong) idea */
+	/* of what the suffix should be. */
 
 	if( f->f_suffix.len )
 	{
