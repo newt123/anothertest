@@ -413,9 +413,11 @@ rule As
 
 rule Bulk
 {
-	for _i in $(>)
+	local i ;
+
+	for i in $(>)
 	{
-	    File $(_i:D=$(<)) : $(_i) ;
+	    File $(i:D=$(<)) : $(i) ;
 	}
 }
 
@@ -524,10 +526,12 @@ rule Install
 
 rule InstallBin
 {
-	for _i in $(>)
+	local i ;
+
+	for i in $(>)
 	{
-	    Install $(_i:D=$(<)) : $(_i) ;
-	    MODE on $(_i:D=$(<)) = $(EXEMODE) ;
+	    Install $(i:D=$(<)) : $(i) ;
+	    MODE on $(i:D=$(<)) = $(EXEMODE) ;
 	}
 }
 
@@ -538,10 +542,12 @@ rule InstallFile
 
 rule InstallLib
 {
-	for _i in $(>)
+	local i ;
+
+	for i in $(>)
 	{
-	    Install $(_i:D=$(<)) : $(_i) ;
-	    MODE on $(_i:D=$(<)) = $(FILEMODE) ;
+	    Install $(i:D=$(<)) : $(i) ;
+	    MODE on $(i:D=$(<)) = $(FILEMODE) ;
 	}
 }
 
@@ -549,29 +555,33 @@ rule InstallMan
 {
 	# Really this just strips the . from the suffix
 
-	for _i in $(>)
+	local i s d ;
+
+	for i in $(>)
 	{
-	    switch $(_i:S)
+	    switch $(i:S)
 	    {
-	    case .1 : _s = 1 ; case .2 : _s = 2 ; case .3 : _s = 3 ;
-	    case .4 : _s = 4 ; case .5 : _s = 5 ; case .6 : _s = 6 ;
-	    case .7 : _s = 7 ; case .8 : _s = 8 ; case .l : _s = l ;
-	    case .n : _s = n ; case .man : _s = 1 ;
+	    case .1 : s = 1 ; case .2 : s = 2 ; case .3 : s = 3 ;
+	    case .4 : s = 4 ; case .5 : s = 5 ; case .6 : s = 6 ;
+	    case .7 : s = 7 ; case .8 : s = 8 ; case .l : s = l ;
+	    case .n : s = n ; case .man : s = 1 ;
 	    }
 
-	    _d = $(_i:D=man$(_s):S=.$(_s)) ;
+	    d = $(i:D=man$(s):S=.$(s)) ;
 
-	    Install $(_d:R=$(<)) : $(_i) ;
-	    MODE on $(_d:R=$(<)) = $(FILEMODE) ;
+	    Install $(d:R=$(<)) : $(i) ;
+	    MODE on $(d:R=$(<)) = $(FILEMODE) ;
 	}
 }
 
 rule InstallShell
 {
-	for _i in $(>)
+	local i ;
+
+	for i in $(>)
 	{
-	    Install $(_i:D=$(<)) : $(_i) ;
-	    MODE on $(_i:D=$(<)) = $(SHELLMODE) ;
+	    Install $(i:D=$(<)) : $(i) ;
+	    MODE on $(i:D=$(<)) = $(SHELLMODE) ;
 	}
 }
 
@@ -590,20 +600,22 @@ rule Library
 
 rule LibraryFromObjects
 {
+	local i l s ;
+
 	# Add grist to file names
 
-	makeGristedName _s : $(>) ;
+	makeGristedName s : $(>) ;
 
 	# library depends on its member objects
 
-	_l = $(<:S=$(SUFLIB)) ;
+	l = $(<:S=$(SUFLIB)) ;
 
-	DEPENDS lib : $(_l) ;
+	DEPENDS lib : $(l) ;
 
 	# Set LOCATE for the library and its contents.  The bound
 	# value shows up as $(NEEDLIBS) on the Link actions.
 
-	MakeLocate $(<) $(<)($(_s:BS)) : $(LOCATE_TARGET) ;
+	MakeLocate $(<) $(<)($(s:BS)) : $(LOCATE_TARGET) ;
 
 	if $(NOARSCAN) 
 	{ 
@@ -611,7 +623,7 @@ rule LibraryFromObjects
 	    # we have to just make the library depend directly on the
 	    # on-disk object files.  
 
-	    DEPENDS $(_l) : $(_s) ;
+	    DEPENDS $(l) : $(s) ;
 	}
 	else
 	{
@@ -619,25 +631,25 @@ rule LibraryFromObjects
 	    # on its members and each member depend on the on-disk
 	    # object file.
 
-	    DEPENDS $(_l) : $(_l)($(_s:BS)) ;
+	    DEPENDS $(l) : $(l)($(s:BS)) ;
 
-	    for _i in $(_s)
+	    for i in $(s)
 	    {
-		DEPENDS $(_l)($(_i:BS)) : $(_i) ;
+		DEPENDS $(l)($(i:BS)) : $(i) ;
 	    }
 	}
 
-	Clean clean : $(_l) ;
+	Clean clean : $(l) ;
 
-	if $(CRELIB) { CreLib $(_l) : $(_s[1]) ; }
+	if $(CRELIB) { CreLib $(l) : $(s[1]) ; }
 
-	Archive $(_l) : $(_s) ;
+	Archive $(l) : $(s) ;
 
-	if $(RANLIB) { Ranlib $(_l) ; }
+	if $(RANLIB) { Ranlib $(l) ; }
 
 	# If we can't scan the library, we have to leave the .o's around.
 
-	if ! $(NOARSCAN) { RmTemps $(_l) : $(_s) ; }
+	if ! $(NOARSCAN) { RmTemps $(l) : $(s) ; }
 }
 
 rule Link
@@ -648,18 +660,20 @@ rule Link
 
 rule LinkLibraries
 {
+	local t ;
+
 	# make library dependencies of target
 	# set NEEDLIBS variable used by 'actions Main'
 
 	if $(<:S)
 	{
-	    _t = $(<) ;
+	    t = $(<) ;
 	} else {
-	    _t = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	DEPENDS $(_t) : $(>:S=$(SUFLIB)) ;
-	NEEDLIBS on $(_t) += $(>:S=$(SUFLIB)) ;
+	DEPENDS $(t) : $(>:S=$(SUFLIB)) ;
+	NEEDLIBS on $(t) += $(>:S=$(SUFLIB)) ;
 }
 
 rule Main
@@ -670,26 +684,28 @@ rule Main
 
 rule MainFromObjects
 {
+	local s t ;
+
 	# Add grist to file names
 
-	makeGristedName _s : $(>) ;
+	makeGristedName s : $(>) ;
 
 	# make compiled sources a dependency of target
 
 	if $(<:S)
 	{
-	    _t = $(<) ;
+	    t = $(<) ;
 	} else {
-	    _t = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	DEPENDS exe : $(_t) ;
-	DEPENDS $(_t) : $(_s) ;
-	MakeLocate $(_t) $(<) : $(LOCATE_TARGET) ;
+	DEPENDS exe : $(t) ;
+	DEPENDS $(t) : $(s) ;
+	MakeLocate $(t) $(<) : $(LOCATE_TARGET) ;
 
-	Clean clean : $(_t) ;
+	Clean clean : $(t) ;
 
-	Link $(_t) : $(_s) ;
+	Link $(t) : $(s) ;
 }
 
 rule MakeLocate
@@ -697,8 +713,8 @@ rule MakeLocate
 	if $(>)
 	{
 	    LOCATE on $(<) = $(>) ;
-	    Depends $(<) : $(>) ;
-	    MkDir $(>) ;
+	    Depends $(<) : $(>[1]) ;
+	    MkDir $(>[1]) ;
 	}
 }
 
@@ -706,7 +722,7 @@ rule MkDir
 {
 	if $(<) != $(DOT) && ! $($(<)-mkdir) 
 	{
-	    local _s ;
+	    local s ;
 
 	    # Cheesy gate to prevent multiple invocations on same dir
 	    # MkDir1 has the actions 
@@ -723,18 +739,20 @@ rule MkDir
 	    # On VMS, $(<:D) = $(<), no recursing, but you don't need to 
 	    # create parent directories explicitly there.
 
-	    _s = $(<:D) ;
+	    s = $(<:D) ;
 
-	    if $(_s) && $(_s) != $(<)
+	    if $(s) && $(s) != $(<)
 	    {
-		Depends $(<) : $(_s) ;
-		MkDir $(_s) ;
+		Depends $(<) : $(s) ;
+		MkDir $(s) ;
 	    }
 	}
 }
 
 rule Object
 {
+	local h ;
+
 	# locate object and search for source, if wanted
 
 	Clean clean : $(<) ;
@@ -755,22 +773,22 @@ rule Object
 	# with the scanned file as the target and the found headers
 	# as the sources.  HDRSEARCH is just grist for HdrRule.
 
-	# $(_h) is where cc first looks for #include "foo.h" files.
+	# $(h) is where cc first looks for #include "foo.h" files.
 	# If the source file is in a distant directory, look there.
 	# Else, look in "" (the current directory).
 
 	if $(SEARCH_SOURCE)
 	{
-	    _h = $(SEARCH_SOURCE) ;
+	    h = $(SEARCH_SOURCE) ;
 	}
 	else
 	{
-	    _h = "" ;
+	    h = "" ;
 	}
 
 	HDRRULE on $(>) = HdrRule ;
 	HDRSCAN on $(>) = $(HDRPATTERN) ;
-	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(_h) $(STDHDRS) ;
+	HDRSEARCH on $(>) = $(HDRS) $(SUBDIRHDRS) $(h) $(STDHDRS) ;
 
 	# if source is not .c, generate .c with specific rule
 
@@ -793,40 +811,48 @@ rule Object
 
 rule ObjectCcFlags
 {
+	local s ;
+
 	# Add grist to file names
 
-	makeGristedName _s : $(<:S=$(SUFOBJ)) ;
+	makeGristedName s : $(<:S=$(SUFOBJ)) ;
 
-	CCFLAGS on $(_s) += $(>) ;
+	CCFLAGS on $(s) += $(>) ;
 }
 
 rule ObjectC++Flags
 {
+	local s ;
+
 	# Add grist to file names
 
-	makeGristedName _s : $(<:S=$(SUFOBJ)) ;
+	makeGristedName s : $(<:S=$(SUFOBJ)) ;
 
-	C++FLAGS on $(_s) += $(>) ;
+	C++FLAGS on $(s) += $(>) ;
 }
 
 rule ObjectHdrs
 {
+	local s ;
+
 	# Add grist to file names
 
-	makeGristedName _s : $(<:S=$(SUFOBJ)) ;
+	makeGristedName s : $(<:S=$(SUFOBJ)) ;
 
-	HDRS on $(_s) += $(>) ;
+	HDRS on $(s) += $(>) ;
 }
 
 rule Objects
 {
+	local i s ;
+
 	# Add grist to file names
 
-	makeGristedName _s : $(<) ;
+	makeGristedName s : $(<) ;
 
-	for _i in $(_s)
+	for i in $(s)
 	{
-		Object $(_i:S=$(SUFOBJ)) : $(_i) ;
+		Object $(i:S=$(SUFOBJ)) : $(i) ;
 	}
 }
 
@@ -837,14 +863,16 @@ rule RmTemps
 
 rule Setuid
 {
+	local t ;
+
 	if $(<:S)
 	{
-	    _t = $(<) ;
+	    t = $(<) ;
 	} else {
-	    _t = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	MODE on $(_t) = 4711 ;
+	MODE on $(t) = 4711 ;
 }
 
 rule Shell
@@ -859,6 +887,8 @@ rule Shell
 
 rule SubDir
 {
+	local r s ;
+
 	#
 	# SubDir TOP d1 [ ... ]
 	#
@@ -896,23 +926,23 @@ rule SubDir
 
 	    # File is $(TOPRULES) or $(TOP)/Jamrules.
 
-	    _r = $($(<[1])RULES) ;
+	    r = $($(<[1])RULES) ;
 
-	    if ! $(_r)
+	    if ! $(r)
 	    {
-		_r = $(JAMRULES:R=$($(<[1]))) ;
+		r = $(JAMRULES:R=$($(<[1]))) ;
 	    }
 
 	    # Include it.
 
-	    include $(_r) ;
+	    include $(r) ;
 	}
 
 	# Get path to current directory from root using makeSubDir.
 	# Save dir tokens for other potential uses.
 
-	makeDirName _s : $(<[2-]) ;
-	SUBDIR = $(_s:R=$($(<[1]))) ;
+	makeDirName s : $(<[2-]) ;
+	SUBDIR = $(s:R=$($(<[1]))) ;
         SUBDIR_TOKENS = $(<[2-]) ;
 
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
@@ -949,6 +979,8 @@ rule SubDirHdrs
 
 rule SubInclude
 {
+	local i s ;
+
 	# That's
 	#	SubInclude TOP d1 [ d2 [ d3 [ d4 ] ] ]
 	#
@@ -959,31 +991,33 @@ rule SubInclude
 	    EXIT Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	_s = $(<[2]) ;
+	s = $(<[2]) ;
 
-	for _i in $(<[3-])
+	for i in $(<[3-])
 	{
-	    _s = $(_s)$(SLASH)$(_i) ;
+	    s = $(s)$(SLASH)$(i) ;
 	}
 
 	if $(VMS)
 	{
-	    _s = [$(_s)] ;
+	    s = [$(s)] ;
 	}
 
-	include $(JAMFILE:D=$(_s):R=$($(<[1]))) ;
+	include $(JAMFILE:D=$(s):R=$($(<[1]))) ;
 }
 
 rule Undefines
 {
+	local t ;
+
 	if $(<:S)
 	{
-	    _t = $(<) ;
+	    t = $(<) ;
 	} else {
-	    _t = $(<:S=$(SUFEXE)) ;
+	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	UNDEFS on $(_t) += $(UNDEFFLAG)$(>) ;
+	UNDEFS on $(t) += $(UNDEFFLAG)$(>) ;
 }
 
 rule UserObject
@@ -993,24 +1027,24 @@ rule UserObject
 
 rule Yacc
 {
-	local _h ;
+	local h ;
 
-	_h = $(<:BS=.h) ;
+	h = $(<:BS=.h) ;
 
 	# Some places don't have a yacc.
 
 	if $(YACC)
 	{
-	    DEPENDS $(<) $(_h) : $(>) ;
-	    Yacc1 $(<) $(_h) : $(>) ;
-	    Clean clean : $(<) $(_h) ;
+	    DEPENDS $(<) $(h) : $(>) ;
+	    Yacc1 $(<) $(h) : $(>) ;
+	    Clean clean : $(<) $(h) ;
 	}
 
-	# make sure someone includes $(_h) else it will be
+	# make sure someone includes $(h) else it will be
 	# a deadly independent target
 
-	INCLUDES $(<) : $(_h) ;
-	MakeLocate $(<) $(_h) : $(LOCATE_SOURCE) ;
+	INCLUDES $(<) : $(h) ;
+	MakeLocate $(<) $(h) : $(LOCATE_SOURCE) ;
 }
 
 #
