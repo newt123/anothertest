@@ -69,8 +69,7 @@ SEE ALSO
 	CHANGES		Changes from Release 1 to Release 2
 	Makefile	a bootstrap makefile
 	Porting		notes on porting jam
-	Jambase.5	Jambase man page
-	Jamfile.5	Easy reading on writing a Jamfile
+	Jamfile.5	Manual for writing a Jamfile
 	Paper.ps	UNIX Application Development Symposion paper
 	jam.1		jam man page
 	yyacc		a yacc pre-preprocessor

@@ -68,5 +68,5 @@ if $(UNIX)
 {
 	InstallBin /usr/local/bin : jam ;
 	InstallLib /usr/local/lib/jam : Jambase ;
-	InstallMan /usr/local/man : jam.1 Jambase.5 Jamfile.5 ;
+	InstallMan /usr/local/man : jam.1 Jamfile.5 ;
 }

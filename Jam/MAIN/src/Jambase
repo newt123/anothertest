@@ -747,7 +747,7 @@ rule Undefines
 
 rule UserObject
 {
-	EXIT "Unknown suffix on" $(>) "- see UserObject rule in Jambase(5)." ;
+	EXIT "Unknown suffix on" $(>) "- see UserObject rule in Jamfile(5)." ;
 }
 
 rule Yacc
