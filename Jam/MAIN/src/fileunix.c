@@ -13,7 +13,11 @@
 # define PORTAR 1
 # endif
 
+#ifdef NeXT
+# include <sys/dir.h>
+#else
 # include <dirent.h>
+#endif
 
 # if defined (COHERENT) && defined (_I386)
 # include <arcoff.h>
@@ -184,7 +188,11 @@ void	(*func)();
 {
 	FILENAME f;
 	DIR *d;
+#ifdef NeXT
+	struct direct *dirent;
+#else
 	struct dirent *dirent;
+#endif
 	char filename[ MAXPATH ];
 	struct stat statbuf;
 

@@ -79,6 +79,7 @@ INSTALLING
 	    DG AViiON       DGUX 5.4
 	    HP 9000/700     HPUX 9.0
 	    IBM RS/6000     AIX		*
+            NeXT            NEXTSTEP 3.2
 	    SGI R4000       IRIX 5.0
 	    Sequent 2000    PTX V2.1.0
 	    Sun 3           SunOS4.0

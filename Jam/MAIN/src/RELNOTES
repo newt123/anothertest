@@ -8,6 +8,7 @@ Clean for File rule in Jambase.
 'first' is dependency of all pseudo-targets
 allow for OS to be Windows_NT
 NOSCANLIB and other BCC changes for NT (lauraw).
+NEXT support from karthy@dannug.dk (Karsten Thygesen
 
 Release notes for Jam 2.0.
 

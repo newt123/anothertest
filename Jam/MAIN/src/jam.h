@@ -83,10 +83,8 @@
 # endif
 # include <stdio.h>
 # include <ctype.h>
-# ifndef __bsdi__
-# ifndef __FreeBSD__
+# if !defined(__bsdi__)&&!defined(__FreeBSD__)&&!defined(NeXT)
 # include <malloc.h>
-# endif
 # endif
 # include <memory.h>
 # include <signal.h>
