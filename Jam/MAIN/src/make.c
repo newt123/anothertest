@@ -32,6 +32,7 @@
  * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  * 02/02/95 (seiwald) - propagate leaf source time for new LEAVES rule.
  * 02/14/95 (seiwald) - NOUPDATE rule means don't update existing target.
+ * 08/22/95 (seiwald) - NOUPDATE targets immune to anyhow (-a) flag.
  */
 
 # include "jam.h"
@@ -262,7 +263,11 @@ int	anyhow;
 	{
 	    fate = T_FATE_OUTDATED;
 	}
-	else if( t->flags & T_FLAG_TOUCHED || anyhow )
+	else if( t->flags & T_FLAG_TOUCHED )
+	{
+	    fate = T_FATE_TOUCHED;
+	}
+	else if( anyhow && !( t->flags & T_FLAG_NOUPDATE ) )
 	{
 	    fate = T_FATE_TOUCHED;
 	}

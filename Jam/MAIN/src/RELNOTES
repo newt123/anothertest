@@ -1,5 +1,6 @@
 Release notes for Jam 2.1.
 
+NOUPDATE immune to -a (anyhow) flag, so jam -a works on MkDir.
 wording for 'actions existing' in jam.1
 linux in jam.h
 Semicolon typo in filent.c.
