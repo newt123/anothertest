@@ -1033,6 +1033,7 @@ rule Yacc
 
 	if $(YACC)
 	{
+	    MakeLocate $(<) $(h) : $(LOCATE_SOURCE) ;
 	    DEPENDS $(<) $(h) : $(>) ;
 	    Yacc1 $(<) $(h) : $(>) ;
 	    Clean clean : $(<) $(h) ;
@@ -1042,7 +1043,6 @@ rule Yacc
 	# a deadly independent target
 
 	INCLUDES $(<) : $(h) ;
-	MakeLocate $(<) $(h) : $(LOCATE_SOURCE) ;
 }
 
 #
