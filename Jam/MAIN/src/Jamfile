@@ -43,6 +43,7 @@ Main		mkjambase : mkjambase.c ;
 
 rule GenFile 
 {
+	MakeLocate $(<) : $(LOCATE_SOURCE) ;
 	Depends $(<) : $(>[1]:S=$(SUFEXE)) $(>[2]) ;
 	GenFile1 $(<) : $(>[1]:S=$(SUFEXE)) $(>[2]) ;
 }
