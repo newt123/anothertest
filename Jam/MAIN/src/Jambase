@@ -639,14 +639,14 @@ rule SubDir
 	# TOP level directory of the build tree.  d1...d4 are the
 	# directory elements that lead to this directory.  The call
 	# to SubDir is system independent, in that it contains no OS
-	# path!
+	# path!  We crudely construct the path below.
 
 	if ! $($(<[1])) 
 	{
 	    ECHO Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	# Get the grist, search
+	# Get the grist $(g), search $(s)
 	# This is just hideous variable manipulation
 
 	if $(<[5]) { 
@@ -667,9 +667,13 @@ rule SubDir
 	}
 
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
+	# These can be reset if needed.  For example, if the source
+	# directory should not hold object files, LOCATE_TARGET can
+	# subsequently be redefined.
 
-	SEARCH_SOURCE = $($(<[1]))$(s) ;
-	LOCATE_TARGET = $($(<[1]))$(s) ;
+	SUBDIR = $($(<[1]))$(s) ;
+	SEARCH_SOURCE = $(SUBDIR) ;
+	LOCATE_TARGET = $(SUBDIR) ;
 	SOURCE_GRIST = $(g) ;
 	CCDIRFLAGS = ;
 }
