@@ -244,7 +244,7 @@ else if $(VMS)
 }
 
 JAMFILE		default = Jamfile ;
-JAMRULES	default = ;
+JAMRULES	default = Jamrules ;
 
 HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 
@@ -354,8 +354,8 @@ rule InstallBin
 {
 	for i in $(>)
 	{
-	    Install $(i:R=$(<)) : $(i) ;
-	    INSTALLMODE on $(i:R=$(<)) = $(EXEMODE) ;
+	    Install $(i:D=$(<)) : $(i) ;
+	    INSTALLMODE on $(i:D=$(<)) = $(EXEMODE) ;
 	}
 }
 
@@ -363,8 +363,8 @@ rule InstallLib
 {
 	for i in $(>)
 	{
-	    Install $(i:R=$(<)) : $(i) ;
-	    INSTALLMODE on $(i:R=$(<)) = $(FILEMODE) ;
+	    Install $(i:D=$(<)) : $(i) ;
+	    INSTALLMODE on $(i:D=$(<)) = $(FILEMODE) ;
 	}
 }
 
@@ -393,8 +393,8 @@ rule InstallShell
 {
 	for i in $(>)
 	{
-	    Install $(i:R=$(<)) : $(i) ;
-	    INSTALLMODE on $(i:R=$(<)) = $(SHELLMODE) ;
+	    Install $(i:D=$(<)) : $(i) ;
+	    INSTALLMODE on $(i:D=$(<)) = $(SHELLMODE) ;
 	}
 }
 
@@ -595,24 +595,53 @@ rule Shell
 
 rule SubDir
 {
-	# This introduces a subdirectory Jamfile, setting up all the
-	# search & locate stuff.
 	#
-	#	SubDir TOP d1 [ d2 [ d3 [ d4 ] ] ]
+	# SubDir TOP d1 [ ... ]
 	#
-	# TOP is the name of the (environment) variable that names the
-	# TOP level directory of the build tree.  d1...d4 are the
-	# directory elements that lead to this directory.  The call
-	# to SubDir is system independent, in that it contains no OS
-	# path!	 We crudely construct the path below.
+	# This introduces a Jamfile that is part of a project tree 
+	# rooted at $(TOP).  It (only once) includes the project-specific
+	# rules file $(TOP)/Jamrules and then sets search & locate stuff.
+	#
+	# If the variable $(TOPRULES) is set (where TOP is the first arg 
+	# to SubDir), that file is included instead of $(TOP)/Jamrules.
+	#
+	# d1 ... are the directory elements that lead to this directory 
+	# from $(TOP).  We construct the system dependent path from these
+	# directory elements in order to set search&locate stuff.
+	#
+	# 
 
 	if ! $($(<[1]))
 	{
 	    ECHO Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	# Get the grist $(g), search $(s)
-	# This is just hideous variable manipulation
+	#
+	# If $(TOP)/Jamrules hasn't been included, do so.
+	#
+
+	if ! $($(<[1])-included)
+	{
+	    # Gated entry.
+
+	    $(<[1])-included = TRUE ;
+
+	    # File is $(TOPRULES) or $(TOP)/Jamrules.
+
+	    r = $($(<[1])RULES) ;
+
+	    if ! $(r)
+	    {
+		r = $(JAMRULES:R=$($(<[1]))) ;
+	    }
+
+	    # Include it.
+
+	    include $(r) ;
+	}
+
+	# Get the grist $(g), search $(s), by concatenating the
+	# directory elements using the OS specific path separator.
 
 	g = $(<[2]) ;
 	s = $(SLASH)$(<[2]) ;
@@ -951,9 +980,8 @@ rule INSTALLLIB { InstallLib $(LIBDIR) : $(<) ; }
 rule INSTALLMAN { InstallMan $(MANDIR) : $(<) ; }
 
 #
-# Now include the user's Jam rules and Jamfile.
+# Now include the user's Jamfile.
 #
 
-include $(JAMUSER) ;
 include $(JAMFILE) ;
 

@@ -583,11 +583,5 @@ RmTemps ola : foo ;
 .XE
 This says: build \fIfoo\fR using \fISpecialUserRuleA\fR and \fIola\fR
 using \fISpecialUserRuleB\fR.  Once that is done, remove \fIfoo\fR.
-.SH USER-PROVIDED JAM RULES
-.PP
-It is possible to put user-provided rules and constructs directly into
-the \fBJamfile\fR, but to share them they should be placed in their own
-rule file.  If the variable $(JAMUSER) is set to the name of this file,
-\fBJambase\fR includes it just before reading the \fBJamfile\fR.
 .SH SEE ALSO
 \fBjam\fR(1), \fBJambase\fR(5)
