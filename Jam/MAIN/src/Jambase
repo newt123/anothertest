@@ -225,6 +225,7 @@ else if $(VMS)
 	LINKLIBS	default = ;
 	MV		default = rename ;
 	OPTIM		default = ;
+	RM		default = delete ;
 	SHELLMODE	default = (w:er) ;
 	SLASH		default = . ;
 	STDHDRS		default = "" decc$library_include ;
@@ -441,10 +442,11 @@ rule LibraryFromObjects
 	# on 'actions' refers to updated .o's.
 	# delete objects after archive is made
 
+	if $(CRELIB) { CreLib $(<) ; }
+
 	Archive $(<) : $(S) ;
 	RmTemps $(<) : $(S) ;
 
-	if $(CRELIB) { CreLib $(<) ; }
 	if $(RANLIB) { Ranlib $(<) ; }
 }
 
@@ -896,7 +898,7 @@ else if $(VMS)
 	set file/prot=$(EXEMODE) $(<)
     }
 
-    actions quietly updated piecemeal together Rmtemps
+    actions quietly updated piecemeal together RmTemps
     {
 	$(RM) $(>[1]);* ,$(>[2-]);*
     }
