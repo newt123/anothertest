@@ -14,7 +14,7 @@
  *	yylex() - parse the next token, returning its type
  *	yymode() - adjust lexicon of scanner
  *	yyparse() - declaration for yacc parser
- *	yyanyerror() - indicate if any parsing errors occured
+ *	yyanyerrors() - indicate if any parsing errors occured
  *
  * The yymode() function is for the parser to adjust the lexicon of the
  * scanner.  Aside from normal keyword scanning, there is a mode to
@@ -45,7 +45,7 @@ void yyfparse();
 int yylex();
 void yymode();
 int yyparse();
-int yyanyerror();
+int yyanyerrors();
 
 # define SCAN_NORMAL	0	/* normal parsing */
 # define SCAN_STRING	1	/* look only for matching } */
