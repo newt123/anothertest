@@ -6,14 +6,9 @@
 # We have some different files for UNIX, VMS, and NT.
 #
 
-switch $(OS)
-{
-case VMS :	code = vms ;
-case OPENVMS :	code = vms ;
-case NT :	code = nt ;
-case * :	code = unix ;
-}
-
+if $(NT) 	{ code = nt ; } 
+else if $(VMS) 	{ code = vms ; } 
+else 		{ code = unix ; }
 
 #
 # The guts of the Jamfile: how to build Jam

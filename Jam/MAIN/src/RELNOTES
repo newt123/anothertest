@@ -6,6 +6,8 @@ Install -c in Jambase - FreeBSD does move without -c.
 && for File in Jambase.
 Clean for File rule in Jambase.
 'first' is dependency of all pseudo-targets
+allow for OS to be Windows_NT
+NOSCANLIB and other BCC changes for NT (lauraw).
 
 Release notes for Jam 2.0.
 

@@ -194,6 +194,14 @@ if $(UNIX)
 }
 else if $(NT)
 {
+    	CP		default = copy ;
+    	MV		default = move ;
+    	RM		default = del/f/q ;
+    	SLASH		default = \\ ;
+    	SUFLIB		default = .lib ;
+    	SUFOBJ		default = .obj ;
+    	SUFEXE		default = .exe ;
+     
     if $(BCCROOT)
     {
 	ECHO "Compiler is Borland C++" ;
@@ -202,18 +210,15 @@ else if $(NT)
 	ARFLAGS		default = /C /P64 ;
 	CC		default = bcc32 ;
 	CCFLAGS		default = -v -w-  ;
-	MV		default = rename ;
-	RM		default = del ;
+	C++		default = bcc32 ;
+	C++FLAGS	default = -v -w- ;
 	RW		default = $(BCCROOT)\\lib\\rw ;
 	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
-	SLASH		default = \\ ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
-	SUFLIB		default = .lib ;
-	SUFOBJ		default = .obj ;
-	SUFEXE		default = .exe ;
+	NOLIBSCAN	default = true ;
     }
     else if $(MSVCNT)
     {
@@ -222,8 +227,6 @@ else if $(NT)
 	AR		default = lib ;
 	CC		default = cl ;
 	CCFLAGS		default = /D \"NT\" ;
-	MV		default = rename ;
-	RM		default = del ;
 	RW		default = $(MSVCNT)\\lib\\rw ;
 	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
@@ -234,11 +237,7 @@ else if $(NT)
 				$(MSVCNT)\\lib\\oldnames.lib
 				$(MSVCNT)\\lib\\kernel32.lib ;
 	OPTIM		default =  ;
-	SLASH		default = \\ ;
 	STDHDRS		default = $(MSVCNT)\\include ;
-	SUFLIB		default = .lib ;
-	SUFOBJ		default = .obj ;
-	SUFEXE		default = .exe ;
 	UNDEFFLAG	default = "/u _" ;
     }
 }
@@ -480,9 +479,6 @@ rule LibraryFromObjects
 	}
 
 	DEPENDS lib : $(l) ;
-	DEPENDS $(l) : $(l)($(s:BS)) ;
-
-	Clean clean : $(l) ;
 
 	# We wish we could locate the library and it's contents,
 	# but the reference to $(NEEDLIBS) in Main's actions
@@ -491,17 +487,32 @@ rule LibraryFromObjects
 	#
 	# LOCATE on $(<) $(<)($(s:BS)) = $(LOCATE_TARGET) ;
 
-	# each archive member object depends on real object
-	# each real object gets compiled from sources
+	if $(NOLIBSCAN) 
+	{ 
+	    # If we can't scan the library to timestamp its contents,
+	    # we have to just make the library depend directly on the
+	    # on-disk object files.  This is somewhat dangerous, as
+	    # parts of the library can be replaced, making it seem up-
+	    # to-date when files (from other directories) haven't been
+	    # recompiled.
 
-	for i in $(s)
+	    DEPENDS $(l) : $(s) ;
+	}
+	else
 	{
-	    DEPENDS $(l)($(i:BS)) : $(i) ;
+	    # If we can scan the library, we make the library depend
+	    # on its members and each member depend on the on-disk
+	    # object file.
+
+	    DEPENDS $(l) : $(l)($(s:BS)) ;
+
+	    for i in $(s)
+	    {
+		DEPENDS $(l)($(i:BS)) : $(i) ;
+	    }
 	}
 
-	# must call separate Archive rule so that 'updated' modifier
-	# on 'actions' refers to updated .o's.
-	# delete objects after archive is made
+	Clean clean : $(l) ;
 
 	if $(CRELIB) { CreLib $(l) ; }
 
@@ -793,12 +804,17 @@ rule SubDir
 	    s = [$(s)] ;
 	}
 
+	# The result of our calculation: this directory.
+	# Save dir tokens for other potential uses.
+
+	SUBDIR = $(s:R=$($(<[1]))) ;
+        SUBDIR_TOKENS = $(<[2-]) ;
+
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
 	# These can be reset if needed.	 For example, if the source
 	# directory should not hold object files, LOCATE_TARGET can
 	# subsequently be redefined.
 
-	SUBDIR = $(s:R=$($(<[1]))) ;
 	SEARCH_SOURCE = $(SUBDIR) ;
 	LOCATE_TARGET = $(SUBDIR) ;
 	SOURCE_GRIST = $(g) ;
@@ -1023,15 +1039,26 @@ else if $(NT)
 {
     if $(BCCROOT)
     {
-	actions Link
+
+	actions C++
 	{
-	$(LINK) -e$(<) $(LINKFLAGS) $(UNDEFS) -L$(LINKLIBS) $(NEEDLIBS) $(>) || del $(<) /f
+	$(C++) -c $(C++FLAGS) $(OPTIM) -I$(HDRS) -o$(<) $(>)
 	}
 
-	actions together piecemeal Archive
+	actions Link
+	{
+	$(LINK) -e$(<) $(LINKFLAGS) $(UNDEFS) -L$(LINKLIBS) $(NEEDLIBS) $(>) || $(RM) $(<)
+	}
+
+	actions updated together piecemeal Archive
 	{
 	$(AR) $(ARFLAGS) $(<) -+$(>)
 	}
+
+	actions Cc
+	{
+	$(CC) -c $(CCFLAGS) $(OPTIM) -I$(HDRS) -o$(<) $(>)
+        }
     }
     else if $(MSVCNT)
     {
@@ -1040,15 +1067,15 @@ else if $(NT)
 	$(LINK) $(LINKFLAGS) /o$(<) $(UNDEFS) $(>) $(NEEDLIBS) $(LINKLIBS)
 	}
 
-	actions together piecemeal Archive
+	actions updated together piecemeal Archive
 	{
 	$(AR) /out:$(<) $(>)
 	}
-    }
 
-    actions Cc
-    {
-	$(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
+	actions Cc
+	{
+	    $(CC) /c $(CCFLAGS) $(OPTIM) /out:$(<) /I$(HDRS) $(>)
+	}
     }
 
     actions Chmod
@@ -1057,7 +1084,7 @@ else if $(NT)
 
     actions piecemeal together existing Clean
     {
-	$(RM) $(>) /f /q
+	$(RM) $(>)
     }
 
     actions File
