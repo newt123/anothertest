@@ -1,408 +1,229 @@
 .TH JAMBASE 5 "30 August 1993"
 .SH NAME
-.B Jambase
-\- 
-.BR jam (1)
-boilerplate
+\fBJambase\fR \- \fBjam\fR(1) boilerplate
 .SH FILES
-.B /usr/local/lib/jam/Jambase
+\fB/usr/local/lib/jam/Jambase\fR
 .br
-.B Jamfile
+\fBJamfile\fR
 .SH DESCRIPTION
 .PP
-.B Jambase
-contains a set of
-.B jam
-rule definitions that provide roughly
-.BR make (1)-like
-functionality.
-.B Jam
-reads
-.BR Jambase ,
-which in turn includes the
-.B Jamfile
-from the current directory.
+\fBJambase\fR contains a set of \fBjam\fR rule definitions that provide
+roughly \fBmake\fR(1)-like functionality.  \fBJam\fR reads
+\fBJambase\fR, which in turn includes the \fBJamfile\fR from the
+current directory.  This manual describes the support in \fBJambase\fR for
+writing a \fBJamfile\fR.
 .PP
-There are a number of built-in
-.B jam
-targets, including
-.IR all ,
-.IR exe ,
-.IR files ,
-.IR install ,
-.IR lib ,
-and
-.IR shell .
-The target
-.I all
-depends on
-.IR exe ,
-.IR files ,
-.IR install ,
-.IR lib ,
-and
-.IR shell .
+There are a number of built-in \fBjam\fR targets, including \fIall\fR,
+\fIexe\fR, \fIfiles\fR, \fIinstall\fR, \fIlib\fR, and \fIshell\fR.  The
+target \fIall\fR depends on \fIexe\fR, \fIfiles\fR, \fIinstall\fR,
+\fIlib\fR, and \fIshell\fR.
 .PP
-The rules defined and variables used for the 
-.B Jamfile 
-are as follows:
+The rules defined and variables used for the \fBJamfile\fR are as
+follows:
 .SS Rules
 .PP
 .IP "Main image : sources ;"
 .IP
-Compiles
-.I sources
-and links them into
-.IR image ,
-and makes
-.I exe
-depend on
-.IR image .
+Compiles \fIsources\fR and links them into \fIimage\fR, and makes
+\fIexe\fR depend on \fIimage\fR.
 .IP "LinkLibraries image : libraries ;"
 .IP
-Makes 
-.I image
-depend on
-.I libraries
-and includes them during the linking.
+Makes \fIimage\fR depend on \fIlibraries\fR and includes them during
+the linking.
 .IP "Setuid image ;"
 .IP
-Sets the setuid bit on
-.I image
-after linking.
+Sets the setuid bit on \fIimage\fR after linking.
 .IP "Undefines image : symbols ;"
 .IP
 Tries to convince the loader that symbols need to be "undefined" for
 the linking to work.
 .IP "Library library : sources ;"
 .IP
-Compiles
-.I sources
-and archives them into 
-.IR library .
-The intermediate objects are deleted.
-Makes
-.I lib 
-depend on
-.IR libraries .
+Compiles \fIsources\fR and archives them into \fIlibrary\fR.  The
+intermediate objects are deleted.  Makes \fIlib\fR depend on
+\fIlibraries\fR.
 .IP "Object object : source ;"
 .IP
-Compiles a single source file
-.I source
-into
-.IR object .
-This rule is used by
-.B Main
-and 
-.BR Library .
-Makes
-.I object
-depend on all header files included by
-.IR source .
-Such dependencies are "soft": missing headers are not an error.
+Compiles a single source file \fIsource\fR into \fIobject\fR.  This
+rule is used by \fBMain\fR and \fBLibrary\fR.  Makes \fIobject\fR
+depend on all header files included by \fIsource\fR.  Such dependencies
+are "soft": missing headers are not an error.
 .IP
-For 
-.IR source , 
-the following suffixes are recognized:
+For \fIsource\fR, the following suffixes are recognized:
 .RS
 .IP .c
 C source file
 .IP .C
 C++ source file
 .IP .l
-.IR lex (1)
-source file.
-The resulting lex.yy.c is renamed to be the same base as the
-.IR source .
+\fIlex\fR(1) source file.  The resulting lex.yy.c is renamed to be the
+same base as the \fIsource\fR.
 .IP .y
-.IR yacc (1)
-source file.  
-The resulting y.tab.c and y.tab.h are renamed to the same base as
-.IR source .
+\fIyacc\fR(1) source file.  The resulting y.tab.c and y.tab.h are
+renamed to the same base as \fIsource\fR.
 .PP
 All other suffixes are passed to the rule
 .IP
 UserObject object : source ;
 .PP
-to be defined in the user's
-.B Jamfile
-(or elsewhere).
+to be defined in the user's \fBJamfile\fR (or elsewhere).
 .RE
 .IP "Bulk directory : sources ;"
 .IP
-Copies
-.I sources
-into 
-.I directory
-and makes
-.I files
-depend on all the targets.
+Copies \fIsources\fR into \fIdirectory\fR and makes \fIfiles\fR depend
+on all the targets.
 .IP "File target : source ;"
 .IP
-Copies 
-.I source
-into 
-.I target
-and makes
-.I files
-depend on
+Copies \fIsource\fR into \fItarget\fR and makes \fIfiles\fR depend on
 .IR target.
 .IP "Shell image : source ;"
 .IP
-Copies 
-.I source
-into the executable 
-.BR sh (1)
-script
-.I image
-and makes
-.I shell
-depend on
-.IR image .
+Copies \fIsource\fR into the executable \fBsh\fR(1) script \fIimage\fR
+and makes \fIshell\fR depend on \fIimage\fR.
 .IP "InstallBin sources ; "
 .IP
-Copy
-.I sources
-into /usr/local/bin.
-Makes
-.I install
-depend on all targets.
+Copy \fIsources\fR into /usr/local/bin.  Makes \fIinstall\fR depend on
+all targets.
 .IP "InstallLib sources ;"
 .IP
-Copy
-.I sources
-into /usr/local/lib.
-Makes
-.I install
-depend on all targets.
+Copy \fIsources\fR into /usr/local/lib.  Makes \fIinstall\fR depend on
+all targets.
 .IP "InstallMan sources ;"
 .IP
-Copy
-.I sources
-into the appropriate subdirectory of /usr/local/man.
-Makes
-.I install
-depend on all targets.
+Copy \fIsources\fR into the appropriate subdirectory of
+/usr/local/man.  Makes \fIinstall\fR depend on all targets.
 .IP "RmTemps targets : sources ;"
 .IP
-Marks
-.I sources
-as temporary with the
-.B TEMPORARY 
-rule, and deletes
-.I sources
-once
-.I targets
-are built.
-Must be the last rule invoked on
-.IR targets .
-Used internally by
-.BR Object .
+Marks \fIsources\fR as temporary with the \fBTEMPORARY\fR rule, and
+deletes \fIsources\fR once \fItargets\fR are built.  Must be the last
+rule invoked on \fItargets\fR.  Used internally by \fBObject\fR.
 .SS Variables
 .PP
-AR (default
-.IR "ar ru" )
+AR (default \fI"ar ru"\fR)
 .IP
-The archiver used for
-.BR Library .
-.PP 
-BINDIR (default
-.IR "/usr/local/bin" )
+The archiver used for \fBLibrary\fR.
+.PP
+BINDIR (default \fI/usr/local/bin\fR)
 .IP
-The install directory for 
-.BR InstallBin .
-.PP 
-CC (default
-.IR cc )
+The install directory for \fBInstallBin\fR.
+.PP
+CC (default \fIcc\fR)
 .IP
-C compiler used for
-.BR Object .
-.PP 
+C compiler used for \fBObject\fR.
+.PP
 CCFLAGS (no default)
 .IP
-Flags handed to the C compiler for
-.BR Object .
-.B OPTIM
-is also handed to the C compiler.
-.PP 
-EXEMODE (default 
-.IR 711 )
+Flags handed to the C compiler for \fBObject\fR.  \fBOPTIM\fR is also
+handed to the C compiler.
+.PP
+EXEMODE (default \fI711\fR)
 .IP
-Permissions for executables linked with
-.BR Main .
-.PP 
-FILEMODE (default
-.IR 644 )
+Permissions for executables linked with \fBMain\fR.
+.PP
+FILEMODE (default \fI644\fR)
 .IP
-Permissions for files copied by
-.B File 
-or
-.BR Bulk .
+Permissions for files copied by \fBFile\fR or \fBBulk\fR.
 .PP
 HDRPATTERN (default ^#[\\t ]*include[\\t ]*[<"](.*)[">].*$)
 .IP
-The
-.BR regexp (3)
-pattern for finding header file includes in source files.
-The 
-.B Object
-rule sets the 
-.B jam
-special variable
-.B HDRSCAN
-to
-.RB $( HDRPATTERN )
-for all of its sources.  The
-.B Object
-target depends on all header files found.
-.PP 
+The \fBregexp\fR(3) pattern for finding header file includes in source
+files.  The \fBObject\fR rule sets the \fBjam\fR special variable
+\fBHDRSCAN\fR to $(\fBHDRPATTERN\fR) for all of its sources.  The
+\fBObject\fR target depends on all header files found.
+.PP
 HDRS (no default)
 .IP
-Directories to be scanned for header files and handed to the C
-compiler with -I.  The
-.B Object
-rule sets
-.B HDRS
-to $(HDRS)
-for each of its sources.
+Directories to be scanned for header files and handed to the C compiler
+with -I.  The \fBObject\fR rule sets \fBHDRS\fR to $(HDRS) for each of
+its sources.
 .PP
-LEX (default 
-.IR lex  )
+LEX (default \fIlex\fR )
 .IP
-The 
-.BR lex (1)
-command and flags.
-.PP 
-LIBDIR (default 
-.IR /usr/local/lib )
-.IP
-The target directory for 
-.BR InstallLib .
+The \fBlex\fR(1) command and flags.
 .PP
-LINK (default 
-.IR cc )
+LIBDIR (default \fI/usr/local/lib\fR)
+.IP
+The target directory for \fBInstallLib\fR.
+.PP
+LINK (default \fIcc\fR)
 .IP
 The linker.
 .PP
-LINKFLAGS (default 
-.IR $(CCFLAGS) )
+LINKFLAGS (default \fI$(CCFLAGS)\fR)
 .IP
 Flags handed to the linker.
 .PP
-LINKLinkLibraries (no default)
+LINKLIBS (no default)
 .IP
-Libraries to hand to the linker.
-The target image does not depend on these libraries.
+Libraries to hand to the linker.  The target image does not depend on
+these libraries.
 .PP
 LOCATE_TARGET (no default)
 .IP
-The directory for object modules and other intermediate files generated by
-.BR Object .
-This works by setting the
-.B jam
-special variable
-.B LOCATE 
-to the value of
-.RB $( LOCATE_TARGET )
-for each of 
-.BR Object 's 
-targets.
+The directory for object modules and other intermediate files generated
+by \fBObject\fR.  This works by setting the \fBjam\fR special variable
+\fBLOCATE\fR to the value of $(\fBLOCATE_TARGET\fR) for each of
+\fBObject\fR's targets.
 .PP
-MV (default 
-.IR "mv -f" )
+MV (default \fImv -f\fR)
 .IP
 The file rename command and options.
 .PP
-OPTIM (default 
-.IR -O )
+OPTIM (default \fI-O\fR)
 .IP
 More flags handed to the C compiler.
 .PP
-RANLIB (default 
-.IR ranlib )
+RANLIB (default \fIranlib\fR)
 .IP
-If set, the command string to be invoked on each library after archiving.
+If set, the command string to be invoked on each library after
+archiving.
 .PP
-RM (default 
-.IR "rm -f" )
+RM (default \fIrm -f\fR)
 .IP
 The command and options to remove a file.
 .PP
 SEARCH_SOURCE (no default)
 .IP
-The directory to find sources listed with
-.BR Main ,
-.BR Library ,
-.BR Object ,
-.BR Bulk ,
-.BR File ,
-.BR Shell ,
-.BR InstallBin ,
-.BR InstallLib ,
-and
-.BR InstallMan
-rules.
-This works by setting the
-.B jam
-special variable
-.B SEARCH 
-to the value of 
-.RB $( SEARCH_SOURCE )
-for each of the rules' sources.
+The directory to find sources listed with \fBMain\fR, \fBLibrary\fR,
+\fBObject\fR, \fBBulk\fR, \fBFile\fR, \fBShell\fR, \fBInstallBin\fR,
+\fBInstallLib\fR, and \fBInstallMan\fR rules.  This works by setting
+the \fBjam\fR special variable \fBSEARCH\fR to the value of
+$(\fBSEARCH_SOURCE\fR) for each of the rules' sources.
 .PP
-SHELLHEADER (default 
-.IR "#!/bin/sh" )
+SHELLHEADER (default \fI#!/bin/sh\fR)
 .IP
 A string inserted to the first line of every file created by the
-.B Shell
-rule.
+\fBShell\fR rule.
 .PP
-SHELLMODE (default 
-.IR 755 )
+SHELLMODE (default \fI755\fR)
 .IP
-Permissions for files installed by
-.BR Shell .
+Permissions for files installed by \fBShell\fR.
 .PP
-STDHDRS (default 
-.IR /usr/include )
+STDHDRS (default \fI/usr/include\fR)
 .IP
 Directories where headers can be found without resorting to using the
--I flag to the C compiler.
+\fIflag\fR to the C compiler.
 .PP
-UNDEFFLAG (default 
-.IR "\-u _" )
+UNDEFFLAG (default \fI-u _\fR)
 .IP
-The flag prefixed to each symbol for the
-.B Undefines 
-rule.
+The flag prefixed to each symbol for the \fBUndefines\fR rule.
 .PP
-YACc (default 
-.IR "yacc -d" )
+YACc (default \fIyacc -d\fR)
 .IP
-The 
-.BR yacc (1)
-command and flags.
+The \fByacc\fR(1) command and flags.
 .PP
-JAMFile (default
-.IR Jamfile )
+JAMFILE (default \fIJamfile\fR)
 .IP
 The user provided file listing the sources to be built.
 
 .SH BUGS
 .PP
-Because libraries are passed unbound to the 
-.B Link 
-rule as
-.RB $( NEEDLIBS ), 
-they cannot be located with 
-.RB $( LOCATE ), 
-because 
-.RB $( LOCATE )
-only changes the bound file name.
+Because libraries are passed unbound to the \fBLink\fR rule as
+$(\fBNEEDLIBS\fR), they cannot be located with $(\fBLOCATE\fR), because
+$(\fBLOCATE\fR) only changes the bound file name.
 .PP
-There's no 
-.BR yacc (1)
-on VMS, so the guts of the rules are commented out.
+There's no \fByacc\fR(1) on VMS, so the guts of the rules are commented
+out.
 
 .SH EXAMPLES
 .PP
