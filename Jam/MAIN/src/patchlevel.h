@@ -1,2 +1,2 @@
-#define VERSION 1
+#define VERSION 2
 #define PATCHLEVEL 1
