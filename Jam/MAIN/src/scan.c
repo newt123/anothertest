@@ -9,6 +9,7 @@
 # include "parse.h"
 # include "scan.h"
 # include "jamgram.h"
+# include "jambase.h"
 # include "newstr.h"
 
 /*
@@ -72,15 +73,6 @@ char *s;
 }
 
 void
-yyiparse( name, s )
-char *name;
-char **s;
-{
-	yyfparse( name );
-	inci->strings = s;
-}
-
-void
 yyfparse( s )
 char *s;
 {
@@ -114,6 +106,11 @@ char *s;
 	    inci->next = i;
 	    inci = i;
 	}
+
+	/* If the filename is "+", it means use the internal jambase. */
+
+	if( !strcmp( s, "+" ) )
+	    inci->strings = jambase;
 }
 
 /*

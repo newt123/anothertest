@@ -10,8 +10,7 @@
  * External functions:
  *
  *	yyerror( char *s ) - print a parsing error message
- *	yyiparse( char *name, char **s ) - tell scanner to parse s
- *	yyfparse( char *s ) - tell the scanner to include file s
+ *	yyfparse( char *s ) - scan include file s
  *	yylex() - parse the next token, returning its type
  *	yymode() - adjust lexicon of scanner
  *	yyparse() - declaration for yacc parser

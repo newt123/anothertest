@@ -15,7 +15,6 @@
 # include "jam.h"
 # include "option.h"
 # include "make.h"
-# include "jambase.h"
 # ifdef FATFS
 # include "patchlev.h"
 # else
@@ -45,20 +44,19 @@
  *
  * The top half of the code is structured such:
  *
- *                        jam 
- *                       -----
- *                      / | \ \
- *                 +---+  |  \ \
- *                /       |   \ \
- *         jamgram     jambase \ option
+ *                       jam 
+ *                      / | \ 
+ *                 +---+  |  \
+ *                /       |   \ 
+ *         jamgram     option  \ 
  *        /  |   \              \
  *       /   |    \              \
  *      /    |     \             |
  *  scan     |     compile      make
- *           |    /    \       / |  \
- *           |   /      \     /  |   \
- *           |  /        \   /   |    \
- *         parse         rules  search make1
+ *   |       |    /    \       / |  \
+ *   |       |   /      \     /  |   \
+ *   |       |  /        \   /   |    \
+ * jambase parse         rules  search make1
  *                               |	|   \
  *                               |	|    \
  *                               |	|     \
@@ -222,7 +220,7 @@ char	**argv;
 
 	if( !n )
 	{
-	    yyiparse( "internal jambase", jambase );
+	    yyfparse( "+" );
 	    yyparse();
 	}
 
