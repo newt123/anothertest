@@ -427,23 +427,40 @@ else if $(VMS)
 }
 else if $(MAC)
 {
+	CWGUSI		default = "Macintosh HD:Perforce:src:mac:CWGUSI" ;
+	CWGUSIHDR	default = $(CWGUSI):include ;
+	CWGUSILIB	default = $(CWGUSI):Lib ;
+	CWMAC		default = "Macintosh HD:CW10 Gold:Metrowerks CodeWarrior:MacOS Support" ;
+	CWMACLIB	default = $(CWMAC):Libraries ;
+	CWMACHDR	default = $(CWMAC):Headers ;
+	
 	CC		default = mwcppc ;
 	CCFLAGS		default = -w off ;
 	CP		default = copy ;
-	DOT		default = "" ;
-	DOTDOT		default = :: ;
-	HDRS		default = ;
+	DOT		default = ":" ;
+	DOTDOT		default = "::" ;
+	HDRS		default = $(CWGUSIHDR) $(CWMACHDR):"ANSI Headers" $(CWMACHDR):"Universal Headers" ;
 	LINK		default = mwlinkppc ;
-	LINKFLAGS	default = -mpwtool ;
+	LINKFLAGS	default = -mpwtool -warn ;
+	LINKLIBS	default = "$(CWGUSILIB):GUSIMPW.Lib.PPC" 
+				  "$(CWGUSILIB):GUSI.Lib.PPC" 
+				  "$(CWMACLIB):MacOS Common:Interfacelib" 
+				  "$(CWMACLIB):MacOS Common:PLStringFuncs Glue:PLStringFuncsPPC.lib" 
+				  "$(CWMACLIB):Runtime:Runtime PPC:MWMPWCRuntime.lib" 
+				  "$(CWMACLIB):ANSI PPC:MPW ANSI.C.PPC.Lib" 
+				  "$(CWMACLIB):MacOS PPC:PPCToolLibs.o" 
+				  "$(CWMACLIB):MacOS PPC:Mathlib" ;
 	MKDIR		default = newfolder ;
 	MV		default = rename ;
+	NOARSCAN	default = true ;
 	OPTIM		default = ;
 	RM		default = delete ;
 	SLASH		default = ":" ;
-	STDHDRS		default = $(MWCIncludes) ;
+	STDHDRS		default = ; #$(MWCIncludes) ;
 	SUFLIB		default = .lib ;
 	SUFOBJ		default = .o ;
 	SUFEXE		default = "" ;
+	NOARSCAN	default = true ;
 }
 
 # 
@@ -1784,6 +1801,7 @@ else if $(VMS)
 }
 else if $(MAC)
 {
+    SP = " " ;
 
     actions together piecemeal Archive 
     {
@@ -1791,18 +1809,18 @@ else if $(MAC)
     }
 
     actions Cc
-    { 
-	$(CC) -o $(<) $(CCFLAGS) $(OPTIM) $(>) 
+    {
+	$(CC) -o $(<) -i$(SP)"$(HDRS)" "$(CCFLAGS)" $(OPTIM) $(>) 
     }
 
     actions C++
     { 
-	$(CC) -o $(<) $(CCFLAGS) $(OPTIM) $(>) 
+	$(CC) -o $(<) -i$(SP)"$(HDRS)" "$(C++FLAGS)" $(OPTIM) $(>) 
     }
 
-    actions Chmod
+    rule Chmod
     {
-	set file/prot=$(MODE) $(<)
+	# no chmod on mac - could setfile -l/-L to make rw/ro
     }
 
     actions piecemeal together existing Clean
@@ -1827,7 +1845,7 @@ else if $(MAC)
 
     actions Link bind NEEDLIBS
     {
-	$(LINK) -o $(<) $(LINKFLAGS) $(>) $(NEEDLIBS) $(LINKLIBS)
+	$(LINK) -o $(<) $(LINKFLAGS) $(>) $(NEEDLIBS) "$(LINKLIBS)"
     }
 
     actions MkDir1

@@ -61,7 +61,7 @@ FILENAME	*f;
 	    file = p + 1;
 	}
 
-	/* Look for dir/ */
+	/* Look for dir: */
 
 	p = strrchr( file, DELIM );
 
@@ -69,12 +69,14 @@ FILENAME	*f;
 	{
 	    f->f_dir.ptr = file;
 	    f->f_dir.len = p - file;
-	
-	    /* Special case for / - dirname is /, not "" */
-
+	    
+	    /* Dir of : is : */
+#if 0
 	    if( !f->f_dir.len )
-		f->f_dir.len = 1;
-
+	    	++f->f_dir.len;
+# else
+	    f->f_dir.len++;
+# endif
 	    file = p + 1;
 	}
 
@@ -114,6 +116,44 @@ FILENAME	*f;
 /*
  * file_build() - build a filename given dir/base/suffix/member
  */
+ 
+# define DIR_EMPTY	0	/* "" */
+# define DIR_DOT	1	/* : */
+# define DIR_DOTDOT	2	/* :: */
+# define DIR_ABS	3	/* dira:dirb: */
+# define DIR_REL	4	/* :dira:dirb: */
+
+# define G_DIR		0	/* take dir */
+# define G_ROOT		1	/* take root */
+# define G_CAT		2	/* prepend root to dir */
+# define G_DTDR		3	/* :: of rel dir */
+# define G_DDDD		4	/* make it ::: (../..) */
+# define G_MT		5	/* leave it empty */
+
+char grid[5][5] = {
+/* 		EMPTY	DOT	DOTDOT	ABS	REL */
+/* EMPTY */   {	G_MT,	G_DIR,	G_DIR,	G_DIR,	G_DIR },
+/* DOT */     {	G_ROOT,	G_DIR,	G_DIR,	G_DIR,	G_DIR },
+/* DOTDOT */  {	G_ROOT,	G_ROOT,	G_DDDD,	G_DIR,	G_DTDR },
+/* ABS */     {	G_ROOT,	G_ROOT, G_ROOT,	G_DIR,	G_CAT },
+/* REL */     {	G_ROOT,	G_ROOT,	G_ROOT,	G_DIR,	G_CAT }
+} ;
+
+static int
+file_flags( ptr, len )
+char	*ptr;
+int	len;
+{
+	if( !len )
+	    return DIR_EMPTY;
+	if( len == 1 && ptr[0] == DELIM )
+	    return DIR_DOT;
+	if( len == 2 && ptr[0] == DELIM && ptr[1] == DELIM )
+	    return DIR_DOTDOT;
+	if( ptr[0] == DELIM )
+	    return DIR_REL;
+	return DIR_ABS;
+}
 
 void
 file_build( f, file, binding )
@@ -121,6 +161,20 @@ FILENAME	*f;
 char		*file;
 int		binding;
 {
+	char *ofile = file;
+	int dflag, rflag, act;
+	
+	if( DEBUG_SEARCH )
+	{
+	printf("build file: ");
+	if( f->f_root.len )
+		printf( "root = '%.*s' ", f->f_root.len, f->f_root.ptr );
+	if( f->f_dir.len )
+		printf( "dir = '%.*s' ", f->f_dir.len, f->f_dir.ptr );
+	if( f->f_base.len )
+		printf( "base = '%.*s' ", f->f_base.len, f->f_base.ptr );
+	}
+	
 	/* Start with the grist.  If the current grist isn't */
 	/* surrounded by <>'s, add them. */
 
@@ -131,34 +185,54 @@ int		binding;
 	    file += f->f_grist.len;
 	    if( file[-1] != '>' ) *file++ = '>';
 	}
-
-	/* Don't prepend root if it's . or directory is rooted */
-
-	if( f->f_root.len 
-	    && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
-	    && !( f->f_dir.len && f->f_dir.ptr[0] == DELIM ) )
+	
+	/* Combine root & directory, according to the grid. */
+	
+	dflag = file_flags( f->f_dir.ptr, f->f_dir.len );
+	rflag = file_flags( f->f_root.ptr, f->f_root.len );
+	
+	switch( act = grid[ rflag ][ dflag ] )
 	{
-	    memcpy( file, f->f_root.ptr, f->f_root.len );
-	    file += f->f_root.len;
+	case G_DTDR:
+		/* :: of rel dir */
+		*file++ = DELIM;
+		/* fall through */
+		
+	case G_DIR: 	
+		/* take dir */
+		memcpy( file, f->f_dir.ptr, f->f_dir.len );
+	    	file += f->f_dir.len;
+		break;
+		
+	case G_ROOT:	
+		/* take root */
+		memcpy( file, f->f_root.ptr, f->f_root.len );
+	    	file += f->f_root.len;
+		break;
+	    
+	case G_CAT:	
+		/* prepend root to dir */
+		memcpy( file, f->f_root.ptr, f->f_root.len );
+	    	file += f->f_root.len;
+		if( file[-1] == DELIM ) --file;
+		memcpy( file, f->f_dir.ptr, f->f_dir.len );
+	    	file += f->f_dir.len;
+		break;
+	
+	case G_DDDD:	
+		/* make it ::: (../..) */
+		strcpy( file, ":::" );
+		file += 3;
+		break;
+	}
+
+	/* Put : between dir and file (if none already) */
+	
+	if( act != G_MT && 
+	    file[-1] != DELIM && 
+	    ( f->f_base.len || f->f_suffix.len ) )
+	{
 	    *file++ = DELIM;
-	}
-
-	if( f->f_dir.len )
-	{
-	    memcpy( file, f->f_dir.ptr, f->f_dir.len );
-	    file += f->f_dir.len;
-	}
-
-	/* UNIX: Put / between dir and file */
-	/* NT:   Put \ between dir and file */
-
-	if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
-	{
-	    /* UNIX: Special case for dir \ : don't add another \ */
-	    /* NT:   Special case for dir / : don't add another / */
-
-		if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == DELIM ) )
-		    *file++ = DELIM;
 	}
 
 	if( f->f_base.len )
@@ -180,7 +254,10 @@ int		binding;
 	    file += f->f_member.len;
 	    *file++ = ')';
 	}
-	*file = 0;
+	*file = 0;	
+	
+	if( DEBUG_SEARCH )
+		printf(" -> '%s'\n", ofile);
 }
 
 /*

@@ -57,14 +57,12 @@ void	(*func)();
 	f.f_dir.ptr = dir;
 	f.f_dir.len = strlen(dir);
 
-	dir = *dir ? dir : "";
-
 	if( DEBUG_BINDSCAN )
 	    printf( "scan directory %s\n", dir );
 		
-	/* Special case / : enter it */
+	/* Special case ":" - enter it */
 
-	if( f.f_dir.len == 1 && f.f_dir.ptr[0] == '/' )
+	if( f.f_dir.len == 1 && f.f_dir.ptr[0] == ':' )
 	    (*func)( dir, 0 /* not stat()'ed */, (time_t)0 );
 
 	/* Now enter contents of directory */

@@ -8,6 +8,7 @@
 # If $(OSVER) isn't set, second value is used.
 
 if $(VMS) {	LOCATE_TARGET ?= [.binvms] ; }
+else if $(MAC) { LOCATE_TARGET ?= :bin.mac ; }
 else { 		LOCATE_TARGET ?= bin.$(OSFULL[1]:L) ; }
 
 # Leave generated source in current directory; it would be nice to use
@@ -26,6 +27,7 @@ else { 		LOCATE_TARGET ?= bin.$(OSFULL[1]:L) ; }
 if $(NT) 	{ code = execnt.c filent.c pathunix.c ; } 
 else if $(OS2)	{ code = execnt.c fileos2.c pathunix.c ; } 
 else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; } 
+else if $(MAC)	{ code = execmac.c filemac.c pathmac.c ; }
 else 		{ code = execunix.c fileunix.c pathunix.c ; }
 
 if $(OS) = NT { CCFLAGS += /DNT ; }
