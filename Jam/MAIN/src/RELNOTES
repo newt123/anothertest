@@ -32,6 +32,9 @@ Changes since 2.1
     This is a compromise between the normal -d1 behavior (where commands
     were never seen) and -d2 (where commands are always seen).
 
+    The NT command executor now handles multiple line actions, by sending
+    the actions one line at time to the DOS shell.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

@@ -19,7 +19,8 @@
 static int intr = 0;
 
 void
-onintr()
+onintr( disp )
+int disp;
 {
 	intr++;
 	printf( "...interrupted\n" );
@@ -35,16 +36,42 @@ LIST *shell;
 	int status, pid, w, rstat;
 	void (*istat)();
 
-	istat = signal( SIGINT, onintr );
-	status = system( string );
-	signal( SIGINT, istat );
+	/* Execute each line separately for dame-brammaged DOS shell. */
 
-	if( intr )
-	    rstat = EXEC_CMD_INTR;
-	else if( w == -1 || status != 0 )
-	    rstat = EXEC_CMD_FAIL;
-	else
-	    rstat = EXEC_CMD_OK;
+	do
+	{
+	    /* Copy next line to buf. */
+
+	    char buf[ MAXCMD ];
+	    char *b = buf;
+
+	    while( *string )
+	    	if( ( *b++ = *string++ ) == '\n' )
+		    break;
+
+	    if( b == buf )
+		break;
+
+	    *b++ = '\0';
+
+	    /* Execute line */
+
+	    istat = signal( SIGINT, onintr );
+	    status = system( buf );
+	    signal( SIGINT, istat );
+
+	    /* Divine status. */
+
+	    if( intr )
+		rstat = EXEC_CMD_INTR;
+	    else if( w == -1 || status != 0 )
+		rstat = EXEC_CMD_FAIL;
+	    else
+		rstat = EXEC_CMD_OK;
+
+	} while( rstat == EXEC_CMD_OK );
+
+	/* Signal completion. */
 
 	(*func)( closure, rstat );
 }
