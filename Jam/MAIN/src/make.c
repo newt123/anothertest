@@ -50,7 +50,9 @@
 
 static void make0();
 
+# ifndef max
 # define max( a,b ) ((a)>(b)?(a):(b))
+# endif
 
 typedef struct {
 	int	temp;

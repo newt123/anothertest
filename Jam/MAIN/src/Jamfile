@@ -6,9 +6,9 @@
 # We have some different files for UNIX, VMS, and NT.
 #
 
-if $(NT) 	{ code = nt ; } 
-else if $(VMS) 	{ code = vms ; } 
-else 		{ code = unix ; }
+if $(NT) 	{ code = execnt.c filent.c ; } 
+else if $(VMS) 	{ code = execvms.c filevms.c ; } 
+else 		{ code = execunix.c fileunix.c ; }
 
 #
 # The guts of the Jamfile: how to build Jam
@@ -18,8 +18,8 @@ Main 		jam : jam.c ;
 LinkLibraries 	jam : libjam.a ;
 
 Library         libjam.a : 
-		    command.c compile.c exec$(code).c expand.c
-		    file$(code).c glob.c hash.c headers.c jamgram.y
+		    command.c compile.c $(code) expand.c
+		    glob.c hash.c headers.c jamgram.y
 		    lists.c make.c make1.c newstr.c option.c parse.c
 		    regexp.c rules.c scan.c search.c timestamp.c
 		    variable.c ;

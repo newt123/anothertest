@@ -64,8 +64,6 @@ static void make1remove();
 static LIST *make1list();
 static int make1exec();
 
-# define max( a,b ) ((a)>(b)?(a):(b))
-
 /* Ugly static - it's too hard to carry it through the callbacks. */
 
 static struct {

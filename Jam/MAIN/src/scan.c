@@ -71,6 +71,7 @@ char *s;
 	printf( "%s at %s\n", s, symdump( &yylval ) );
 }
 
+void
 yyfparse( s )
 char *s;
 {

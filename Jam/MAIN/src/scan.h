@@ -25,7 +25,7 @@ typedef struct _YYSTYPE {
 extern YYSTYPE yylval;
 
 int yyerror();
-int yyfparse();
+void yyfparse();
 int yylex();
 void yymode();	/* adjust lexicon of scanner */
 int yyparse();
