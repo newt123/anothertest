@@ -1,3 +1,8 @@
+Changes since 2.1
+
+    LOCATE_TARGET now has a new flavor, LOCATE_SOURCE that is used for
+    generated source files (by yacc and lex).
+
 Release notes for Jam 2.1.
 
 1.  Release info:

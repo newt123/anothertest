@@ -42,7 +42,7 @@ if $(UNIX)
 rule YYacc
 {
 	DEPENDS $(<) : $(>) ;
-	LOCATE on $(<) = $(LOCATE_TARGET) ;
+	LOCATE on $(<) = $(LOCATE_SOURCE) ;
 	Clean clean : $(<) ;
 }
 

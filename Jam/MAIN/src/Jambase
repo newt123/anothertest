@@ -513,7 +513,7 @@ rule InstallShell
 rule Lex
 {
 	DEPENDS $(<) : $(>) ;
-	LOCATE on $(<) = $(LOCATE_TARGET) ;
+	LOCATE on $(<) = $(LOCATE_SOURCE) ;
 	Clean clean : $(<) ;
 }
 
@@ -845,6 +845,7 @@ rule SubDir
 	# subsequently be redefined.
 
 	SEARCH_SOURCE = $(SUBDIR) ;
+	LOCATE_SOURCE = $(ALL_LOCATE_TARGET) $(SUBDIR) ;
 	LOCATE_TARGET = $(ALL_LOCATE_TARGET) $(SUBDIR) ;
 	makeGrist SOURCE_GRIST : $(<[2-]) ;
 
@@ -931,7 +932,7 @@ rule Yacc
 	# a deadly independent target
 
 	INCLUDES $(<) : $(_h) ;
-	LOCATE on $(<) $(_h) = $(LOCATE_TARGET) ;
+	LOCATE on $(<) $(_h) = $(LOCATE_SOURCE) ;
 }
 
 #
