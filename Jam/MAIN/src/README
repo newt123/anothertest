@@ -65,7 +65,7 @@ INFORMATION GUIDE
 
 INSTALLING
 
-    The Makefile (UNIX, NT), build.com (VMS), build.mpw (Mac MPW) are 
+    The Makefile (UNIX, NT), build.com (VMS), Build.mpw (Mac MPW) are 
     for bootstrapping.  Once jam is built, it can rebuild itself.
 
     UNIX
@@ -119,11 +119,14 @@ INSTALLING
 
     Macintosh
 
-	Build jam with build.mpw on:
+	Build jam with Build.mpw on:
 
 	    Platform		$(OS)
 	    -------------------------
 	    Macintosh		MAC		
+
+	You'll need to edit Build.mpw to set CWGUSI and CWMAC.  Jam
+	requires GUSI and Mac specific stuff to build (sorry).
 
     VMS
 
