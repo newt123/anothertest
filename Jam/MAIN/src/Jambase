@@ -157,6 +157,7 @@ if $(UNIX)
 	RM		default = rm -f ;
 	SHELLHEADER	default = "#!/bin/sh" ;
 	SHELLMODE	default = 755 ;
+	SLASH		default = / ;
 	STDHDRS		default = /usr/include ;
 	SUFOBJ		default = .o ;
 	SUFEXE		default = "" ;
@@ -179,9 +180,9 @@ else if $(NT)
 	RWLIBPATH	default = $(RW)\\lib ;
 	LINK		default = $(CC) ;
 	LINKFLAGS	default = $(CCFLAGS) ;
+	SLASH		default = \\ ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
-
     }
     else if $(MSVCNT)
     {
@@ -202,6 +203,7 @@ else if $(NT)
 				$(MSVCNT)\\lib\\oldnames.lib
 				$(MSVCNT)\\lib\\kernel32.lib ;
 	OPTIM		default =  ;
+	SLASH		default = \\ ;
 	STDHDRS		default = $(MSVCNT)\\include ;
 	UNDEFFLAG	default = "/u _" ;
     }
@@ -567,21 +569,13 @@ rule SubDir
 	# Get the grist $(g), search $(s)
 	# This is just hideous variable manipulation
 
-	if $(<[5]) {
-		g = $(<[2])!$(<[3])!$(<[4])!$(<[5]) ;
-		s = /$(<[2])/$(<[3])/$(<[4])/$(<[5]) ;
-	} else if $(<[4]) {
-		g = $(<[2])!$(<[3])!$(<[4]) ;
-		s = /$(<[2])/$(<[3])/$(<[4]) ;
-	} else if $(<[3]) {
-		g = $(<[2])!$(<[3]) ;
-		s = /$(<[2])/$(<[3]) ;
-	} else if $(<[2]) {
-		g = $(<[2]) ;
-		s = /$(<[2]) ;
-	} else {
-		g = ;
-		s = ;
+	g = $(<[2]) ;
+	s = $(SLASH)$(<[2]) ;
+
+	for i in $(<[3-])
+	{
+	    g = $(g)!$(i) ;
+	    s = $(s)$(SLASH)$(i) ;
 	}
 
 	# Now set up SEARCH_SOURCE, LOCATE_TARGET, SOURCE_GRIST
@@ -622,15 +616,14 @@ rule SubInclude
 	    ECHO Top level of source tree has not been set with $(<[1]) ;
 	}
 
-	if $(<[5]) {
-		include $($(<[1]))/$(<[2])/$(<[3])/$(<[4])/$(<[5])/$(JAMFILE) ;
-	} else if $(<[4]) {
-		include $($(<[1]))/$(<[2])/$(<[3])/$(<[4])/$(JAMFILE) ;
-	} else if $(<[3]) {
-		include $($(<[1]))/$(<[2])/$(<[3])/$(JAMFILE) ;
-	} else if $(<[2]) {
-		include $($(<[1]))/$(<[2])/$(JAMFILE) ;
+	s = "" ;
+
+	for i in $(<[2-])
+	{
+	    s = $(s)$(SLASH)$(i) ;
 	}
+
+	include $($(<[1]))$(s)$(SLASH)$(JAMFILE) ;
 }
 
 rule Undefines
