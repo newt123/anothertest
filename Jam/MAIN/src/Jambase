@@ -163,8 +163,9 @@ switch $(OS)
 {
 case AIX :	LINKLIBS default = -lbsd ;
 case DGUX :	RANLIB default = "" ; RELOCATE = true ;
-case IRIX :	RANLIB default = "" ;
 case HPUX :	RANLIB default = "" ;
+		INSTALL default = "" ;
+case IRIX :	RANLIB default = "" ;
 		INSTALL default = "" ;
 case MVS :	RANLIB default = "" ; RELOCATE = true ;
 case NCR :	RANLIB default = "" ;
