@@ -826,9 +826,9 @@ INCLUDES foo.c : foo.h ;
 .XE
 .PP
 This examples makes "foo.o" depend on "foo.c" and "foo.h".
-.SS ALWAYS, LAURA, NOCARE, NOTFILE, TEMPORARY Rules
+.SS ALWAYS, LAURA, NOCARE, NOTFILE, NOUPDATE, TEMPORARY Rules
 .PP
-These five rules modify targets so that \fBjam\fR treats them different
+These six rules modify targets so that \fBjam\fR treats them different
 during its target binding and updating phase.  Normally, \fBjam\fR
 updates a target if it can't be found, if it is older than its dependents,
 or if its dependents are being updated.  Note that this only applies
@@ -849,6 +849,15 @@ The \fINOTFILE\fR rule marks its targets as being pseudo targets, that
 is, targets that aren't in the filesystem.  The \fIall\fR target is an
 example of such a target.  These targets are built only if their
 dependents are updated.
+.PP
+The \fINOUPDATE\fR rule prevents a target from being updated if it
+already exists.  That is, \fBjam\fR will only create and never replace
+the target.  It also causes \fBjam\fR to ignore the modification time
+of the file and pretend that it is eternally old if it exists.  This
+prevents anything which depends on the target from being rebuilt if the
+target gets updated.  This rule is applied to directories by the
+\fIMkDir\fR rule, because \fIMkDir\fR only cares that the directory
+exists, not when it has last been updated.
 .PP
 The \fITEMPORARY\fR rule allows for targets to be deleted after they
 are generated.  If \fBjam\fR sees that a temporary target is missing,
