@@ -59,7 +59,7 @@
 # Fortran obj.o : source.f ;		.f -> .o
 # Hardlink target : source ;		make link from source to target
 # HdrRule source : headers ;		handle #includes
-# Install target : source ;		install any single file
+# InstallInto dir : sources ;		install any files
 # InstallBin dir : sources ;		install binaries
 # InstallLib dir : sources ;		install files
 # InstallFile dir : sources ;		install files
@@ -500,55 +500,48 @@ rule HdrRule
 	HDRRULE on $(>) = $(HDRRULE) ;
 }
 
-rule Install
+rule InstallInto
 {
-	DEPENDS install : $(<) ;
-	DEPENDS $(<) : $(>) ;
+	local t ;
+
+	t = $(>:G=installed) ;
+
+	DEPENDS install : $(t) ;
+	DEPENDS $(t) : $(>) ;
 	SEARCH on $(>) = $(SEARCH_SOURCE) ;
-
-	# depend upon and create the directory
-
-	DEPENDS $(<) : $(<:D) ;
-	MkDir $(<:D) ;
+	MakeLocate $(t) : $(<) ;
 
 	# Arrange for jam uninstall
 
-	Clean uninstall : $(<) ;
+	Clean uninstall : $(t) ;
+
+	Install $(t) : $(>) ;
 
 	if ! $(INSTALL)
 	{
-	    Chmod $(<) ;
+	    Chmod $(t) ;
 
-	    if $(OWNER) { Chown $(<) ; OWNER on $(<) = $(OWNER) ; }
-	    if $(GROUP) { Chgrp $(<) ; GROUP on $(<) = $(GROUP) ; }
+	    if $(OWNER) { Chown $(t) ; OWNER on $(t) = $(OWNER) ; }
+	    if $(GROUP) { Chgrp $(t) ; GROUP on $(t) = $(GROUP) ; }
 	}
 }
 
 rule InstallBin
 {
-	local i ;
-
-	for i in $(>)
-	{
-	    Install $(i:D=$(<)) : $(i) ;
-	    MODE on $(i:D=$(<)) = $(EXEMODE) ;
-	}
+	InstallInto $(<) : $(>) ;
+	MODE on $(>:G=installed) = $(EXEMODE) ;
 }
 
 rule InstallFile
 {
-	InstallLib $(<) : $(>) ;
+	InstallInto $(<) : $(>) ;
+	MODE on $(>:G=installed) = $(FILEMODE) ;
 }
 
 rule InstallLib
 {
-	local i ;
-
-	for i in $(>)
-	{
-	    Install $(i:D=$(<)) : $(i) ;
-	    MODE on $(i:D=$(<)) = $(FILEMODE) ;
-	}
+	InstallInto $(<) : $(>) ;
+	MODE on $(>:G=installed) = $(FILEMODE) ;
 }
 
 rule InstallMan
@@ -567,22 +560,18 @@ rule InstallMan
 	    case .n : s = n ; case .man : s = 1 ;
 	    }
 
-	    d = $(i:D=man$(s):S=.$(s)) ;
+	    d = man$(s) ;
 
-	    Install $(d:R=$(<)) : $(i) ;
-	    MODE on $(d:R=$(<)) = $(FILEMODE) ;
+	    InstallInto $(d:R=$(<)) : $(i) ;
 	}
+
+	MODE on $(>:G=installed) = $(FILEMODE) ;
 }
 
 rule InstallShell
 {
-	local i ;
-
-	for i in $(>)
-	{
-	    Install $(i:D=$(<)) : $(i) ;
-	    MODE on $(i:D=$(<)) = $(SHELLMODE) ;
-	}
+	InstallInto $(<) : $(>) ;
+	MODE on $(>:G=installed) = $(SHELLMODE) ;
 }
 
 rule Lex

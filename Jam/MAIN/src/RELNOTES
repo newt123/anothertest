@@ -46,6 +46,10 @@ Changes since 2.1
 
     Jam now by default builds itself into a platform specific subdirectory.
 
+    Due to internal restructuring of the Jambase, the old "Install" rule
+    is no longer available.  Use InstallBin, InstallFile, InstallLib,
+    InstallMan, or InstallShell instead.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
