@@ -141,8 +141,6 @@ if $(UNIX)
 	FORTRANFLAGS	default = ;
 	HDRS		default = ;
 	INSTALL		default = install ;
-	JAMFILE		default = Jamfile ;
-	JAMRULES	default = ;
 	LEX		default = lex ;
 	LIBDIR		default = /usr/local/lib ;
 	LINK		default = $(CC) ;
@@ -183,6 +181,8 @@ else if $(NT)
 	SLASH		default = \\ ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
+	SUFOBJ		default = .obj ;
+	SUFEXE		default = .exe ;
     }
     else if $(MSVCNT)
     {
@@ -205,9 +205,41 @@ else if $(NT)
 	OPTIM		default =  ;
 	SLASH		default = \\ ;
 	STDHDRS		default = $(MSVCNT)\\include ;
+	SUFOBJ		default = .obj ;
+	SUFEXE		default = .exe ;
 	UNDEFFLAG	default = "/u _" ;
     }
 }
+else if $(VMS)
+{
+	AS		default = as ;
+	CC		default = cc ;
+	CCFLAGS		default = ;
+	CRELIB		default = true ;
+	EXEMODE		default = (w:e) ;
+	FILEMODE	default = (w:r) ;
+	HDRS		default = ;
+	LEX		default = lex ;
+	LINK		default = link ;
+	LINKFLAGS	default = ;
+	LINKLIBS	default = ;
+	MV		default = rename ;
+	OPTIM		default = ;
+	SHELLMODE	default = (w:er) ;
+	SLASH		default = . ;
+	STDHDRS		default = "" decc$library_include ;
+	SUFOBJ		default = .obj ;
+	SUFEXE		default = .exe ;
+
+	switch $(OS) 
+	{
+	case OPENVMS : CCFLAGS default = /stand=vaxc ;
+	case VMS     : LINKLIBS default = sys$library:vaxcrtl.olb/lib ;
+	}
+}
+
+JAMFILE		default = Jamfile ;
+JAMRULES	default = ;
 
 HDRPATTERN = "^#[	 ]*include[	 ]*[<\"](.*)[\">].*$" ;
 
@@ -249,6 +281,11 @@ rule Cc
 	if $(RELOCATE)
 	{
 	    CcMv $(<) : $(>) ;
+	}
+
+	if $(VMS) && $(HDRS[1])
+	{
+	    SLASHINC on $(<) = "/inc=(" $(HDRS[1]) ,$(HDRS[2-]) ")" ;
 	}
 }
 
@@ -407,6 +444,7 @@ rule LibraryFromObjects
 	Archive $(<) : $(S) ;
 	RmTemps $(<) : $(S) ;
 
+	if $(CRELIB) { CreLib $(<) ; }
 	if $(RANLIB) { Ranlib $(<) ; }
 }
 
@@ -640,11 +678,18 @@ rule Yacc
 {
 	h = $(<:BS=.h) ;
 
-	DEPENDS $(<) $(h) : $(>) ;
-	Yacc1 $(<) $(h) : $(>) ;
-	Clean clean : $(<) $(h) ;
+	# Some places don't have a yacc.
+
+	if $(YACC)
+	{
+	    DEPENDS $(<) $(h) : $(>) ;
+	    Yacc1 $(<) $(h) : $(>) ;
+	    Clean clean : $(<) $(h) ;
+	}
+
 	# make sure someone includes $(h) else it will be
 	# a deadly independent target
+
 	INCLUDES $(<) : $(h) ;
 	LOCATE on $(<) $(h) = $(LOCATE_TARGET) ;
 }
@@ -762,8 +807,7 @@ if $(UNIX)
 	}
     }
 }
-
-if $(NT)
+else if $(NT)
 {
     if $(BCCROOT)
     {
@@ -803,6 +847,71 @@ if $(NT)
     actions File
     {
 	copy $(>) $(<)
+    }
+}
+else if $(VMS)
+{
+
+    actions updated together piecemeal Archive 
+    {
+	lib/replace $(<) $(>[1]) ,$(>[2-])
+    }
+
+    actions Cc
+    { 
+	cc/obj=$(<) $(CCFLAGS) $(OPTIM) $(SLASHINC) $(>) 
+    }
+
+    actions piecemeal together existing Clean
+    {
+	$(RM) $(>[1]);* ,$(>[2-]);*
+    }
+
+    actions together quietly CreLib
+    {
+       if f$search("$(<)") .eqs. "" then lib/create $(<)
+    }
+
+    actions File
+    {
+	copy $(>) $(<)
+	set file/prot=$(FILEMODE) $(<)
+    }
+
+    actions Install
+    {
+	copy $(>) $(<)
+	set file/prot=$(INSTALLMODE) $(<)
+    }
+
+    actions Lex
+    {
+	$(LEX) $(>) 
+	$(MV) lex.yy.c $(<)
+    }
+
+    actions Link 
+    {
+	$(LINK)/exe=$(<) $(LINKFLAGS) $(>[1]) ,$(>[2-]) ,$(NEEDLIBS)/lib ,$(LINKLIBS)
+	set file/prot=$(EXEMODE) $(<)
+    }
+
+    actions quietly updated piecemeal together Rmtemps
+    {
+	$(RM) $(>[1]);* ,$(>[2-]);*
+    }
+
+    actions Shell
+    {
+	copy $(>) $(<)
+	set file/prot=$(SHELLMODE) $(<)
+    }
+
+    actions Yacc1
+    {
+	$(YACC) $(>)
+	$(MV) y.tab.c $(<[1])
+	$(MV) y.tab.h $(<[2])
     }
 }
 

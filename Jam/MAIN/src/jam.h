@@ -46,7 +46,7 @@
 # endif 
 
 # define MAXCMD	1023 /* longest command */
-# define JAMBASE "Jambase.VMS"
+# define JAMBASE "Jambase"
 # define EXITOK 1
 
 # else
