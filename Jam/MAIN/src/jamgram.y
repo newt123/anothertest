@@ -59,6 +59,8 @@
 %left _BANG
 
 %{
+#include "jam.h"
+
 #include "lists.h"
 #include "parse.h"
 #include "scan.h"

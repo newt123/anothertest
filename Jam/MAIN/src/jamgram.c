@@ -37,6 +37,8 @@ extern char *malloc(), *realloc();
 # define STRING 292
 
 # line 62 "jamgram.y"
+#include "jam.h"
+
 #include "lists.h"
 #include "parse.h"
 #include "scan.h"
@@ -703,151 +705,151 @@ yyparse()
 	{
 		
 case 1:
-# line 98 "jamgram.y"
+# line 100 "jamgram.y"
 {
 			compile_builtins();
 		} break;
 case 2:
-# line 102 "jamgram.y"
+# line 104 "jamgram.y"
 { 
 			(*(yypvt[-0].parse->func))( yypvt[-0].parse, L0, L0 );
 			parse_free( yypvt[-0].parse );
 		} break;
 case 3:
-# line 114 "jamgram.y"
+# line 116 "jamgram.y"
 { yyval.parse = prules( P0, P0 ); } break;
 case 4:
-# line 116 "jamgram.y"
+# line 118 "jamgram.y"
 { yyval.parse = prules( yypvt[-1].parse, yypvt[-0].parse ); } break;
 case 5:
-# line 120 "jamgram.y"
+# line 122 "jamgram.y"
 { yyval.parse = pincl( yypvt[-1].list ); } break;
 case 6:
-# line 122 "jamgram.y"
+# line 124 "jamgram.y"
 { yyval.parse = prule( yypvt[-2].string, yypvt[-1].list, L0 ); } break;
 case 7:
-# line 124 "jamgram.y"
+# line 126 "jamgram.y"
 { yyval.parse = prule( yypvt[-4].string, yypvt[-3].list, yypvt[-1].list ); } break;
 case 8:
-# line 126 "jamgram.y"
+# line 128 "jamgram.y"
 { yyval.parse = pset( yypvt[-3].list, yypvt[-1].list, yypvt[-2].number ); } break;
 case 9:
-# line 128 "jamgram.y"
+# line 130 "jamgram.y"
 { yyval.parse = pstng( yypvt[-3].list, yypvt[-5].list, yypvt[-1].list, yypvt[-2].number ); } break;
 case 10:
-# line 130 "jamgram.y"
+# line 132 "jamgram.y"
 { yyval.parse = pset( yypvt[-4].list, yypvt[-1].list, ASSIGN_DEFAULT ); } break;
 case 11:
-# line 132 "jamgram.y"
+# line 134 "jamgram.y"
 { yyval.parse = pfor( yypvt[-5].string, yypvt[-1].parse, yypvt[-3].list ); } break;
 case 12:
-# line 134 "jamgram.y"
+# line 136 "jamgram.y"
 { yyval.parse = pswitch( yypvt[-3].list, yypvt[-1].parse ); } break;
 case 13:
-# line 136 "jamgram.y"
+# line 138 "jamgram.y"
 { yyval.parse = pif( yypvt[-3].parse, pthen( yypvt[-1].parse, P0 ) ); } break;
 case 14:
-# line 138 "jamgram.y"
+# line 140 "jamgram.y"
 { yyval.parse = pif( yypvt[-5].parse, pthen( yypvt[-3].parse, yypvt[-0].parse ) ); } break;
 case 15:
-# line 140 "jamgram.y"
+# line 142 "jamgram.y"
 { yyval.parse = psetc( yypvt[-1].string, yypvt[-0].parse ); } break;
 case 16:
-# line 142 "jamgram.y"
+# line 144 "jamgram.y"
 { yymode( SCAN_STRING ); } break;
 case 17:
-# line 144 "jamgram.y"
+# line 146 "jamgram.y"
 { yyval.parse = psete( yypvt[-2].string, yypvt[-0].string, yypvt[-3].number );
 		  yymode( SCAN_NORMAL ); } break;
 case 18:
-# line 147 "jamgram.y"
+# line 149 "jamgram.y"
 { yyval.parse = yypvt[-1].parse; } break;
 case 19:
-# line 155 "jamgram.y"
+# line 157 "jamgram.y"
 { yyval.number = ASSIGN_SET; } break;
 case 20:
-# line 157 "jamgram.y"
+# line 159 "jamgram.y"
 { yyval.number = ASSIGN_APPEND; } break;
 case 21:
-# line 159 "jamgram.y"
+# line 161 "jamgram.y"
 { yyval.number = ASSIGN_DEFAULT; } break;
 case 22:
-# line 167 "jamgram.y"
+# line 169 "jamgram.y"
 { yyval.parse = pcomp( COND_EXISTS, yypvt[-0].list, L0 ); } break;
 case 23:
-# line 169 "jamgram.y"
+# line 171 "jamgram.y"
 { yyval.parse = pcomp( COND_EQUALS, yypvt[-2].list, yypvt[-0].list ); } break;
 case 24:
-# line 171 "jamgram.y"
+# line 173 "jamgram.y"
 { yyval.parse = pcomp( COND_NOTEQ, yypvt[-2].list, yypvt[-0].list ); } break;
 case 25:
-# line 173 "jamgram.y"
+# line 175 "jamgram.y"
 { yyval.parse = pcomp( COND_LESS, yypvt[-2].list, yypvt[-0].list ); } break;
 case 26:
-# line 175 "jamgram.y"
+# line 177 "jamgram.y"
 { yyval.parse = pcomp( COND_LESSEQ, yypvt[-2].list, yypvt[-0].list ); } break;
 case 27:
-# line 177 "jamgram.y"
+# line 179 "jamgram.y"
 { yyval.parse = pcomp( COND_MORE, yypvt[-2].list, yypvt[-0].list ); } break;
 case 28:
-# line 179 "jamgram.y"
+# line 181 "jamgram.y"
 { yyval.parse = pcomp( COND_MOREEQ, yypvt[-2].list, yypvt[-0].list ); } break;
 case 29:
-# line 181 "jamgram.y"
+# line 183 "jamgram.y"
 { yyval.parse = pcond( COND_NOT, yypvt[-0].parse, P0 ); } break;
 case 30:
-# line 183 "jamgram.y"
+# line 185 "jamgram.y"
 { yyval.parse = pcond( COND_AND, yypvt[-2].parse, yypvt[-0].parse ); } break;
 case 31:
-# line 185 "jamgram.y"
+# line 187 "jamgram.y"
 { yyval.parse = pcond( COND_OR, yypvt[-2].parse, yypvt[-0].parse ); } break;
 case 32:
-# line 187 "jamgram.y"
+# line 189 "jamgram.y"
 { yyval.parse = yypvt[-1].parse; } break;
 case 33:
-# line 198 "jamgram.y"
+# line 200 "jamgram.y"
 { yyval.parse = P0; } break;
 case 34:
-# line 200 "jamgram.y"
+# line 202 "jamgram.y"
 { yyval.parse = pcases( yypvt[-1].parse, yypvt[-0].parse ); } break;
 case 35:
-# line 204 "jamgram.y"
+# line 206 "jamgram.y"
 { yyval.parse = pcase( yypvt[-2].string, yypvt[-0].parse ); } break;
 case 36:
-# line 213 "jamgram.y"
+# line 215 "jamgram.y"
 { yymode( SCAN_NORMAL ); } break;
 case 37:
-# line 217 "jamgram.y"
+# line 219 "jamgram.y"
 { yyval.list = L0; yymode( SCAN_PUNCT ); } break;
 case 38:
-# line 219 "jamgram.y"
+# line 221 "jamgram.y"
 { yyval.list = list_new( yypvt[-1].list, copystr( yypvt[-0].string ) ); } break;
 case 39:
-# line 223 "jamgram.y"
+# line 225 "jamgram.y"
 { yyval.list = list_new( L0, copystr( yypvt[-0].string ) ); } break;
 case 40:
-# line 232 "jamgram.y"
+# line 234 "jamgram.y"
 { yyval.number = 0; } break;
 case 41:
-# line 234 "jamgram.y"
+# line 236 "jamgram.y"
 { yyval.number = yypvt[-1].number | yypvt[-0].number; } break;
 case 42:
-# line 238 "jamgram.y"
+# line 240 "jamgram.y"
 { yyval.number = EXEC_UPDATED; } break;
 case 43:
-# line 240 "jamgram.y"
+# line 242 "jamgram.y"
 { yyval.number = EXEC_TOGETHER; } break;
 case 44:
-# line 242 "jamgram.y"
+# line 244 "jamgram.y"
 { yyval.number = EXEC_IGNORE; } break;
 case 45:
-# line 244 "jamgram.y"
+# line 246 "jamgram.y"
 { yyval.number = EXEC_QUIETLY; } break;
 case 46:
-# line 246 "jamgram.y"
+# line 248 "jamgram.y"
 { yyval.number = EXEC_PIECEMEAL; } break;
 case 47:
-# line 248 "jamgram.y"
+# line 250 "jamgram.y"
 { yyval.number = EXEC_EXISTING; } break;
 	}
 	goto yystack;		/* reset registers in driver code */
