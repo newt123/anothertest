@@ -188,8 +188,8 @@ char	**argv;
 	    /* First -d, turn off defaults. */
 
 	    if( !n )
-		for( i = DEBUG_MAX; i; )
-		    globs.debug[i--] = 0;
+		for( i = 0; i < DEBUG_MAX; i++ )
+		    globs.debug[i] = 0;
 
 	    i = atoi( s );
 
