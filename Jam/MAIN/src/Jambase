@@ -715,7 +715,7 @@ rule Setuid
 	    t = $(<:S=$(SUFEXE)) ;
 	}
 
-	EXEMODE on $(t) = 4755 ;
+	MODE on $(t) = 4711 ;
 }
 
 rule Shell

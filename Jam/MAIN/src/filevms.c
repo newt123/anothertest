@@ -9,6 +9,27 @@
 /*
  * filevms.c - manipulate file names and scan directories on VMS
  *
+ * External routines:
+ *
+ *	file_parse() - split a file name into dir/base/suffix/member
+ *	file_build() - build a filename given dir/base/suffix/member
+ *	file_dirscan() - scan a directory for files
+ *	file_time() - get timestamp of file, if not done by file_dirscan()
+ *	file_archscan() - scan an archive for files
+ *
+ * File_parse() and file_build() just manipuate a string and a structure;
+ * they do not make system calls.
+ *
+ * File_dirscan() and file_archscan() call back a caller provided function
+ * for each file found.  A flag to this callback function lets file_dirscan()
+ * and file_archscan() indicate that a timestamp is being provided with the
+ * file.   If file_dirscan() or file_archscan() do not provide the file's
+ * timestamp, interested parties may later call file_time().
+ *
+ * WARNING!  This file contains voodoo logic, as black magic is 
+ * necessary for wrangling with VMS file name.  Woe be to people
+ * who mess with this code.
+ *
  * 02/09/95 (seiwald) - bungled R=[xxx] - was using directory length!
  */
 
