@@ -350,6 +350,7 @@ int *status;
 		    if ( exitcode == STILL_ACTIVE )
 			active_handles[num_active++] = (HANDLE)cmdtab[i].pid;
 		    else {
+			CloseHandle((HANDLE)cmdtab[i].pid);
 			*status = (int)((exitcode & 0xff) << 8);
 			return cmdtab[i].pid;
 		    }
@@ -375,6 +376,7 @@ int *status;
 	    else
 		i = waitcode - WAIT_OBJECT_0;
 	    if ( GetExitCodeProcess(active_handles[i], &exitcode) ) {
+		CloseHandle(active_handles[i]);
 		*status = (int)((exitcode & 0xff) << 8);
 		return (int)active_handles[i];
 	    }

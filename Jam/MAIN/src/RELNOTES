@@ -7,8 +7,12 @@ Release notes for Jam/MR 2.2
 	Jam/MR 2.2
 	October 22, 1997
 	VERSION 2.2
-	PATCHLEVEL 0
+	PATCHLEVEL 1
 
+1.1 Bug fixes since 2.2 patchlevel 0
+
+	The NT handle leak in execunix.c has been fixed, thanks to
+	Gurusamy Sarathy.  (Patchlevel 1).
 
 2. Compatibility
 
