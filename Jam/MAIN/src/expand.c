@@ -130,9 +130,9 @@ int	cancopyin;
 	    {
 	    case '(': depth++; break;
 	    case ')': depth--; break;
-	    case ':': ov[-1] = MAGIC_COLON;
-	    case '[': ov[-1] = MAGIC_LEFT;
-	    case ']': ov[-1] = MAGIC_RIGHT;
+	    case ':': ov[-1] = MAGIC_COLON; break;
+	    case '[': ov[-1] = MAGIC_LEFT; break;
+	    case ']': ov[-1] = MAGIC_RIGHT; break;
 	    }
 	}
 
