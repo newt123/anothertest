@@ -6,18 +6,50 @@ Release notes for Jam 2.0.
 	VERSION 2
 	PATCHLEVEL 3
 
-2.  Limitations/Bugs
+2.  Limitations/Known Bugs
 
-	The new Windows/NT support has only been marginally tested.
+	The new Windows/NT support has only been marginally tested.  It
+	is dependent on certain variables being set depending on which
+	compiler you are using.  You'll need to look in the file
+	Jambase and see what variables are expected to be set.
+
+	The VMS support has been tested, courtesy of the DEC guest
+	machine, but has not been hammered fully in release 2.0.  It
+	was used quite a bit in Jam 1.0.
 
 	Jam clean when there is nothing to clean claims it is updating
 	a target.
 
+	Because the include statement works by pushing a new file in
+	the input stream of the scanner rather than recursively
+	invoking the parser on the new file, multiple include
+	statements in a rule's procedure causes the files to be
+	included in reverse order.
+
+	If the include statement appears inside an if block, the
+	parser's attempt to find the else will cause the text of the
+	included file to appear after the first token following the
+	statement block.  This is rarely what is intended.
+
+	In a rule's actions, only $(<) and $(>) refer to the bound file
+	names:  all other variable references get the unbound names.
+	This is a pain for $(NEEDLIBS), because it means that library
+	path can't be bound using $(SEARCH) and $(LOCATE).
+
+	With the -j flag, errors from failed commands can get
+	staggeringly mixed up.  Also, because targets tend to get built
+	in a quickest-first ordering, dependency information must be
+	quite exact.  Finally, beware of parallelizing commands that
+	drop fixed-named files into the current directory, like yacc(1)
+	does.
+
+	A poorly set $(JAMSHELL) is likely to result in silent
+	failure.
+
 3.  Porting
 
 	Windows/NT is now (crudely) supported, courtesy of Brett Taylor
-	and Laura Wingerd.  You'll need to look in the file Jambase and
-	see what variables are expected to be set.
+	and Laura Wingerd.  
 
 	COHERENT/386 is now supported, courtesy of Fred Smith.
 
@@ -77,8 +109,8 @@ Release notes for Jam 2.0.
 	all ignore the suffixes provided and use the one defined in the
 	Jambase for the platform.
 
-	Stupid yyacc support moved out of Jambase and into Jamfile, as
-	jam is its only likely user.
+	Stupid yyacc support moved out of Jambase, as jam is its only
+	likely user.
 
 	Jambase now purturbs library sources with a "grist" of
 	SOURCE_GRIST.
