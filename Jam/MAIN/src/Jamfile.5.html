@@ -571,7 +571,7 @@ and LinkLibraries.
        libraries dependencies of the executable, so that they get
        built first; and it makes the libraries  show  up  on  the
        command  line  that links the executable.  The ordering of
-       the lines above is not important, because jam builds  targets 
+       the lines above is not important, because <b>jam</b> builds  targets 
        in the order that they are needed.
 <P>
        You  can  put multiple libraries on a single invocation of
@@ -723,9 +723,12 @@ Compiling
 <PRE>
               Object foo.o : foo.c ;
 </PRE>
-	However, to keep your Jamfiles portable, you should use:
+	However, the Object rule does not provide suffixes, and
+	it does not provide the grist needed to construct target
+	identifiers if you are using the SubDir* rules.
+	A portable and robust Jamfile would need to invoke Object thus:
 	<PRE>
-              Object <src!util>foo$(SUFOBJ) : foo.c ;
+	      Object &lt;src!util&gt;foo$(SUFOBJ) : &lt;src!util&gt;foo.c ;
 	</PRE>
 	which is inelegant and clearly shows why using Objects
 	is better than using Object.
@@ -769,7 +772,7 @@ Compiling
    Cc, C++, Yacc, Lex, Fortran, As, etc. Rules
 </H4>
 <P>
-       The Object calls compile rules specific to the suffix of
+       The Object rule calls compile rules specific to the suffix of
        the source file.  (You can see which suffixes are supported
        by looking at the Object rule definition in Jambase.)
        Because  the  extra  work  done  by  the

@@ -153,7 +153,7 @@ actions PostBall
 	mv Jamfile.sav Jamfile
 }
 
-VERSION = jam-2.1.plus ;
+VERSION = jam-2.2 ;
 
 actions Tar
 {
@@ -174,6 +174,7 @@ actions Zip
 
 Ball SHAR : $(ALLSOURCE) ;
 Ball $(VERSION).tar : $(ALLSOURCE) ;
+Depends TAR : $(VERSION).tar ;
 Ball ZIP : $(ALLSOURCE) ;
 
 

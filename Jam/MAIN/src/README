@@ -1,11 +1,10 @@
-jam - make(1) redux 
+Jam/MR (formerly "jam - make(1) redux") 
 
     /+\
-    +\	Copyright 1993, 1996 Christopher Seiwald.
+    +\	Copyright 1993, 1997 Christopher Seiwald.
     \+/
 
-    This is Release 2.1 of jam, a make-like program.
-    The next release will be Release 2.2.
+    This is Release 2.2 of Jam/MR, a make-like program.
 
     License is hereby granted to use this software and distribute it
     freely, as long as this copyright notice is retained and modifications 
@@ -15,50 +14,46 @@ jam - make(1) redux
 
 FEATURES
 
-   ->	Jam is a make(1) replacement that makes building simple things
+   ->	Jam/MR is a make(1) replacement that makes building simple things
 	simple and building complicated things manageable.
 
-   ->	Jam's language is expressive, making Jamfiles (c.f. Makefiles) 
+   ->	Jam/MR's language is expressive, making Jamfiles (c.f. Makefiles) 
 	compact.  Here's a sample:
 
 	    Main smail : main.c map.c resolve.c deliver.c
 			 misc.c parser.y alias.c pw.c headers.c
 			 scanner.l getpath.c str.c ;
 
-	This builds "smail" from a dozen source files.  Jam handles 
+	This builds "smail" from a dozen source files.  Jam/MR handles 
 	header file dependencies automatically and on-the-fly.
 
-   ->	Jam is very portable: it runs on UNIX, VMS, and NT.  Most
+   ->	Jam/MR is very portable: it runs on UNIX, VMS, and NT.  Most
 	Jamfiles themselves are portable, like the sample above.
 
-   ->   Jam is unintrusive: it is small, it has negligible CPU 
+   ->   Jam/MR is unintrusive: it is small, it has negligible CPU 
 	overhead, and it doesn't create any of its own funny files
 	(c.f. Odin, nmake, SunOS make).
 
-   ->	Jam can build large projects spread across many directories
+   ->	Jam/MR can build large projects spread across many directories
 	in one pass, without recursing, tracking the relationships
-	among all files.  See the accompanying paper.  On UNIX, Jam 
-	can do this with multiple, concurrent processes.
+	among all files. Jam/MR can do this with multiple, concurrent 
+	processes.
 
-   ->   Jam isn't under the blinkin GNU copyright, so you can 
+   ->   Jam/MR isn't under the blinkin GNU copyright, so you can 
 	incorporate it into commercial products.
 
 
 INFORMATION GUIDE
 
-    jam.1	jam command man page - a terse description.
-    jam.ps
+    jam.1.html		jam command usage
 
-    Jambase.5	Reference for the rule boilerplate file.
-    Jambase.ps
+    jamMR.html		The JamMR language description
 
-    Jamfile.5	Easy reading on creating a Jamfile and using jam.
-    Jamfile.ps
+    Jambase.5.html	Reference for the Jambase boilerplate file.
 
-    Paper.ps    The 1994 UNIX Application Development Symposium paper 
-		on jam (reflects Release 1 - see RELNOTES for diffs).
+    Jamfile.5.html	Easy reading on creating a Jamfile and using jam.
 
-    RELNOTES	Release 2.1 release notes.
+    RELNOTES	Release 2.2 release notes.
 
     Porting	Notes on porting jam to wildcat platforms.
 
@@ -103,24 +98,21 @@ INSTALLING
 	    VMS 5.4		VMS
 	    OPENVMS		OPENVMS
 
-    Special instructions for NT and VMS:
+    Special instructions for NT:
 
-	    On both VMS and NT, there isn't an standard place where the
-	    Jambase can be installed, and so it is assumed to be in the
-	    current directory.  This isn't practical for normal use 
-	    (because you want the Jambase to be shared for all projects),
-	    so you either need to edit jam.h to tell it where the Jambase
-	    should like or make an alias (NT using MKS shell) or symbol
-	    (on VMS) that is something like:
-
-		jam = jam -f _path_to_Jambase_
+	    The NT MAXLINE (command line length) is still set in jam.h to
+	    996, which was apparently the NT 3.5 limit. On 4.0, the limit 
+	    is somewhere around 10K. For now, you can increase MAXLINE in 
+	    jam.h so that a jam running on 4.0 will use the full command
+	    line length, but that jam.exe will fail miserably on the older 
+	    OS.
 
 	    On NT, a variable must be set before invoking jam to tell
 	    it where the C compiler lives.  The name of this variable
 	    depends on which compiler you are using:
 
 		BCCROOT:	The Borland C compiler
-		MSVCNT:		The Microsoft Compiler 2.0 (for NT)
+		MSVCNT:		The Microsoft Compiler 5.0 (for NT)
 		MSVC:		The Microsoft Compiler 1.5 (for Windows)
 
 	    Only MSVCNT has really been tested and is known to work.
@@ -130,7 +122,8 @@ Comments to the author!
 November, 1993 - release 1.0
 March, 1995 - release 2.0 
 February, 1996 - release 2.1
+October, 1997 - release 2.2
 
 Christopher Seiwald
 
-seiwald@p3.com
+seiwald@perforce.com
