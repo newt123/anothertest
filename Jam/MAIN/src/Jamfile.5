@@ -375,7 +375,7 @@ The following variables control the installation rules:
 BINDIR          InstallBin directory (/usr/local/bin)
 LIBDIR          InstallLib directory (/usr/local/lib)
 MANDIR          InstallMan directory (/usr/local/man)
-INSTALL		The install program; uses cp if not set (install)
+INSTALL         The install program; uses cp if not set (install)
 FILEMODE        generic permissions for InstallLib, InstallMan (644)
 EXEMODE         generic permissions for InstallBin (711)
 SHELLMODE       generic permissions for InstallShell (755)
@@ -385,55 +385,88 @@ These variable must be set (globally) before calling the install rules
 for them to take effect.
 .SH HANDLING DIRECTORY TREES
 .PP
-\fBJambase\fR includes a few rules for building whole directory trees.
-If these rules do not accomodate a particular project, they can be
-wrapped with custom extentions or simply replaced.
+\fBJam\fR can build large projects spread across many directories in
+one pass, tracking the relationships among all files.  It doesn't
+require the user to change the invocations of normal rules like
+\fIMain\fR, \fILibrary\fR, etc. to use non-local pathnames:  these
+rules continue to refer to files in the directory of the
+\fBJamfile\fR.  This section describes the \fBJambase\fR rules and
+variables that supports this.
 .PP
-The handling of a directory tree requires the user to set an
-environment variable pointing to the base of the tree.  The variable's
-name is left up to the user, but in this example we use $(TOP).
-.SH SubInclude Rule
+To build a whole directory tree at a time, the user must do three
+things:
+.IP 1.
+Set an environment variable pointing to the root directory of the
+source tree.  The root variable's name is left up to the user, but in these
+examples we use TOP.
+.IP 2.
+Place at the root of the tree a file named \fBJamrules\fR.  (This file
+can alternately be named by the variable $(xxxRULES), where xxx is
+the name of the root variable).  This file could be empty, but
+in practice it contains user-provided rules and variable definitions
+that are shared throughout the tree, such as library names, header
+directories, install directories, compiler flags, etc.  
+.IP 3.
+Preface the \fBJamfile\fR in each directory with an invocation of
+the \fISubDir\fR rule.
+.SS SubDir Rule
 .PP
-The \fISubInclude\fR rule sources the \fIJamfile\fR from the named
-subdirectory.  It takes as its first argument the name of the
-environment variable that points to the root of the directory tree, and
-as subsequent arguments the directory names leading from the root to
-the \fIJamfile\fR to be included.  Note that the name of the
-subdirectory is given as individual elements:  the \fISubInclude\fR
-rule does not use system-specific file name syntax.
+The \fISubDir\fR rule does two things:
+.IP 1.
+It reads in the \fBJamrules\fR at the root of the tree, if that file
+hasn't already been read in by a previous invocation of \fISubDir\fR.
+.IP 2.
+It sets a few variables that tell \fBjam\fR the name of the
+\fBJamfile\fR's directory, so that \fBjam\fR may find source files that
+are named local to the \fBJamfile\fR's directory.
+.PP
+The \fISubDir\fR rule takes as its first argument the root variable's
+name and as subsequent arguments the directory names leading from the
+root to the directory of the current \fBJamfile\fR.  Note that the name
+of the subdirectory is given as individual elements:  the \fISubDir\fR
+rule does not use system-specific directory name syntax.  
+.PP
+The \fISubDir\fR rule must be invoked before any rules that refer to
+the contents of the directory - it is best to put it at the top of each
+\fBJamfile\fR.
+.XB
+# Mondo src/util directory.
+
+SubDir TOP src util ;
+
+Main $(TOP)/lib/testutil : test.c ;
+
+LinkLibraries $(TOP)/lib/testutil : $(TOP)/lib/libutil.a ;
+
+Library $(TOP)/lib/libutil.a : gadgets.c gizmos.c widgets.c ;
+.XE
+.SS SubInclude Rule
+.PP
+The \fISubInclude\fR rule sources the \fBJamfile\fR from the named
+subdirectory.  Its arguments are the same as \fISubDir\fR's, and its
+only reason for being is to allow including a subdirectory
+\fBJamfile\fR without having to use system-specific directory name
+syntax.
 .PP
 The recommended practice is only to include one level of subdirectories
 at a time, and let the \fBJamfile\fR in each subdirectory include its
-subdirectories.
+subdirectories.  This allows a user to sit in any arbitrary directory
+of the source tree and build that subtree.
 .XB
 # Top level Jamfile for mondo project.  
 # 
 # $(TOP) points to root of mondo tree (set in environment).
 
-SubInclude TOP src ;	
+SubInclude TOP src ;    
 SubInclude TOP man ;
 SubInclude TOP misc ;
-.XE
-.SS SubDir Rule
-.PP
-In the \fBJamfile\fR of a directory that has contents other than just
-more subdirectories, the \fISubDir\fR rule announces the name of the
-directory, in the same format as the \fISubInclude\fR rule.  While the
-directory for \fISubDir\fR could be inferred from the \fRSubInclude\fR,
-restating it in each file makes it possible to invoke \fBjam\fR in a
-subdirectory without having to start at the root.  The \fISubDir\fR
-rule should be invoked before any other rule.
-.XB
-# Mondo Man page directory.
-
-SubDir TOP man ;
-
-InstallMan /usr/local/man : mondo.1 mondofile.5 mondod.8 ;
+SubInclude TOP util ;
 .XE
 .PP
-If a subdirectory has both subdirectories of its own and files that
-need building, the \fISubIncludes\fR should go at the end of the \fBJamfile\fR,
-after the effects of the \fISubDir\fR rule are needed.
+If a directory has both subdirectories of its own and files that
+need building, the \fISubIncludes\fR should either before the \fISubDir\fR
+rule or at the end of the \fBJamfile\fR - \fInot\fR between the 
+\fISubDir\fR and other rule invocations.
 .XB
 # Mondo src code.
 
@@ -460,11 +493,11 @@ SubDirCcFlags -DUSE_FAST_CODE ;
 .SS Variables
 The following variables are used when \fIJam\fR spans multiple directories:
 .BB
-LOCATE_TARGET	Directory to put targets.
-SEARCH_SOURCE	Directory to find sources.
-SOURCE_GRIST	Something to perturb source file names.
-SUBDIRCCFLAGS	Per-directory CCFLAGS.
-SUBDIRHDRS	Per-directory HDRS.
+LOCATE_TARGET   Directory to put targets.
+SEARCH_SOURCE   Directory to find sources.
+SOURCE_GRIST    Something to perturb source file names.
+SUBDIRCCFLAGS   Per-directory CCFLAGS.
+SUBDIRHDRS      Per-directory HDRS.
 .BE
 .PP
 \fISubDir\fR sets $(LOCATE_TARGET) and $(SEARCH_SOURCE) to be the
@@ -474,9 +507,9 @@ by rules in \fBJambase\fR: most rules that generate targets (like
 for the targets they generate, and rules that use sources (most all of
 them) set $(SEARCH) to be $(SEARCH_SOURCE) for the sources they use.
 .PP
-$(LOCATE) and $(SEARCH) are better explained in \fBjam\fR(1), but in 
-brief they tell \fBjam\fR where to create new targets and find existing
-ones, respectively.
+$(LOCATE) and $(SEARCH) are better explained in \fBjam\fR(1), but in
+brief they tell \fBjam\fR where to create new targets and where to find
+existing ones, respectively.
 .PP
 \fISubDir\fR sets $(SOURCE_GRIST) to be a value derived from the
 directory name.  $(SOURCE_GRIST) is used by the rules that take
@@ -491,8 +524,37 @@ and $(HDRS).  They could also be set directly.
 It should be noted that the user can set these variables independently
 of \fISubDir\fR, or after it.  The most profitable example is setting
 $(LOCATE_TARGET) to be a directory outside the source tree: in this
-case, \fBjam\fR can build without touching the source tree.
+case, \fBjam\fR can build without even modifying the source tree.
 .SH MISCELLANEOUS
+.SS LibraryFromObjects Rule
+.PP
+Sometimes the \fILibrary\fR rule's straightforward compiling of source
+into object modules to be archived isn't flexible enough.  The 
+\fILibraryFromObjects\fR rule does the archiving (and deleting) job
+of the \fILibrary\fR rule, but not the compiling.  The user can make
+use of the \fIObjects\fR or \fIObject\fR rule for that.
+.XB
+LibraryFromObjects max.o min.o ;
+Object max.o : maxmin.c ;
+Object min.o : maxmin.c ;
+ObjectCcFlags max.c : -DUSEMAX ;
+ObjectCcFlags min.c : -DUSEMIN ;
+.XE
+.PP
+This compiles the same source file into two different objects, with different
+compile flags, and archives them.  Note that \fIObjectCcFlags\fR refered to the
+(nonexistent) source file names for the objects.
+.SS MainFromObjects Rule
+.PP
+Similar to \fILibraryFromObjects\fR, \fIMainFromObjects\fR does the linking
+part of the \fIMain\fR rule, but not the compiling.
+.XB
+MainFromObjects w : w.o ;
+MainFromObjects uptime : uptime.o ;
+Object w.o : uptime.c ;
+Object uptime.o : uptime.c ;
+ObjectCcFlags w.c : -DW_CODE ;
+.XE
 .SS Clean Rule
 .PP
 In addition to their other duties, all rules listed above arrange for
@@ -525,7 +587,7 @@ type of intermediate files, a different \fIClean\fR target can be used
 to rid them.
 .XB
 rule M4 {
-	# File depends on it's m4 source
+        # File depends on it's m4 source
 
         DEPENDS $(<) : $(>) ;
 
@@ -539,49 +601,21 @@ actions M4
         m4 < $(>) > $(<)
 }
 .XE
-.SS LibraryFromObjects Rule
-.PP
-Sometimes the \fILibrary\fR rule's straightforward compiling of source
-into object modules to be archived isn't flexible enough.  The 
-\fILibraryFromObjects\fR rule does the archiving (and deleting) job
-of the \fILibrary\fR rule, but not the compiling.  The user can make
-use of the \fIObjects\fR or \fIObject\fR rule for that.
-.XB
-LibraryFromObjects max.o min.o ;
-Object max.o : maxmin.c ;
-Object min.o : maxmin.c ;
-ObjectCcFlags max.c : -DUSEMAX ;
-ObjectCcFlags min.c : -DUSEMIN ;
-.XE
-.PP
-This compiles the same source file into two different objects, with different
-compile flags, and archives them.  Note that \fIObjectCcFlags\fR refered to the
-(nonexistent) source file names for the objects.
-.SS MainFromObjects Rule
-.PP
-Similar to \fILibraryFromObjects\fR, \fIMainFromObjects\fR does the linking
-part of the \fIMain\fR rule, but not the compiling.
-.XB
-MainFromObjects w : w.o ;
-MainFromObjects uptime : uptime.o ;
-Object w.o : uptime.c ;
-Object uptime.o : uptime.c ;
-ObjectCcFlags w.c : -DW_CODE ;
-.XE
 .SS RmTemps Rule
 .PP
 Some intermediate files are meant to be temporary.  The \fIRmTemps\fR
 rule makes such files with the TEMPORARY attribute, and then deletes
 them after they are used.  To delete them only when they are finished
-being used, \fIRmTemps\fR must be the rule (with actions) invoked on
+being used, \fIRmTemps\fR must be the last rule (with actions) invoked on
 the target that uses the temporary files, and the sources to
 \fIRmTempts\fR must be the temporary files themselves.
-.XE
+.XB
 SpecialUserRuleA foo : bar ;
 SpecialUserRuleB ola : foo ;
 RmTemps ola : foo ;
 .XE
-This says: build \fIfoo\fR using \fISpecialUserRuleA\fR and \fIola\fR
-using \fISpecialUserRuleB\fR.  Once that is done, remove \fIfoo\fR.
+.PP
+This says: build "foo" using \fISpecialUserRuleA\fR and "ola"
+using \fISpecialUserRuleB\fR.  Once that is done, remove "foo".
 .SH SEE ALSO
 \fBjam\fR(1), \fBJambase\fR(5)
