@@ -1322,7 +1322,7 @@ if $(UNIX)
 	}
     }
 
-    actions CcMv
+    actions ignore CcMv
     {
 	[ $(<) != $(>:BS=$(SUFOBJ)) ] && $(MV) $(>:BS=$(SUFOBJ)) $(<)
     }
