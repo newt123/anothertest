@@ -160,4 +160,5 @@ ACTIONS	*actionlist();
 SETTINGS *addsettings();
 void 	pushsettings();
 void 	popsettings();
+void	freesettings();
 void	donerules();

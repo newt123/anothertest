@@ -19,6 +19,9 @@ Changes since 2.1
     $(FOO:S) now refers to the _last_ suffix if a filename has more than
     one dot (.) in it.
 
+    Variables local to the current context may be declared at the top
+    of a block (just after a {) with "local var ... ;"
+
 Release notes for Jam 2.1.
 
 1.  Release info:

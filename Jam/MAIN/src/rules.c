@@ -27,6 +27,7 @@
  *    usesettings() - set all target specific variables
  *    pushsettings() - set all target specific variables
  *    popsettings() - reset target specific variables to their pre-push values
+ *    freesettings() - delete a settings list
  *    donerules() - free RULE and TARGET tables
  *
  * 04/12/94 (seiwald) - actionlist() now just appends a single action.
@@ -236,6 +237,26 @@ popsettings( v )
 SETTINGS *v;
 {
 	pushsettings( v );	/* just swap again */
+}
+
+/*
+ *    freesettings() - delete a settings list
+ */
+
+void
+freesettings( v )
+SETTINGS *v;
+{
+	while( v )
+	{
+	    SETTINGS *n = v->next;
+
+	    freestr( v->symbol );
+	    list_free( v->value );
+	    free( (char *)v );
+
+	    v = n;
+	}
 }
 
 /*

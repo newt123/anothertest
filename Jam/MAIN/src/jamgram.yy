@@ -47,6 +47,7 @@
 # define psete( s,s1,f )  parse_make( compile_setexec,P0,P0,s,s1,L0,L0,f )
 # define pincl( l )       parse_make( compile_include,P0,P0,S0,S0,l,L0,0 )
 # define pswitch( l,p )   parse_make( compile_switch,p,P0,S0,S0,l,L0,0 )
+# define plocal( l,p )	  parse_make( compile_local,p,P0,S0,S0,l,L0,0 );
 # define pcases( l,r )    parse_make( F0,l,r,S0,S0,L0,L0,0 )
 # define pcase( s,p )     parse_make( F0,p,P0,s,S0,L0,L0,0 )
 # define pif( l,r )	  parse_make( compile_if,l,r,S0,S0,L0,L0,0 )
@@ -78,9 +79,15 @@ stmts	:
  * rule - any one of jam's rules
  */
 
-rules	: /* empty */
+rules	: rule0
+		{ $$.parse = $1.parse; }
+	| `local` args `;` rule0
+		{ $$.parse = plocal( $2.list, $4.parse ); }
+	;
+
+rule0	: /* empty */
 		{ $$.parse = prules( P0, P0 ); }
-	| rules rule
+	| rule0 rule
 		{ $$.parse = prules( $1.parse, $2.parse ); }
 	;
 

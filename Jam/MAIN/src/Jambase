@@ -92,6 +92,7 @@
 # Utility rules that have no side effects:
 #
 # makeSubDir var : d1 d2 ... ;		$(var) = path to root
+# addDirName var : d1 d2 ... ;		$(var) += path from root to dir
 # makeDirName var : d1 d2 ... ;		$(var) = path from root to dir
 # makeGrist var : d1 d2 ... ;		$(var) = grist form of dir
 # makeGristedName var : value ;		$(var) = $(value:G=$(SOURCE_GRIST))
@@ -976,10 +977,10 @@ rule makeSubDir
 	$(<) = $(_d) ;
 }
 
-rule makeDirName
+rule addDirName
 {
 	# Turn individual elements in $(>) into a usable path.
-	# Return result in $(<)
+	# Add result to $(<).
 
 	if $(>)
 	{
@@ -1000,7 +1001,12 @@ rule makeDirName
 	    _s = [$(_s)] ;
 	}
 
-	$(<) = $(_s) ;
+	$(<) += $(_s) ;
+}
+
+rule makeDirName
+{
+	$(<) = ; addDirName $(<) : $(>) ;
 }
 
 rule makeGrist
