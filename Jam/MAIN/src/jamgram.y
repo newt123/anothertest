@@ -75,7 +75,7 @@
 # define pset( l,r,a ) 	  parse_make( compile_set,P0,P0,S0,S0,l,r,a )
 # define pset1( l,p,a )	  parse_make( compile_settings,p,P0,S0,S0,l,L0,a )
 # define pstng( p,l,r,a ) pset1( p, parse_make( F0,P0,P0,S0,S0,l,r,0 ), a )
-# define prule( s,l,r )   parse_make( compile_rule,P0,P0,s,S0,l,r,0 )
+# define prule( s,p )     parse_make( compile_rule,p,P0,s,S0,L0,L0,0 )
 # define prules( l,r )	  parse_make( compile_rules,l,r,S0,S0,L0,L0,0 )
 # define pfor( s,p,l )    parse_make( compile_foreach,p,P0,s,S0,l,L0,0 )
 # define psetc( s,p )     parse_make( compile_setcomp,p,P0,s,S0,L0,L0,0 )
@@ -89,6 +89,7 @@
 # define pthen( l,r )	  parse_make( F0,l,r,S0,S0,L0,L0,0 )
 # define pcond( c,l,r )	  parse_make( F0,l,r,S0,S0,L0,L0,c )
 # define pcomp( c,l,r )	  parse_make( F0,P0,P0,S0,S0,l,r,c )
+# define plol( p,l )	  parse_make( F0,p,P0,S0,S0,l,L0,0 )
 
 %}
 
@@ -104,7 +105,12 @@ stmts	:
 		}
 	| stmts rule
 		{ 
-			(*($2.parse->func))( $2.parse, L0, L0 );
+			/* no target, sources in global scope */
+			/* invoke statement and then free its parse */
+
+			LOL l;
+			lol_init( &l );
+			(*($2.parse->func))( $2.parse, &l );
 			parse_free( $2.parse );
 		}
 	;
@@ -128,10 +134,8 @@ rule0	: /* empty */
 
 rule	: INCLUDE args _SEMIC
 		{ $$.parse = pincl( $2.list ); }
-	| ARG args _SEMIC
-		{ $$.parse = prule( $1.string, $2.list, L0 ); }
-	| ARG args _COLON args _SEMIC
-		{ $$.parse = prule( $1.string, $2.list, $4.list ); }
+	| ARG lol _SEMIC
+		{ $$.parse = prule( $1.string, $2.parse ); }
 	| arg1 assign args _SEMIC
 		{ $$.parse = pset( $1.list, $3.list, $2.number ); }
 	| arg1 ON args assign args _SEMIC
@@ -214,6 +218,16 @@ cases	: /* empty */
 
 case	: CASE ARG _COLON rules
 		{ $$.parse = pcase( $2.string, $4.parse ); }
+	;
+
+/*
+ * lol - list of lists
+ */
+
+lol	: args
+		{ $$.parse = plol( P0, $1.list ); }
+	| args _COLON lol
+		{ $$.parse = plol( $3.parse, $1.list ); }
 	;
 
 /*
