@@ -542,13 +542,11 @@ rule Object
 	# If the source file is in a distant directory, look there.
 	# Else, look in "" (the current directory).
 
+	HDRLOCAL = "" ;
+
 	if $(SEARCH_SOURCE)
 	{
 	    HDRLOCAL = $(SEARCH_SOURCE) ;
-	}
-	else
-	{
-	    HDRLOCAL = "" ;
 	}
 
 	HDRRULE on $(>) = HdrRule ;
