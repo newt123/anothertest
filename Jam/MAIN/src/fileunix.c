@@ -141,11 +141,15 @@ char		*file;
 	    file += f->f_dir.len;
 	}
 
-	/* Special case for dir / : don't add another / */
+	/* Put / between dir and file */
 
-	if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == '/' ) )
-	    if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
+	if( f->f_dir.len && ( f->f_base.len || f->f_suffix.len ) )
+	{
+	    /* Special case for dir / : don't add another / */
+
+	    if( !( f->f_dir.len == 1 && f->f_dir.ptr[0] == '/' ) )
 		*file++ = '/';
+	}
 
 	if( f->f_base.len )
 	{

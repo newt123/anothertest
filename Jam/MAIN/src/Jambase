@@ -543,26 +543,24 @@ rule MainFromObjects
 
 rule MkDir
 {
-	# Cheesy gate to prevent multiple invocations on same dir
-
 	if ! $($(<)-mkdir) 
 	{
-	    $(<)-mkdir = true ;
-
-	    MkDir1 $(<) ;
-
+	    # Cheesy gate to prevent multiple invocations on same dir
+	    # MkDir1 has the actions 
 	    # If dir exists, don't update it
-
-	    NOUPDATE $(<) ;
-
 	    # Arrange for jam dirs
 
+	    $(<)-mkdir = true ;
+	    MkDir1 $(<) ;
+	    NOUPDATE $(<) ;
 	    Depends dirs : $(<) ;
 
 	    # Recursively make parent directories.
+	    # On UNIX, $(<:D) = $(<)'s parent, & we recurse until root
+	    # On VMS, $(<:D) = $(<), no recursing, but you don't need to 
+	    # create parent directories explicitly there.
 
 	    s = $(<:D) ;
-
 	    if $(s) && $(s) != $(<)
 	    {
 		Depends $(<) : $(s) ;
