@@ -68,8 +68,8 @@ static char *target_fate[] =
 	"missing",
 	"old",
 	"update",
-	"can't find",
-	"can't make"
+	"nofind",
+	"nomake"
 } ;
 
 # define spaces(x) ( "                " + 16 - ( x > 16 ? 16 : x ) )
