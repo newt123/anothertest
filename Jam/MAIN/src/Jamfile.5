@@ -1,4 +1,4 @@
-.TH JAMFILE 5 "30 August 1993"
+.TH JAMFILE 5 "15 January 1995"
 .de BB
 .RS
 .PP
@@ -20,17 +20,24 @@ Example:
 .BE
 ..
 .SH NAME
-\fBJamfile\fR \- per-directory \fBJam\fR(1) instructions
+\fBJamfile\fR \- per-directory \fBjam\fR(1) instructions
 .SH DESCRIPTION
 .PP
-\fBJamfile\fR is the file that tells the build tool \fBJam\fR what to
+\fBJamfile\fR is the file that tells the build tool \fBjam\fR what to
 do in the current directory.  This man page gives examples for a
 \fBJamfile\fR.
 .PP
-The rules used here are defined by \fBJambase\fR(5), the \fBJam\fR
-boilerplate.  \fBJambase\fR contains a set of \fBJam\fR rule
+The rules used here are defined by \fBJambase\fR(5), the \fBjam\fR
+boilerplate.  \fBJambase\fR contains a set of \fBjam\fR rule
 definitions that provide the roughly \fBmake\fR(1)-like functionality
 shown here.
+.SH WHITESPACE NOTE
+.PP
+\fBJam\fR requires whitespace (blanks, tabs, or newlines) to surround
+all tokens, including the \fB:\fR (colon) and \fB;\fR (semicolon)
+tokens.  This is because \fBjam\fR runs on many platforms and no
+characters, save whitespace, are uncommon in the file names on all of
+those platforms.
 .SH EXECUTABLES AND LIBRARIES
 .SS Main Rule
 .PP
@@ -237,7 +244,7 @@ One of the functions of the \fIObject\fR rule is to scan source files
 for (C style) header file inclusions.  To do so, it sets the
 Jam-special variables $(HDRSCAN) and $(HDRRULE) (specifically for the
 source file).  The presence of these variables triggers a special
-mechanism in \fBJam\fR for scanning a file for header file inclusions
+mechanism in \fBjam\fR for scanning a file for header file inclusions
 and invoking a rule with the results of the scan.  The $(HDRSCAN)
 variable is set to an \fBegrep\fR(1) pattern that matches "#include"
 statements in C source files, and the $(HDRRULE) variable is set to the
@@ -254,7 +261,7 @@ included files can be found.  \fIObject\fR does this as well, setting
 $(HDRSEARCH) to $(HDRS) and $(STDHDRS).
 .PP
 The header file scanning occurs during the "file binding" phase of
-\fBJam\fR, which means that the target-specific variables (for the
+\fBjam\fR, which means that the target-specific variables (for the
 source file) are in effect.  To accomodate nested includes, one of the
 \fIHdrRule\fR's jobs is to pass the values of $(HDRRULE), $(HDRSCAN),
 and $(HDRSEARCH) onto the included files, so that they will be scanned
@@ -413,7 +420,7 @@ In the \fBJamfile\fR of a directory that has contents other than just
 more subdirectories, the \fISubDir\fR rule announces the name of the
 directory, in the same format as the \fISubInclude\fR rule.  While the
 directory for \fISubDir\fR could be inferred from the \fRSubInclude\fR,
-restating it in each file makes it possible to invoke \fBJam\fR in a
+restating it in each file makes it possible to invoke \fBjam\fR in a
 subdirectory without having to start at the root.  The \fISubDir\fR
 rule should be invoked before any other rule.
 .XB
@@ -467,8 +474,8 @@ by rules in \fBJambase\fR: most rules that generate targets (like
 for the targets they generate, and rules that use sources (most all of
 them) set $(SEARCH) to be $(SEARCH_SOURCE) for the sources they use.
 .PP
-$(LOCATE) and $(SEARCH) are better explained in \fBJam\fR(1), but in 
-brief they tell \fBJam\fR where to create new targets and find existing
+$(LOCATE) and $(SEARCH) are better explained in \fBjam\fR(1), but in 
+brief they tell \fBjam\fR where to create new targets and find existing
 ones, respectively.
 .PP
 \fISubDir\fR sets $(SOURCE_GRIST) to be a value derived from the
@@ -484,7 +491,7 @@ and $(HDRS).  They could also be set directly.
 It should be noted that the user can set these variables independently
 of \fISubDir\fR, or after it.  The most profitable example is setting
 $(LOCATE_TARGET) to be a directory outside the source tree: in this
-case, \fBJam\fR can build without touching the source tree.
+case, \fBjam\fR can build without touching the source tree.
 .SH MISCELLANEOUS
 .SS Clean Rule
 .PP
@@ -582,3 +589,5 @@ It is possible to put user-provided rules and constructs directly into
 the \fBJamfile\fR, but to share them they should be placed in their own
 rule file.  If the variable $(JAMUSER) is set to the name of this file,
 \fBJambase\fR includes it just before reading the \fBJamfile\fR.
+.SH SEE ALSO
+\fBjam\fR(1), \fBJambase\fR(5)
