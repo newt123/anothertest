@@ -34,6 +34,7 @@
  * 05/04/94 (seiwald) - async multiprocess (-j) support
  * 06/01/94 (seiwald) - new 'actions existing' does existing sources
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
+ * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  */
 
 # include "jam.h"
@@ -185,7 +186,8 @@ TARGET	*t;
 	case T_FATE_TOUCHED:
 	    break;
 
-	case T_FATE_DONTKNOW:
+	case T_FATE_CANTFIND:
+	case T_FATE_CANTMAKE:
 	    t->status = EXEC_CMD_FAIL;
 	    break;
 

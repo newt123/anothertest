@@ -24,6 +24,7 @@
  * 04/12/94 (seiwald) - actionlist() now just appends a single action.
  * 06/01/94 (seiwald) - new 'actions existing' does existing sources
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
+ * 01/19/95 (seiwald) - split DONTKNOW into CANTFIND/CANTMAKE.
  */
 
 typedef struct _rule RULE;
@@ -126,7 +127,8 @@ struct _target {
 # define	T_FATE_MISSING	5	/* is missing, needs updating */
 # define 	T_FATE_OUTDATED	6	/* is out of date, needs updating */
 # define 	T_FATE_UPDATE	7	/* deps updated, needs updating */
-# define 	T_FATE_DONTKNOW	8	/* no rules to make missing target */
+# define 	T_FATE_CANTFIND	8	/* no rules to make missing target */
+# define 	T_FATE_CANTMAKE	9	/* can't find dependents */
 
 	char	progress;		/* tracks make1() progress */
 

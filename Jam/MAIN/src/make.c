@@ -29,7 +29,7 @@
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
  * 12/20/94 (seiwald) - make0() headers after determining fate of target, so 
  *			that headers aren't seen as dependents on themselves.
- * 01/19/95 (seiwald) - don't consider target buildable if child isn't
+ * 01/19/95 (seiwald) - distinguish between CANTFIND/CANTMAKE targets.
  */
 
 # include "jam.h"
@@ -52,7 +52,8 @@ static void make0();
 typedef struct {
 	int	temp;
 	int	updating;
-	int	dontknow;
+	int	cantfind;
+	int	cantmake;
 	int	targets;
 	int	made;
 } COUNTS ;
@@ -67,7 +68,8 @@ static char *target_fate[] =
 	"missing",
 	"old",
 	"update",
-	"can't"
+	"can't find",
+	"can't make"
 } ;
 
 # define spaces(x) ( "                " + 16 - ( x > 16 ? 16 : x ) )
@@ -102,8 +104,10 @@ int	anyhow;
 		printf( "...using %d temp target(s)...\n", counts->temp );
 	    if( counts->updating )
 		printf( "...updating %d target(s)...\n", counts->updating );
-	    if( counts->dontknow )
-		printf( "...can't make %d target(s)...\n", counts->dontknow );
+	    if( counts->cantfind )
+		printf( "...can't find %d target(s)...\n", counts->cantfind );
+	    if( counts->cantmake )
+		printf( "...can't make %d target(s)...\n", counts->cantmake );
 	}
 
 	for( i = 0; i < n_targets; i++ )
@@ -208,9 +212,9 @@ int	anyhow;
 	/* If children newer than target or */
 	/* If target doesn't exist, rebuild.  */
 
-	if( fate == T_FATE_DONTKNOW )
+	if( fate >= T_FATE_CANTFIND )
 	{
-	    /* can't build child, can't build parent */
+	    fate = T_FATE_CANTMAKE;
 	}
 	else if( fate > T_FATE_STABLE )
 	{
@@ -249,8 +253,8 @@ int	anyhow;
 	    }
 	    else
 	    {
-		fate = T_FATE_DONTKNOW;
 		printf( "don't know how to make %s\n", t->name );
+		fate = T_FATE_CANTFIND;
 	    }
 	}
 
@@ -289,12 +293,14 @@ int	anyhow;
 	if( !( ++counts->targets % 1000 ) && DEBUG_MAKE )
 	    printf( "...patience...\n" );
 
-	if( fate > T_FATE_ISTMP && fate < T_FATE_DONTKNOW && t->actions )
+	if( fate > T_FATE_ISTMP && fate < T_FATE_CANTFIND && t->actions )
 	    counts->updating++;
 	else if( fate == T_FATE_ISTMP )
 	    counts->temp++;
-	else if( fate == T_FATE_DONTKNOW )
-	    counts->dontknow++;
+	else if( fate == T_FATE_CANTFIND )
+	    counts->cantfind++;
+	else if( fate == T_FATE_CANTMAKE && t->actions )
+	    counts->cantmake++;
 
 	if( !( t->flags & T_FLAG_NOTFILE ) && fate > T_FATE_STABLE )
 	    flag = "+";
