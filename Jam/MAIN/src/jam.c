@@ -114,7 +114,11 @@
 struct globs globs = {
 	0,			/* noexec */
 	1,			/* jobs */
+# ifdef macintosh
+	{ 0, 0 }		/* debug - suppress tracing output */
+# else
 	{ 0, 1 } 		/* debug ... */
+# endif
 } ;
 
 /* Symbols to be defined as true for use in Jambase */
