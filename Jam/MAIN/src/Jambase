@@ -95,6 +95,8 @@
 # makeDirName var : d1 d2 ... ;		$(var) = path from root to dir
 # makeGrist var : d1 d2 ... ;		$(var) = grist form of dir
 # makeGristedName var : value ;		$(var) = $(value:G=$(SOURCE_GRIST))
+# makeCommon var1 : var2 ;		strip common initial elements
+# makeRelPath var d1 : d2 ;		$(var) = rel path from d1 to d2
 #
 
 # Brief review of the jam language:
@@ -658,6 +660,13 @@ rule MkDir
 	}
 }
 
+rule MkDirFor
+{
+	Depends $(<) : $(<:D) ;
+	NoUpdate $(<:D) ;
+	MkDir $(<:D) ;
+}
+
 rule Object
 {
 	# locate object and search for source, if wanted
@@ -1020,6 +1029,41 @@ rule makeGristedName
 	else
 	{
 	    $(<) = $(>) ;
+	}
+}
+
+rule makeCommon
+{
+	if $($(<)[1]) && $($(<[1])) = $($(>[1))
+	{
+	    $(<) = $($(<)[2-]) ;
+	    $(>) = $($(>)[2-]) ;
+	    makeCommon $(<) : $(>) ;
+	}
+}
+
+rule makeRelPath 
+{
+	# first strip off common parts
+
+	l = $(<[2-) ;
+	r = $(>) ;
+
+	makeCommon l : r ;
+
+	# now make path to root and path down
+
+	makeSubDir l : $(l) ;
+	makeDirName r : $(r) ;
+
+	# Concatenate and save
+
+	# XXX This should be better
+
+	if $(r) = $(DOT) {
+	    $(<[1]) = $(l) ;
+	} else {
+	    $(<[1]) = $(r:R=$(l)) ;
 	}
 }
 

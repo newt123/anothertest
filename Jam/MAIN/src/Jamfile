@@ -120,7 +120,7 @@ actions PostBall
 	mv Jamfile.sav Jamfile
 }
 
-VERSION = jam-2.1.0 ;
+VERSION = jam-2.1.1 ;
 
 actions Tar
 {
