@@ -18,6 +18,7 @@ Support for Mstools.
 Support for string table archives under msc.
 C++ support in msc.
 warning for NT if root variables not set.
+Jamgram.h included after scan.h so YYSTYPE is defined on Linux.
 
 Release notes for Jam 2.0.
 

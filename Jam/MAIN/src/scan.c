@@ -5,10 +5,10 @@
  */
 
 # include "jam.h"
-# include "jamgram.h"
 # include "lists.h"
 # include "parse.h"
 # include "scan.h"
+# include "jamgram.h"
 # include "newstr.h"
 
 /*
@@ -20,6 +20,8 @@
  *			to return EOF now matter how many times yylex()
  *			reinvokes yyline().
  * 02/11/95 (seiwald) - honor only punctuation keywords if SCAN_PUNCT.
+ * 07/27/95 (seiwald) - Include jamgram.h after scan.h, so that YYSTYPE is
+ *			defined before Linux's yacc tries to redefine it.
  */
 
 struct keyword {
