@@ -1,0 +1,71 @@
+Jam - make(1) redux
+
+FEATURES
+
+    Jam is a make-like program that supplants make's implicit rules
+    with a real language for defining dependencies and update
+    actions.   Its features include:
+
+    o       Jam finds header file dependencies using regexp(3)
+	    patterns.
+
+    o       Jam has a real language, including conditionals and
+	    list valued variables.
+
+    o       A central Jambase defines the rules, which can be
+	    customized for large products.
+
+    o       Per directory Jamfiles are simple and are normally
+	    system independent.
+
+    o       Jam can build large systems without recursing.
+
+    o	    Jam never tries to store state in any funny files.
+
+    o	    Jam runs on UNIX and VMS, and is portable.
+
+PORTING
+
+    Build jam with make(1) on:
+
+	    BSDI	    BSD/386 1.0
+	    DEC 3000/500    OSF/1
+	    DG AViiON       DGUX 5.4
+	    HP 9000/700     HPUX 9.0
+	    IBM RS/6000     AIX		*
+	    SGI R4000       IRIX 5.0
+	    Sequent 2000    PTX V2.1.0
+	    Sun 3           SunOS4.0
+	    Sun 4           Solaris 2	*+
+	    Sun 4           SunOS4.1
+	    VAX             Ultrix 4.2
+	
+	    * requires editing Makefile
+	    + only works with SUNSwpro CC (dirent confusion) 
+
+    Build jam with @build.com on:
+
+	    VAX		    VMS 5.4
+	    DEC 3000/500    OPENVMS	*
+
+	    * requires editing build.com
+
+    See the "Porting" file for info on more wildcat ports.
+
+OTHER FILES
+
+    Aside from source files, there is:
+
+	Build.com	VMS command script
+	Examples	sample Jamfiles
+	Makefile	a bootstrap makefile
+	Porting		notes on porting jam
+	Jambase.5	Jambase man page
+	jam.1		jam man page
+	yyacc		a yacc pre-preprocessor
+
+Comments to the author!
+
+Christopher Seiwald
+Seiwald@vix.com
+November, 1993

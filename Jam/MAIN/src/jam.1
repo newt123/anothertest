@@ -1,0 +1,485 @@
+.TH JAM 1 "30 August 1993"
+.SH NAME
+jam \- 
+.BR make (1)
+redux
+
+.SH SYNOPSIS
+.B jam
+[
+.B \-n
+] [
+.BI \-d " debug"
+] [
+.BI \-f " Jambase"
+] ... [
+.BI \-t " target"
+] ... [
+.I target
+] ...
+
+.SH DESCRIPTION
+.PP
+.B Jam
+recursively builds target files from their source files, using a
+.B Jambase
+to define rules and a
+.B Jamfile
+to lists the targets and sources in terms of those rules.  Together
+they define the dependency tree and the updating actions for all
+targets:
+.B jam
+does not rely on suffix-driven implicit rules or directory contents.
+A default
+.BR Jambase 
+is provided with
+.BR jam ;
+the user supplies the
+.BR Jamfile .
+.PP
+See
+.BR Jambase (5)
+for information on writing Jamfiles.
+This manual page describes the program which interprets
+.BR Jambase .
+
+.SH OPTIONS
+.PP
+.B Jam
+supports the following options:
+.IP "-n"
+Don't actually execute the updating actions, but do everything else.
+.IP "-d<n>"
+Set the debug level to <n>.  Interesting values are:
+.PP
+.RS
+0 Emit only errors
+.br
+1 Emit update action tracing (default)
+.br
+2 Emit update commands
+.br
+3 Produce dependency information
+.br
+4 Show timestamps of bound files
+.br
+5 Show rule invocation
+.br
+6-9 debugging
+.RE
+.IP "-f<file>"
+Read <file> instead of 
+.BR Jambase .
+.IP "-t<target>"
+Pretend <target> is new, regardless of its actual timestamp.
+
+.SH "THE JAM LANGUAGE"
+.PP
+The
+.B jam
+language supports defining and using rules, setting variables, and flow
+of control structures.  The
+.B Jambase
+and
+.B Jamfile
+share this common language.
+.SS "Lexical Features"
+.B Jam
+treats its input files as whitespace separated tokens, with two
+exceptions: double quotes (") can enclose whitespace to embed it into a
+token, and everything between the matching curly braces ({}) in the 
+definition of a rule action is treated as a single string.
+A backslash (\\) can escape a double quote.
+.SS Targets
+Targets and sources (collectively "targets") are files to be updated
+and the files used in updating those targets.  A target is simply a
+filename, either rooted or relative to the directory of
+.BR Jam 's
+invocation.  The special syntax,
+.IR "file(member)" ,
+refers to an
+.BR ar (1)
+library member.
+The special syntax,
+.IR "<grist>file" ,
+perturbs a file name to distinguish it from other files
+with the same name.  The <grist> is stripped from the name during
+binding (see below).
+.SS Rules
+.BR Jam 's
+basic entity is called a rule, which is used to relate targets to their
+sources.  A rule is defined in two parts: the
+.B jam
+statements to execute when the rule is invoked (essentially a procedure
+call), and the actions (shell commands) to execute in order to update
+the targets of the rule.  A rule may have a procedure definition, actions,
+or both.
+.PP
+The 
+.B jam
+statements for defining and invoking rules are as follows, where
+<targets> and <sources> are lists of filenames, <statements> are 
+.B jam
+statements, and <string> is a shell script:
+.IP 
+rule <rulename> { <statements> }
+.IP
+actions [ modifiers ] <rulename> { <string> }
+.IP
+<rulename> <targets> [ : <sources> ] ;
+.PP
+The first form defines a rule's procedure; the second defines the rule's
+updating actions; the third invokes the rule.  Redefining a rule's
+procedure or actions replaces the previous definition.
+.PP
+Invoking a rule executes the procedure for the rule (if any) and associates 
+any update actions for the targets.  More than one update action may be
+associated with a target: they are executed in the order in which they
+are added.
+.PP
+In both the rule's precedure definition and the rule's actions, the
+special variables $(<) and $(>) refer to the <targets> and <sources>
+given at rule invocation.  However, in the rule's actions $(<) and $(>)
+refer to the <targets> and <sources> after they have been bound by the
+binding phase (see below).
+.B Jam
+issues a warning if $(<) or $(>) have elements not in the dependency tree.
+.PP
+The following action modifiers are understood:
+.IP "actions ignore"
+The return status of the shell commands is ignored.
+.IP "actions piecemeal"
+The shell commands are repeatedly invoked with a subset of $(>)
+small enough to fit in a command buffer.
+.IP "actions quietly"
+The action is not echoed to the standard output.
+.IP "actions together"
+The $(>) from multiple instances of the same action on the same
+target are glommed together.
+.IP "actions updated "
+$(>) includes only targets marked for updating.
+.SS "Builtin Rules"
+.PP
+.B Jam
+has six builtin rules, none of which have updating actions:
+.PP
+.IP "DEPENDS <targets> : <sources>"
+.br
+Makes <sources> dependents of <targets>.
+.IP "ECHO <args>"
+.br
+Blurts out the message <args> to stdout.
+.IP "INCLUDES <targets> : <sources>"
+.br
+Makes <sources> dependents of anything of which <targets> is a dependent.
+.IP "NOCARE <targets>"
+.br
+Marks <targets> as possibly being bogus (see binding, below).
+.IP "NOTIME <targets>"
+.br
+Marks <targets> as not being files (see binding, below).
+.IP "TEMPORARY <targets>"
+.br
+Marks <targets> as temporary (see binding, below).
+.SS "Flow of Control"
+.PP
+.B Jam
+has several simple flow of control statements:
+.IP
+include <a> ;
+.IP
+for <a> in <args> { <statements> }
+.IP
+switch <a> { case <v1> : <statements> ; case <v2> : <statements> ; ... }
+.IP
+if <cond> { <statements> } else { <statements> }
+.PP
+The 
+.B include 
+statement includes the named file; the path is relative to
+the directory from which
+.B jam
+was invoked.
+.PP
+The 
+.B for 
+loop executes <statements> for each value in <args>, setting the
+variable <a> to the value.  <a> is not variable expanded.
+.PP
+The 
+.B switch 
+statement executes zero or one of the enclosed <statements>,
+depending on which value <a> matches.  The <v> values are not variable
+expanded.  A <v> value of * matches anything, but there is no other
+wildcarding (sorry).
+.PP
+The 
+.B if 
+statement does the obvious; the 
+.B else 
+clause is optional.  
+.I <cond>
+is built of:
+.PP
+.RS
+<a>		true if <a> is a non-zero length string
+.br
+<a1> = <b1>	strings equal
+.br
+<a1> != <b1>	strings not equal
+.br
+<a1> < <b1>	string less than
+.br
+<a1> <= <b1>	string less than or equal to
+.br
+<a1> > <b1>	string greater than
+.br
+<a1> >= <b1>	string greater than or equal to
+.PP
+! <cond>		condition not true
+.br
+<cond> && <cond>	conjunction
+.br
+<cond> || <cond>	disjunction
+.br
+( <cond> )		grouping
+.RE
+.PP
+In comparisons, the arguments may (through variable expansion) be more
+than one token, but only the first token takes part in the comparison.
+If through variable expansion the argument is zero tokens, a single
+token of a zero length string is used instead.
+.SS Variables
+.PP
+.B Jam
+variables are lists of strings, with zero or more elements.  An unset
+variable is indistinguishable from a variable whose value is an empty
+list.  Variables are either global or target specific.  
+All variables are referenced as $(VARIABLE).
+.PP
+A variable is set with:
+.IP
+<variable> = <values> ;
+.IP
+<variable> default = <values> ;
+.IP
+<variable> on <targets> = <values> ;
+.PP
+The first form sets <variable> globally to the given <values>; 
+the second form only sets the variable if it is unset; the
+third form arranges for <variable> to take on the <values> only
+when binding and updating <targets>.
+.PP
+On program startup,
+.B jam
+imports the environment variable settings into
+.B jam
+variables.
+.B Jam
+variables are not re-exported.
+.SS "Variable Expansion"
+.PP
+Before executing a statement
+.B jam
+performs variable expansion on each token that is not a keyword or rule
+name. Such tokens with embedded variable references are replaced with
+zero or more tokens.  Variable references are of the form $(v) or
+$(vm), where v is the variable name and m are optional modifiers.
+.PP
+Variable expansion in a rule's actions is similar to variable expansion
+in statements, except that the action string is tokenized at whitespace
+without regards for quoting.
+.PP
+The result of a token after variable expansion is the product of the
+components of the token, where each component is a literal substring or
+a list substituting a variable reference.  For example:
+.PP
+.RS
+$(X)		-> a b c
+.br
+t$(X)		-> ta tb tc
+.br
+$(X)z		-> az bz cz
+.br
+$(X)-$(X)	-> a-a a-b a-c b-a b-b b-c c-a c-b c-c
+.RE
+.PP
+The variable name and modifiers can themselves contain a variable
+reference, and this partakes of the product as well: 
+.PP
+.RS
+$(X)		-> a b c
+.br
+$(Y)		-> 1 2
+.br
+$(Z)		-> X Y
+.br
+$($(z))		-> a b c 1 2
+.RE
+.PP
+Because of this product expansion, if any variable reference in a token
+is unset then the result of the expansion is an empty list.
+.PP
+Modifiers to a variable are of two varieties: subelement selection and
+filename editing.  They are:
+.PP
+.IP "[<n>]"
+Select only element number <n> (starting at 1).  If the variable contains
+fewer than <n> elements, the result is a zero element list.
+.IP "[<n>-<m>]"
+Select only elements number <n> through <m>.
+.IP "[<n>-]"
+Select only elements number <n> through the last.
+.IP ":G=<grist>"
+Replace the grist of the filename with <grist>.
+.IP ":D=<path>"
+Replace directory component of filename with <path>.
+.IP ":B=<base>"
+Replace base part of filename with <base>.
+.IP ":S=<suf>"
+Replace suffix of filename with <suf>.
+.IP ":M=<mem>"
+Replace archive member name with <mem>.
+.IP ":R=<root>"
+Prepend <root> to whole name, if not already rooted.
+.IP ":<components>"
+Replace all components not listed with an empty string; components
+is one or more of the string
+.IR GDBSM .
+
+.SH OPERATION
+.B Jam
+has three phases of operation: parsing, binding, and updating.  
+.SS Parsing
+.PP
+.B Jam
+parses the file
+.BR Jambase ,
+which by default includes
+.BR Jamfile .
+The results of parsing are: the dependency tree of targets; update
+actions associated with the targets; and variables set to specific
+values.
+.PP
+.SS Binding
+After parsing,
+.B jam
+recursively decends the dependency tree, attempting to locate each
+target file and determine if it is in need of updating.  
+.PP
+By default, a target is located at the actual path of the target,
+relative to the directory of
+.BR jam 's
+invocation.  If $(LOCATE) is set to a directory name,
+.B jam
+locates the target in that directory; else if $(SEARCH) is set to
+a directory list,
+.B jam
+first searches along the directory list for the target file.  If the
+target name has a rooted directory component then $(SEARCH) and
+$(LOCATE) do not apply: the target is located at the actual path of the
+target.  If a target is marked as not being a file (using the builtin
+rule NOTIME), it is left unbound to a file name.
+.PP
+A target is marked for updating if either it cannot be found, it's
+filesystem modification time is older than any of its dependents, or if
+any of its dependents are marked for updating.  If a target is missing,
+no updating actions are associated with the target, and the target has
+not been marked with the builtin rule NOCARE,
+.B jam
+emits a warning.  If a target is missing and it is marked as temporary
+(with the builtin rule TEMPORARY), then its parent's modification time
+is used when comparing against dependents.  If a target is marked as
+not being a file (using the builtin rule NOTIME), it is marked for
+updating only if any of its dependents are marked for updating.
+.PP
+If a target is a source file that includes header files,
+.B jam
+invokes the rule $(HDRRULE) on the target giving the (unbound) names of
+the headers file as sources.  A target is scanned for header file
+dependencies if $(HDRSCAN) is set to an regexp(3) pattern with ()'s
+surrounding the include file name.
+.PP
+Between binding and updating,
+.B jam
+announces the number of targets to be updated.
+.SS Updating
+After binding,
+.B jam
+again recursively decends the dependency tree, this time executing the
+update actions for each target that was marked for update during the
+binding phase.  If a target's updating actions fail, then all targets
+dependent on that target are skipped.
+
+.SH DIAGNOSTICS
+.PP
+In addition to generic error messages, 
+.B jam
+may emit one of the following:
+.PP
+warning: unknown rule X
+.IP
+A rule was invoked which has never been defined with
+the "actions" or the "rule" statements.
+.PP
+using N temp target(s)
+.IP
+Targets marked as being temporary (but nonetheless present)
+have been found.
+.PP
+updating N target(s)
+.IP
+Targets are out of date and will be updated.
+.PP
+can't make N target(s)
+.IP
+Due to sources not being found, targets cannot be made.
+.PP
+warning: X depends on itself
+.IP
+Somehow a target depends either directly or through its dependents
+back on itself.  This most frequently happens with header file
+inclusions.
+.PP
+don't know how to make X
+.IP
+A needed target is not present and no actions are defined to create
+the target.
+.PP
+X skipped for lack of Y
+.IP
+A dependent failed to build, and thus a target cannot be built.
+.PP
+warning: using independent target X
+.IP
+A target that is not a dependent of any target being made is
+being referenced with $(<) or $(>).  
+.PP
+X removed
+.IP
+.B Jam
+removed a partially built target after being interrupted.
+
+.SH FILES
+/usr/local/lib/Jambase
+
+.SH BUGS, LIMITATIONS
+.PP
+Because the
+.B include
+statement works by pushing a new file in the input stream of the
+scanner rather than recursively invoking the parser on the new file,
+multiple include statements in a rule's procedure causes the files
+to be included in reverse order.
+.PP
+In a rule's actions, only $(<) and $(>) refer to the bound file names:
+all other variable references get the unbound names.  This mostly
+affects 
+.IR IILIBRARY .
+See 
+.IR Jambase (5).
+.PP
+Searching for include files is slow.
+
+.SH SEE ALSO
+.IR Jambase (5)

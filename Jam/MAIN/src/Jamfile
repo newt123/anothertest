@@ -1,0 +1,32 @@
+#
+# Jamfile for Jam
+#
+
+if $(VMS)	
+{ 
+	JAMLIB = libjam.olb ; 
+	OSFILES = execvms.c filevms.c ; 
+}
+
+if $(UNIX)	
+{ 
+	JAMLIB = libjam.a ; 
+	OSFILES = execunix.c fileunix.c ;
+
+	LIBDIR = /usr/local/lib/jam ;
+
+	INSTALLMAN jam.1 Jambase.5 ;
+	INSTALLBIN jam ;
+
+	INSTALLLIB Jambase ;
+
+}
+
+MAIN 		jam : jam.c ;
+LIBS 		jam : $(JAMLIB) ;
+
+LIBRARY         $(JAMLIB) : compile.c expand.c hash.c lists.c make.c 
+		    newstr.c option.c parse.c rules.c scan.c search.c 
+		    timestamp.c variable.c jamgram.yy headers.c regexp.c 
+		    $(OSFILES) ;
+

@@ -1,0 +1,250 @@
+/*
+ * Copyright 1993 Christopher Seiwald.
+ */
+
+# include "jam.h"
+# include "lists.h"
+# include "parse.h"
+# include "variable.h"
+# include "expand.h"
+# include "hash.h"
+# include "filesys.h"
+# include "newstr.h"
+
+/*
+ * variable.c - handle jam multi-element variables
+ *
+ * External routines:
+ *
+ *	var_defines() - load a bunch of variable=value settings
+ *	var_list() - variable expand an input list, generating a new list
+ *	var_string() - expand a string with variables in it
+ *	var_get() - get value of a user defined symbol
+ *	var_set() - set a variable in jam's user defined symbol table
+ *	var_swap() - swap a variable's value with the given one
+ *	var_done() - free variable tables
+ *
+ * Internal routines:
+ *
+ *	var_dump() - dump a variable to stdout
+ */
+
+static struct hash *varhash = 0;
+
+/*
+ * VARIABLE - a user defined multi-value variable
+ */
+
+typedef struct _variable VARIABLE ;
+
+struct _variable {
+	char	*symbol;
+	LIST	*value;
+} ;
+
+static void	var_dump();
+
+
+
+/*
+ * var_defines() - load a bunch of variable=value settings
+ */
+
+void
+var_defines( e )
+char **e;
+{
+	for( ; *e; e++ )
+	{
+	    char sym[ MAXSYM ], *val;
+
+	    if( val = strchr( *e, '=' ) )
+	    {
+		strncpy( sym, *e, val - *e );
+		sym[ val - *e ] = '\0';
+		var_set( sym, list_new( (LIST *)0, newstr( val + 1 ) ) );
+	    }
+	}
+}
+
+/*
+ * var_list() - variable expand an input list, generating a new list
+ *
+ * Returns a newly created list.
+ */
+
+LIST *
+var_list( ilist, targets, sources )
+LIST	*ilist;
+LIST	*targets;
+LIST	*sources;
+{
+	LIST *olist = 0;
+
+	while( ilist )
+	{
+	    char *s = ilist->string;
+	    olist = var_expand( olist, s, s + strlen(s), targets, sources );
+	    ilist = list_next( ilist );
+	}
+
+	return olist;
+}
+
+
+/*
+ * var_string() - expand a string with variables in it
+ *
+ * Copies in to out; doesn't modify targets & sources.
+ */
+
+int
+var_string( in, out, targets, sources )
+char	*in;
+char	*out;
+LIST	*targets;
+LIST	*sources;
+{
+	char 	*out0 = out;
+
+	while( *in )
+	{
+	    char	*lastword;
+	    int		dollar = 0;
+
+	    /* Copy white space */
+
+	    while( isspace( *in ) )
+		*out++ = *in++;
+
+	    lastword = out;
+
+	    /* Copy non-white space, watching for variables */
+
+	    while( *in && !isspace( *in ) )
+	    {
+		if( in[0] == '$' && in[1] == '(' )
+		    dollar++;
+		*out++ = *in++;
+	    }
+
+	    /* If a variable encountered, expand it and and embed the */
+	    /* space-separated members of the list in the output. */
+
+	    if( dollar )
+	    {
+		LIST	*l;
+
+		l = var_expand( (LIST *)0, lastword, out, targets, sources );
+
+		out = lastword;
+
+		for( ; l; l = list_next( l ) )
+		{
+		    strcpy( out, l->string );
+		    out += strlen( out );
+		    *out++ = ' ';
+		}
+
+		list_free( l );
+	    }
+	}
+	*out++ = '\0';
+
+	return out - out0;
+}
+
+/*
+ * var_get() - get value of a user defined symbol
+ *
+ * Returns NULL if symbol unset.
+ */
+
+LIST *
+var_get( symbol )
+char	*symbol;
+{
+	VARIABLE var, *v = &var;
+
+	v->symbol = symbol;
+
+	if( varhash && hashcheck( varhash, (HASHDATA **)&v ) )
+	{
+	    if( DEBUG_VARGET )
+		var_dump( v->symbol, v->value, "get" );
+	    return v->value;
+	}
+    
+	return 0;
+}
+
+/*
+ * var_set() - set a variable in jam's user defined symbol table
+ *
+ * Copies symbol.  Takes ownership of list.
+ */
+
+void
+var_set( symbol, value )
+char	*symbol;
+LIST	*value;
+{
+	list_free( var_swap( symbol, value ) );
+}
+
+/*
+ * var_swap() - swap a variable's value with the given one
+ */
+
+LIST *
+var_swap( symbol, value )
+char	*symbol;
+LIST	*value;
+{
+	VARIABLE var, *v = &var;
+	LIST *oldvalue;
+
+	if( DEBUG_VARSET )
+	    var_dump( symbol, value, "set" );
+
+	if( !varhash )
+	    varhash = hashinit( sizeof( VARIABLE ), "variables" );
+
+	v->symbol = symbol;
+	v->value = 0;
+
+	if( hashenter( varhash, (HASHDATA **)&v ) )
+	    v->symbol = newstr( symbol );	/* never freed */
+
+	oldvalue = v->value;
+	v->value = value;
+
+	return oldvalue;
+}
+
+
+
+/*
+ * var_dump() - dump a variable to stdout
+ */
+
+static void
+var_dump( symbol, value, what )
+char	*symbol;
+LIST	*value;
+char	*what;
+{
+	printf( "%s %s = ", what, symbol );
+	list_print( value );
+	printf( "\n" );
+}
+
+/*
+ * var_done() - free variable tables
+ */
+
+void
+var_done()
+{
+	hashdone( varhash );
+}
