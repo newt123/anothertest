@@ -13,6 +13,7 @@
 	{ ">=", _RANGLE_EQUALS },
 	{ "?=", _QUESTION_EQUALS },
 	{ "actions", ACTIONS },
+	{ "bind", BIND },
 	{ "case", CASE },
 	{ "default", DEFAULT },
 	{ "else", ELSE },

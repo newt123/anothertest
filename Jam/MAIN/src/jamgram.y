@@ -13,6 +13,7 @@
 %token _RANGLE_EQUALS
 %token _QUESTION_EQUALS
 %token ACTIONS
+%token BIND
 %token CASE
 %token DEFAULT
 %token ELSE
@@ -79,7 +80,7 @@
 # define prules( l,r )	  parse_make( compile_rules,l,r,S0,S0,L0,L0,0 )
 # define pfor( s,p,l )    parse_make( compile_foreach,p,P0,s,S0,l,L0,0 )
 # define psetc( s,p )     parse_make( compile_setcomp,p,P0,s,S0,L0,L0,0 )
-# define psete( s,s1,f )  parse_make( compile_setexec,P0,P0,s,s1,L0,L0,f )
+# define psete( s,l,s1,f ) parse_make( compile_setexec,P0,P0,s,s1,l,L0,f )
 # define pincl( l )       parse_make( compile_include,P0,P0,S0,S0,l,L0,0 )
 # define pswitch( l,p )   parse_make( compile_switch,p,P0,S0,S0,l,L0,0 )
 # define plocal( l,p )	  parse_make( compile_local,p,P0,S0,S0,l,L0,0 );
@@ -132,7 +133,9 @@ rule0	: /* empty */
 		{ $$.parse = prules( $1.parse, $2.parse ); }
 	;
 
-rule	: INCLUDE args _SEMIC
+rule	: _LBRACE rules _RBRACE
+		{ $$.parse = $2.parse; }
+	| INCLUDE args _SEMIC
 		{ $$.parse = pincl( $2.list ); }
 	| ARG lol _SEMIC
 		{ $$.parse = prule( $1.string, $2.parse ); }
@@ -152,13 +155,12 @@ rule	: INCLUDE args _SEMIC
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, $7.parse ) ); }
 	| RULE ARG rule
 		{ $$.parse = psetc( $2.string, $3.parse ); }
-	| ACTIONS eflags ARG 
+	| ACTIONS eflags ARG bindlist _LBRACE
 		{ yymode( SCAN_STRING ); }
 	  STRING 
-		{ $$.parse = psete( $3.string, $5.string, $2.number );
-		  yymode( SCAN_NORMAL ); }
-	| _LBRACE rules _RBRACE
-		{ $$.parse = $2.parse; }
+		{ yymode( SCAN_NORMAL ); }
+	  _RBRACE
+		{ $$.parse = psete( $3.string,$4.list,$7.string,$2.number ); }
 	;
 
 /*
@@ -272,5 +274,16 @@ eflag	: UPDATED
 		{ $$.number = EXEC_PIECEMEAL; }
 	| EXISTING
 		{ $$.number = EXEC_EXISTING; }
+	;
+
+
+/*
+ * bindlist - list of variable to bind for an action
+ */
+
+bindlist : /* empty */
+		{ $$.list = L0; }
+	| BIND args
+		{ $$.list = $2.list; }
 	;
 
