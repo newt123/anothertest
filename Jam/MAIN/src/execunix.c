@@ -212,7 +212,7 @@ LIST *shell;
 	{
 # if defined( NT ) || defined( __OS2__ )
 	    argv[0] = comspec;
-	    argv[1] = "/c";		/* anything more is non-portable */
+	    argv[1] = "/Q/C";		/* anything more is non-portable */
 # else
 	    argv[0] = "/bin/sh";
 	    argv[1] = "-c";
