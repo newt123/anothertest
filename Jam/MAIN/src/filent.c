@@ -37,6 +37,7 @@
  *                    like "thing/thing.h". So we need to test for "/" as
  *                    well as "\" when parsing pathnames.
  * 02/14/95 (seiwald) - parse and build /xxx properly
+ * 03/16/95 (seiwald) - fixed accursed typo on line 69.
  */
 
 /*
@@ -66,7 +67,7 @@ FILENAME	*f;
 
 	p = strrchr( file, '\\' );
 	p1 = strrchr( file, '/' );
-	p = p1 > p ? p1 : p
+	p = p1 > p ? p1 : p;
 
  	/* Special case for \ - dirname is \, not "" */
 
