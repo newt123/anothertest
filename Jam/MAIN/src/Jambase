@@ -136,9 +136,7 @@
 #	$(UNIX) - true on UNIX
 #	$(VMS) - true on VMS
 #	$(NT) - true on NT
-#	$(OSNAME) - name of OS - varies wildly
-#	$(OSPLAT) - hardward platform
-#	$(OSVER) - OS subversion`
+#	$(OS) - name of OS - varies wildly
 #	$(JAMVERSION) - version number (2.1)
 #
 # Special variables used by jam:
@@ -155,19 +153,13 @@
 #
 # "default =" - set only if unset
 
-OS ?= $(OSNAME) ;
-
-OSFULL = 
-	$(OSNAME)$(OSPLAT)$(OSVER) 
-	$(OSNAME)$(OSPLAT) 
-	$(OSNAME)$(OSVER) 
-	$(OSNAME) ;
+OSFULL = $(OS)$(OSPLAT)$(OSVER) $(OS)$(OSPLAT) $(OS)$(OSVER) $(OS) ;
 
 #
 # OS specific variable settings
 #
 
-switch $(OSNAME)
+switch $(OS)
 {
 case AIX :	LINKLIBS default = -lbsd ;
 case DGUX :	RANLIB default = "" ; RELOCATE = true ;
@@ -191,14 +183,14 @@ case SOLARIS :	RANLIB default = "" ;
 case UNIXWARE :	RANLIB default = "" ; RELOCATE = true ;
 }
 
-#if $(OSNAME) = SUNOS && $(TZ)
+#if $(OS) = SUNOS && $(TZ)
 #{
 #	Echo Warning: you are running the SunOS jam on Solaris. ;
 #}
 
 if $(UNIX)
 {
-	if $(OSNAME) = QNX 
+	if $(OS) = QNX 
 	{
 	AR		default = wlib ;
 	CC		default = cc ;
@@ -210,7 +202,7 @@ if $(UNIX)
 	NOARSCAN	default = true ;
 	RANLIB		default = "" ;
 	}
-	else if $(OSNAME) = BEOS 
+	else if $(OS) = BEOS 
 	{
 	AR		default = mwld -xml -o ;
 	BINDIR		default = /boot/bin ;
@@ -430,7 +422,7 @@ else if $(VMS)
 	SUFOBJ		default = .obj ;
 	SUFEXE		default = .exe ;
 
-	switch $(OSNAME) 
+	switch $(OS) 
 	{
 	case OPENVMS : CCFLAGS default = /stand=vaxc ;
 	case VMS     : LINKLIBS default = sys$library:vaxcrtl.olb/lib ;
@@ -1443,14 +1435,14 @@ rule unmakeDir
 
 if $(UNIX)
 {
-    if $(OSNAME) = QNX 
+    if $(OS) = QNX 
     {
 	actions together piecemeal Archive
 	{
 	$(AR) $(<) +-$(>) 
 	}
     }
-    else if $(OSNAME) = BEOS
+    else if $(OS) = BEOS
     {
 	actions together Archive
 	{
@@ -1470,7 +1462,7 @@ if $(UNIX)
 	$(AS) $(ASFLAGS) -I$(HDRS) -o $(<) $(>)
     }
 
-    if $(OSNAME) = SINIX
+    if $(OS) = SINIX
     {
 	actions C++
 	{

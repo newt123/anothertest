@@ -70,7 +70,7 @@ INSTALLING
 
     Build jam with make(1) on:
 
-	    Platform		$(OSNAME) setting
+	    Platform		$(OS) setting
 	    --------------------------------------
 	    AIX			AIX		*	
 	    BSD/386 1.0		BSDI
@@ -93,7 +93,7 @@ INSTALLING
 
     Build jam with @build.com on:
 
-	    Platform		$(OSNAME) setting
+	    Platform		$(OS) setting
 	    --------------------------------------
 	    VMS 5.4		VMS
 	    OPENVMS		OPENVMS

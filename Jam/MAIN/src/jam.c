@@ -247,8 +247,8 @@ char	**argv;
 
 	/* load up environment variables */
 
-	var_defines( othersyms );
 	var_defines( environ );
+	var_defines( othersyms );
 
 	/* Load up variables set on command line. */
 
