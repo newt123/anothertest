@@ -39,7 +39,7 @@ if $(UNIX)
 {
 	InstallBin $(BINDIR) : jam ;
 	InstallLib $(LIBDIR) : Jambase ;
-	InstallMan $(MANDIR) : jam.1 Jamfile.5 ;
+	InstallMan $(MANDIR) : jam.1 Jambase.5 Jamfile.5 ;
 }
 
 #### --- cut
@@ -105,8 +105,8 @@ actions Shar
 }
 
 ALLSOURCE = 
-	    README RELNOTES Build.com Jambase Jamfile Jamfile.5
-	    Jamfile.ps Makefile Paper.ps Porting command.c command.h
+	    README RELNOTES Build.com Jambase Jamfile Jambase.5 Jambase.ps
+	    Jamfile.5 Jamfile.ps Makefile Paper.ps Porting command.c command.h
 	    compile.c compile.h execcmd.h execnt.c execunix.c execvms.c
 	    expand.c expand.h filent.c filesys.h fileunix.c filevms.c
 	    glob.c hash.c hash.h headers.c headers.h jam.1 jam.c jam.h
@@ -119,6 +119,7 @@ ALLSOURCE =
 TempCopy Paper.ps : ../doc/jam.ps ;
 Groff jam.ps : jam.1 ;
 Groff Jamfile.ps : Jamfile.5 ;
+Groff Jambase.ps : Jambase.5 ;
 
 Shar SHAR : $(ALLSOURCE) ;
 Tar TAR : $(ALLSOURCE) ;

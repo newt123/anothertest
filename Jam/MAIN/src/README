@@ -50,6 +50,9 @@ INFORMATION GUIDE
     jam.1	Jam man page - a terse description.
     jam.ps
 
+    Jambase.5	Reference for the rule boilerplate file.
+    Jambase.ps
+
     Jamfile.5	Easy reading on creating a Jamfile and using jam.
     Jamfile.ps
 
