@@ -63,6 +63,7 @@ static int make1chunk();
 static void make1remove();
 static LIST *make1list();
 static int make1exec();
+static SETTINGS *make1bind();
 
 /* Ugly static - it's too hard to carry it through the callbacks. */
 
@@ -357,7 +358,7 @@ int	status;
 
 	if( status == EXEC_CMD_FAIL && DEBUG_MAKE )
 	{
-	    /* Print command text on failure, if we haven't printed it before. */
+	    /* Print command text on failure */
 
 	    if( !DEBUG_EXEC )
 		printf( "%s\n", cmd->buf );
@@ -405,6 +406,7 @@ ACTIONS	*a0;
 	for( ; a0; a0 = a0->next )
 	{
 	    RULE    *rule = a0->action->rule;
+	    SETTINGS *latebinds;
 	    int	    chunk = 0;
 	    LIST    *nt, *ns;
 	    ACTIONS *a1;
@@ -441,6 +443,11 @@ ACTIONS	*a0;
 		continue;
 	    }
 
+	    /* If we had 'actions xxx bind vars' we bind the vars now */
+
+	    latebinds = make1bind( rule->bindlist );
+	    pushsettings( latebinds );
+
 	    /* If rule is to be cut into (at most) MAXCMD pieces, estimate */
 	    /* bytes per $(>) element and aim for using MAXCMD minus a */
 	    /* fudgefactor. */
@@ -472,6 +479,9 @@ ACTIONS	*a0;
 	    {
 		cmds = cmd_new( cmds, rule, nt, ns, list_copy( L0, shell ) );
 	    }
+
+	    popsettings( latebinds );
+	    freesettings( latebinds );
 	}
 
 	return cmds;
@@ -577,4 +587,45 @@ LIST *targets;
 	    if( !unlink( targets->string ) )
 		printf( "...removing %s\n", targets->string );
 	}
+}
+
+static SETTINGS *
+make1bind( vars )
+LIST	*vars;
+{
+	SETTINGS *settings = 0;
+
+	for( ; vars; vars = list_next( vars ) )
+	{
+	    LIST *l;
+	    LIST *nl = 0;
+
+	    for( l = var_get( vars->string ); l; l = list_next( l ) )
+	    {
+		TARGET *t = bindtarget( l->string );
+
+		if( t->binding == T_BIND_UNBOUND && !( t->flags & T_FLAG_NOTFILE ) )
+		{
+		    /* Sources to 'actions existing' are never in the dependency */
+		    /* graph (if they were, they'd get built and 'existing' would */
+		    /* be superfluous, so throttle warning message about independent */
+		    /* targets. */
+
+		    printf( "warning: using independent target %s\n", t->name );
+
+		    pushsettings( t->settings );
+		    t->boundname = search( t->name, &t->time );
+		    t->binding = t->time ? T_BIND_EXISTS : T_BIND_MISSING;
+		    popsettings( t->settings );
+		}
+
+		/* boundname is null for T_FLAG_NOTFILE targets - use name */
+
+		nl = list_new( nl, copystr( t->boundname ? t->boundname : t->name ) );
+	    }
+
+	    settings = addsettings( settings, 0, vars->string, nl );
+	}
+
+	return settings;
 }
