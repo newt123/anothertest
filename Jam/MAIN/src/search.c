@@ -27,7 +27,7 @@ time_t	*time;
 {
 	FILENAME f[1];
 	LIST	*varlist;
-	char	buf[ MAXPATH ];
+	char	buf[ MAXJPATH ];
 
 	/* Parse the filename */
 

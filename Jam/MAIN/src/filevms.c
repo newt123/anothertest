@@ -177,7 +177,7 @@ unsigned long *rfa;
 
     struct mhddef *mhd;
     char filename[128];
-    char buf[ MAXPATH ];
+    char buf[ MAXJPATH ];
 
     int library_date, status;
 

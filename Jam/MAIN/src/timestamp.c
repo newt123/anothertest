@@ -65,10 +65,10 @@ time_t	*time;
 {
 	FILENAME f1, f2;
 	BINDING	binding, *b = &binding;
-	char buf[ MAXPATH ];
+	char buf[ MAXJPATH ];
 
 #if defined( NT ) || defined( VMS )
-	char path[ MAXPATH ];
+	char path[ MAXJPATH ];
 	char *p = path;
 
 	do *p++ = tolower( *target );
@@ -167,7 +167,7 @@ time_t	time;
 	BINDING	binding, *b = &binding;
 
 #if defined( NT ) || defined( VMS )
-	char path[ MAXPATH ];
+	char path[ MAXJPATH ];
 	char *p = path;
 
 	do *p++ = tolower( *target );

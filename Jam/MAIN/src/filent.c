@@ -41,8 +41,8 @@ char	*dir;
 void	(*func)();
 {
 	FILENAME f;
-	char filespec[ MAXPATH ];
-	char filename[ MAXPATH ];
+	char filespec[ MAXJPATH ];
+	char filename[ MAXJPATH ];
 	long handle;
 	int ret;
 	struct _finddata_t finfo[1];
@@ -142,7 +142,7 @@ void (*func)();
 {
 	struct ar_hdr ar_hdr;
 	char *string_table = 0;
-	char buf[ MAXPATH ];
+	char buf[ MAXJPATH ];
 	long offset;
 	int fd;
 

@@ -41,8 +41,8 @@ char	*dir;
 void	(*func)();
 {
 	FILENAME f;
-	char filespec[ MAXPATH ];
-	char filename[ MAXPATH ];
+	char filespec[ MAXJPATH ];
+	char filename[ MAXJPATH ];
 	long handle;
 	int ret;
 	struct _find_t finfo[1];

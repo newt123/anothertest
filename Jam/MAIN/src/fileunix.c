@@ -85,7 +85,7 @@ void	(*func)();
 #else
 	struct dirent *dirent;
 #endif
-	char filename[ MAXPATH ];
+	char filename[ MAXJPATH ];
 	struct stat statbuf;
 
 	/* First enter directory itself */
@@ -162,7 +162,7 @@ void (*func)();
 {
 # ifndef __QNX__
 	struct ar_hdr ar_hdr;
-	char buf[ MAXPATH ];
+	char buf[ MAXJPATH ];
 	long offset;
 	char    *string_table = 0;
 	int fd;
@@ -265,7 +265,7 @@ void (*func)();
 		char pad[ 256 ];
 	} ar_hdr ;
 
-	char buf[ MAXPATH ];
+	char buf[ MAXJPATH ];
 	long offset;
 	int fd;
 
