@@ -99,6 +99,11 @@ Changes since 2.1
     the directory component of "/" is "/".  It also now successfully gets
     the timestamp for "D:\" or just plain "\".
 
+    Accessing variables whose names contained ['s (as happens with MkDir
+    on VMS) wasn't working, because it treated the [ as an array subscript.
+    Now [ and ] are, like :, handled specially so that they can appear in
+    variable values.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

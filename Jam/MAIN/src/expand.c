@@ -31,6 +31,8 @@ static void	var_edit();
 static void	var_mods();
 
 # define MAGIC_COLON	'\001'
+# define MAGIC_LEFT	'\002'
+# define MAGIC_RIGHT	'\003'
 
 /*
  * var_expand() - variable-expand input string into list of strings
@@ -129,6 +131,8 @@ int	cancopyin;
 	    case '(': depth++; break;
 	    case ')': depth--; break;
 	    case ':': ov[-1] = MAGIC_COLON;
+	    case '[': ov[-1] = MAGIC_LEFT;
+	    case ']': ov[-1] = MAGIC_RIGHT;
 	    }
 	}
 
@@ -186,7 +190,7 @@ int	cancopyin;
 		if( colon = strchr( varname, MAGIC_COLON ) )
 		    *colon = '\0';
 
-		if( bracket = strchr( varname, '[' ) )
+		if( bracket = strchr( varname, MAGIC_LEFT ) )
 		{
 		    char *dash;
 
