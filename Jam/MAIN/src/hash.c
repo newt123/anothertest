@@ -81,8 +81,8 @@ struct hash
 	char *name;	/* just for hashstats() */
 } ;
 
-static hashrehash();
-void hashstat();
+static void hashrehash();
+static void hashstat();
 
 /*
  * hashitem() - find a record in the table, and optionally enter a new one
@@ -140,7 +140,7 @@ HASHDATA **data;
  * hashrehash() - resize and rebuild hp->tab, the hash table
  */
 
-static hashrehash( hp )
+static void hashrehash( hp )
 register struct hash *hp;
 {
 	int i = ++hp->items.list;
@@ -229,7 +229,7 @@ struct hash *hp;
 
 /* ---- */
 
-void
+static void
 hashstat( hp )
 struct hash *hp;
 {

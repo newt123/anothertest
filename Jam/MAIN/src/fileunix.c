@@ -87,7 +87,6 @@ void	(*func)();
 	struct dirent *dirent;
 #endif
 	char filename[ MAXJPATH ];
-	struct stat statbuf;
 
 	/* First enter directory itself */
 

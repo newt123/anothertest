@@ -62,7 +62,6 @@ static void make1d();
 static CMD *make1cmds();
 static int make1chunk();
 static LIST *make1list();
-static int make1exec();
 static SETTINGS *make1settings();
 static void make1bind();
 

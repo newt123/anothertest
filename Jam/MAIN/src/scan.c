@@ -34,7 +34,7 @@ struct keyword {
 #else
 # include "jamgramtab.h"
 #endif
-	0, 0
+	{ 0, 0 }
 } ;
 
 struct include {
@@ -132,6 +132,7 @@ char *s;
  * returning EOF at the bitter end.
  */
 
+int
 yyline()
 {
 	struct include *i;
@@ -214,6 +215,7 @@ yyline()
 # define yychar() ( *incp->string ? *incp->string++ : yyline() )
 # define yyprev() ( incp->string-- )
 
+int
 yylex()
 {
 	int c;

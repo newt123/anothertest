@@ -210,6 +210,9 @@ LOL		*args;
 		status = evaluate_if( parse->left, args ) ||
 			 evaluate_if( parse->right, args );
 		break;
+
+	    default:
+		status = 0;	/* can't happen */
 	    }
 	}
 	else
@@ -476,13 +479,14 @@ LOL		*args;
 	LIST	*ns = var_list( parse->rlist, args );
 	LIST	*l;
 	int	setflag;
-	char	*trace = "";
+	char	*trace;
 
 	switch( parse->num )
 	{
 	case ASSIGN_SET:	setflag = VAR_SET; trace = "="; break;
 	case ASSIGN_APPEND:	setflag = VAR_APPEND; trace = "+="; break;
 	case ASSIGN_DEFAULT:	setflag = VAR_DEFAULT; trace = "?="; break;
+	default:		setflag = VAR_SET; trace = ""; break;
 	}
 
 	if( DEBUG_COMPILE )

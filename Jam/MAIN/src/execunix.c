@@ -82,7 +82,7 @@ static struct
 # if defined( NT ) || defined( __OS2__ )
 	char	*tempfile;
 # endif
-} cmdtab[ MAXJOBS ] = {0};
+} cmdtab[ MAXJOBS ] = {{0}};
 
 /*
  * onintr() - bump intr to note command interruption

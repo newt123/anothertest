@@ -207,6 +207,10 @@ int	cancopyin;
 
 		    *bracket = '\0';
 		}
+		else
+		{
+		    sub1 = sub2 = 0;	/* not needed */
+		}
 
 		/* Get variable value, specially handling $(<), $(>), $(n) */
 		
