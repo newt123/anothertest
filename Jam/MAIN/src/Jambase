@@ -212,7 +212,8 @@ if $(UNIX)
 	C++FLAGS	default = -nosyspath ;
 	FORTRAN		default = "" ;
 	LIBDIR		default = /boot/develop/libraries ;
-	LINK		default = $(CC) ;
+	LINK		default = mwld ;
+	LINKFLAGS	default = "" ;
 	LEX		default = "" ;
 	MANDIR		default = /boot/documentation/"Shell Tools"/HTML ;
 	NOARSCAN	default = true ;
