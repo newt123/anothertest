@@ -27,7 +27,6 @@ $ link/exe=jam.exe command.obj, compile.obj, execvms.obj, expand.obj, -
     filevms.obj, glob.obj, hash.obj, headers.obj, lists.obj, make.obj, -
     make1.obj, newstr.obj, option.obj, parse.obj, regexp.obj, rules.obj, -
     scan.obj, search.obj, timestamp.obj, variable.obj, jam.obj, jamgram.obj
-!
 $ write sys$output "If that was successful, define a symbol for jam:"
 $ write sys$output ""
 $ write sys$output "    jam :== $xxxx:jam.exe -f xxxx:jambase"
