@@ -27,12 +27,24 @@ int argc;
 char **argv;
 {
 	char buf[ 1024 ];
-	FILE *fin = fopen( argv[1], "r" );
-	FILE *fout = fopen( argv[2], "w" );
+	FILE *fin;
+	FILE *fout;
 
 	if( argc != 3 )
 	{
 	    fprintf( stderr, "usage: %s Jambase jambase.c\n", argv[0] );
+	    return -1;
+	}
+
+	if( !( fin = fopen( argv[1], "r" ) ) )
+	{
+	    perror( argv[1] );
+	    return -1;
+	}
+
+	if( !( fout = fopen( argv[2], "w" ) ) )
+	{
+	    perror( argv[2] );
 	    return -1;
 	}
 
