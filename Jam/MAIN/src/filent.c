@@ -32,6 +32,10 @@
  * timestamp, interested parties may later call file_time().
  *
  * 12/21/94 (wingerd) Use backslashes for pathnames - the NT way.
+ * 02/23/95 (wingerd) Compilers on NT can handle "/" in pathnames, so we
+ *                    should expect hdr searches to come up with strings
+ *                    like "thing/thing.h". So we need to test for "/" as
+ *                    well as "\" when parsing pathnames.
  */
 
 /*
@@ -43,7 +47,7 @@ file_parse( file, f )
 char		*file;
 FILENAME	*f;
 {
-	char *p; 
+	char *p, *p1; 
 	char *end;
 	
 	memset( (char *)f, 0, sizeof( *f ) );
@@ -59,7 +63,11 @@ FILENAME	*f;
 
 	/* Look for dir/ */
 
-	if( p = strrchr( file, '\\' ) )
+	p = strrchr( file, '\\' );
+	p1 = strrchr( file, '/' );
+	p = p1 > p ? p1 : p
+
+	if( p )
 	{
 	    f->f_dir.ptr = file;
 	    f->f_dir.len = p - file;
@@ -114,6 +122,7 @@ char		*file;
 	if( f->f_root.len 
 	    && !( f->f_root.len == 1 && f->f_root.ptr[0] == '.' )
 	    && !( f->f_dir.len && f->f_dir.ptr[0] == '\\' )
+	    && !( f->f_dir.len && f->f_dir.ptr[0] == '/' )
 	    && !( f->f_dir.len && f->f_dir.ptr[1] == ':' ) )
 	{
 	    memcpy( file, f->f_root.ptr, f->f_root.len );
@@ -270,7 +279,7 @@ void (*func)();
 
 	    strncpy( lar_name, ar_hdr.ar_name, sizeof(ar_hdr.ar_name) );
 	    c = lar_name + sizeof( lar_name );
-	    while( *--c == ' ' || *c == '/' )
+	    while( *--c == ' ' || *c == '\\' || *c == '/' )
 		    ;
 	    *++c = '\0';
 
