@@ -44,9 +44,9 @@ if $(DO_GRAMMAR) { code += jamgram.y ; }
 else             { code += jamgram.c ; }
 
 
-if $(OS) = NT { CCFLAGS += /DNT ; }
-if $(OS) = MVS { CCFLAGS += -DMVS ; }
-if $(OS)$(OSVER) = AIX41 { CCFLAGS += -D_AIX41 ; }
+if $(OSNAME) = NT { CCFLAGS += /DNT /O2 ; }
+if $(OSNAME) = MVS { CCFLAGS += -DMVS ; }
+if $(OSNAME)$(OSVER) = AIX41 { CCFLAGS += -D_AIX41 ; }
 
 #
 # How to build the compiled in jambase.
