@@ -36,7 +36,7 @@ extern char *malloc(), *realloc();
 # define ARG 291
 # define STRING 292
 
-# line 59 "jamgram.y"
+# line 62 "jamgram.y"
 #include "lists.h"
 #include "parse.h"
 #include "scan.h"
@@ -81,88 +81,87 @@ int yyexca[] ={
 	0, -1,
 	-2, 0,
 -1, 4,
-	263, 36,
-	264, 36,
-	291, 36,
-	-2, 38,
+	263, 37,
+	264, 37,
+	291, 37,
+	-2, 39,
 	};
-# define YYNPROD 47
-# define YYLAST 181
+# define YYNPROD 48
+# define YYLAST 173
 int yyact[]={
 
-    10,    88,    18,    86,    26,     6,     8,    17,    24,     3,
-    19,    25,    89,     9,     7,    83,    10,    11,    31,    93,
-     4,     6,     8,    82,    27,     3,    20,    33,    32,     9,
-     7,    31,    10,    11,    84,    87,     4,     6,     8,    31,
-    80,     3,    26,    40,    38,     9,     7,    31,    10,    11,
-    31,    60,     4,     6,     8,    31,    62,     3,    30,    37,
-    92,     9,     7,    58,    91,    11,    55,    31,     4,    68,
-    57,    56,    39,    41,    54,    53,    40,    36,    78,    51,
-    40,    18,    59,    31,     2,    31,    17,    43,    29,    19,
-    66,    52,    16,    14,    44,    45,    42,    46,    47,    12,
-    15,    22,    67,    79,    13,    28,    41,    21,     1,     5,
-    50,     0,     0,     0,    34,    35,     0,     0,    23,     0,
-     0,     0,     0,     0,     0,     0,    48,    49,    69,    63,
-     0,     0,     0,    61,    23,    23,    64,    65,     0,     0,
-     0,     0,    70,    71,     0,     0,     0,     0,     0,     0,
-    23,    23,    72,    73,    74,    75,    76,    77,    85,     0,
-     0,     0,     0,    81,     0,     0,     0,     0,     0,     0,
-     0,     0,    90,     0,     0,    95,     0,     0,     0,     0,
-    94 };
+    10,    89,    87,    27,    32,     6,     8,    28,    25,     3,
+    21,    26,    85,     9,     7,    84,    10,    11,    39,    94,
+     4,     6,     8,    38,    93,     3,    41,    69,    79,     9,
+     7,    37,    10,    11,    90,    88,     4,     6,     8,    34,
+    33,     3,    27,    41,    83,     9,     7,    81,    10,    11,
+    63,    61,     4,     6,     8,    31,    42,     3,    92,    19,
+    41,     9,     7,    59,    18,    11,    56,    20,     4,    30,
+    58,    57,    40,    42,    55,    54,    19,    67,    60,    52,
+     2,    18,    44,    53,    20,    15,    13,    17,    68,    45,
+    46,    43,    47,    48,     5,    16,    12,    80,    29,     1,
+     0,    14,    23,    24,    22,     0,     0,    51,     0,     0,
+    70,     0,    35,    36,     0,     0,     0,     0,     0,     0,
+    24,    24,    64,     0,     0,     0,     0,     0,    49,    50,
+     0,    62,     0,     0,    65,    66,    24,    24,    73,    74,
+    75,    76,    77,    78,    71,    72,    86,     0,     0,     0,
+     0,     0,     0,     0,    91,     0,     0,     0,     0,     0,
+     0,    82,    95,     0,     0,     0,     0,     0,     0,     0,
+     0,     0,    96 };
 int yypact[]={
 
- -1000,  -223, -1000, -1000, -1000,  -181,  -265, -1000,  -249,  -267,
- -1000, -1000,  -206,  -236, -1000, -1000,  -190, -1000, -1000, -1000,
-  -220,  -244,  -216,  -171,  -249,  -249, -1000,  -223,  -212,  -239,
- -1000, -1000, -1000, -1000,  -208,  -260, -1000, -1000,  -203, -1000,
-  -249,  -249,  -287,  -287,  -287,  -287,  -287,  -287, -1000,  -183,
- -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
- -1000,  -224, -1000, -1000,  -241,  -273,  -256,  -203,  -288,  -255,
- -1000,  -179, -1000, -1000, -1000, -1000, -1000, -1000, -1000,  -291,
- -1000,  -252, -1000, -1000, -1000, -1000,  -199,  -214, -1000, -1000,
-  -271, -1000,  -223, -1000,  -223, -1000 };
+ -1000,  -223, -1000, -1000, -1000,  -186,  -281, -1000,  -249,  -284,
+ -1000, -1000,  -209,  -287,  -224, -1000, -1000,  -236, -1000, -1000,
+ -1000,  -256,  -270,  -216,  -176,  -249,  -249, -1000,  -223,  -212,
+  -239, -1000, -1000, -1000, -1000,  -214,  -203, -1000, -1000,  -245,
+ -1000,  -249,  -249,  -288,  -288,  -288,  -288,  -288,  -288, -1000,
+  -233, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+ -1000, -1000,  -217, -1000, -1000,  -220,  -273,  -278,  -245,  -289,
+  -255, -1000,  -199, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+  -291, -1000,  -230, -1000, -1000, -1000, -1000,  -205,  -250, -1000,
+ -1000,  -271, -1000,  -223, -1000,  -223, -1000 };
 int yypgo[]={
 
-     0,   108,    82,    88,    99,   109,    93,    90,   101,   105,
-   103,   102,    91 };
+     0,    99,    78,    69,    96,    94,    85,    77,   102,    98,
+    97,    88,    86,    83 };
 int yyr1[]={
 
      0,     1,     1,     3,     3,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,    10,     2,     2,     6,
      6,     6,     8,     8,     8,     8,     8,     8,     8,     8,
-     8,     8,     8,     7,     7,    11,     4,     4,     5,     9,
-     9,    12,    12,    12,    12,    12,    12 };
+     8,     8,     8,     7,     7,    11,     4,    12,    12,     5,
+     9,     9,    13,    13,    13,    13,    13,    13 };
 int yyr2[]={
 
      0,     1,     5,     1,     5,     7,     7,    11,     9,    13,
     11,    15,    11,    11,    15,     7,     1,    11,     7,     3,
      3,     3,     3,     7,     7,     7,     7,     7,     7,     5,
-     7,     7,     7,     1,     5,     9,     1,     5,     3,     1,
-     5,     3,     3,     3,     3,     3,     3 };
+     7,     7,     7,     1,     5,     9,     3,     1,     5,     3,
+     1,     5,     3,     3,     3,     3,     3,     3 };
 int yychk[]={
 
  -1000,    -1,    -2,   280,   291,    -5,   276,   285,   277,   284,
-   271,   288,    -4,    -4,    -6,   281,   273,   267,   262,   270,
-   291,    -4,    -8,    -5,   257,   260,   291,   291,    -9,    -3,
-   264,   291,   264,   263,    -4,    -4,   267,   279,   288,   288,
-   259,   289,   267,   258,   265,   266,   268,   269,    -8,    -8,
-    -2,   291,   -12,   287,   286,   278,   283,   282,   275,    -2,
-   290,    -4,   264,    -6,    -4,    -4,    -7,   -11,   272,    -3,
-    -8,    -8,    -5,    -5,    -5,    -5,    -5,    -5,   261,   -10,
-   264,    -4,   264,   288,   290,    -7,   291,   290,   292,   264,
-    -3,   263,   274,   290,    -3,    -2 };
+   271,   288,    -4,   -12,    -4,    -6,   281,   273,   267,   262,
+   270,   291,    -4,    -8,    -5,   257,   260,   291,   291,    -9,
+    -3,   264,   291,   264,   263,    -4,    -4,   267,   279,   288,
+   288,   259,   289,   267,   258,   265,   266,   268,   269,    -8,
+    -8,    -2,   291,   -13,   287,   286,   278,   283,   282,   275,
+    -2,   290,    -4,   264,    -6,    -4,    -4,    -7,   -11,   272,
+    -3,    -8,    -8,    -5,    -5,    -5,    -5,    -5,    -5,   261,
+   -10,   264,    -4,   264,   288,   290,    -7,   291,   290,   292,
+   264,    -3,   263,   274,   290,    -3,    -2 };
 int yydef[]={
 
-     1,    -2,     2,    36,    -2,     0,     0,    36,     0,     0,
-    39,     3,     0,     0,    36,    36,     0,    19,    20,    21,
-     0,     0,     0,    22,     0,     0,    38,     0,     0,     0,
-     5,    37,     6,    36,     0,     0,    36,    36,    33,     3,
-     0,     0,     0,     0,     0,     0,     0,     0,    29,     0,
-    15,    16,    40,    41,    42,    43,    44,    45,    46,     4,
-    18,     0,     8,    36,     0,     0,     0,    33,     0,     0,
-    30,    31,    23,    24,    25,    26,    27,    28,    32,     0,
-     7,     0,    10,     3,    12,    34,     0,    13,    17,     9,
-     0,     3,     0,    11,    35,    14 };
+     1,    -2,     2,    37,    -2,     0,     0,    37,     0,     0,
+    40,     3,     0,    36,     0,    37,    37,     0,    19,    20,
+    21,     0,     0,     0,    22,     0,     0,    39,     0,     0,
+     0,     5,    38,     6,    37,     0,     0,    37,    37,    33,
+     3,     0,     0,     0,     0,     0,     0,     0,     0,    29,
+     0,    15,    16,    41,    42,    43,    44,    45,    46,    47,
+     4,    18,     0,     8,    37,     0,     0,     0,    33,     0,
+     0,    30,    31,    23,    24,    25,    26,    27,    28,    32,
+     0,     7,     0,    10,     3,    12,    34,     0,    13,    17,
+     9,     0,     3,     0,    11,    35,    14 };
 typedef struct { char *t_name; int t_val; } yytoktype;
 #ifndef YYDEBUG
 #	define YYDEBUG	0	/* don't allow debugging */
@@ -249,8 +248,9 @@ char * yyreds[] =
 	"cases : /* empty */",
 	"cases : case cases",
 	"case : CASE ARG _COLON rules",
-	"args : /* empty */",
-	"args : args ARG",
+	"args : argsany",
+	"argsany : /* empty */",
+	"argsany : argsany ARG",
 	"arg1 : ARG",
 	"eflags : /* empty */",
 	"eflags : eflags eflag",
@@ -703,148 +703,151 @@ yyparse()
 	{
 		
 case 1:
-# line 95 "jamgram.y"
+# line 98 "jamgram.y"
 {
 			compile_builtins();
 		} break;
 case 2:
-# line 99 "jamgram.y"
+# line 102 "jamgram.y"
 { 
 			(*(yypvt[-0].parse->func))( yypvt[-0].parse, L0, L0 );
 			parse_free( yypvt[-0].parse );
 		} break;
 case 3:
-# line 111 "jamgram.y"
+# line 114 "jamgram.y"
 { yyval.parse = prules( P0, P0 ); } break;
 case 4:
-# line 113 "jamgram.y"
+# line 116 "jamgram.y"
 { yyval.parse = prules( yypvt[-1].parse, yypvt[-0].parse ); } break;
 case 5:
-# line 117 "jamgram.y"
+# line 120 "jamgram.y"
 { yyval.parse = pincl( yypvt[-1].list ); } break;
 case 6:
-# line 119 "jamgram.y"
+# line 122 "jamgram.y"
 { yyval.parse = prule( yypvt[-2].string, yypvt[-1].list, L0 ); } break;
 case 7:
-# line 121 "jamgram.y"
+# line 124 "jamgram.y"
 { yyval.parse = prule( yypvt[-4].string, yypvt[-3].list, yypvt[-1].list ); } break;
 case 8:
-# line 123 "jamgram.y"
+# line 126 "jamgram.y"
 { yyval.parse = pset( yypvt[-3].list, yypvt[-1].list, yypvt[-2].number ); } break;
 case 9:
-# line 125 "jamgram.y"
+# line 128 "jamgram.y"
 { yyval.parse = pstng( yypvt[-3].list, yypvt[-5].list, yypvt[-1].list, yypvt[-2].number ); } break;
 case 10:
-# line 127 "jamgram.y"
+# line 130 "jamgram.y"
 { yyval.parse = pset( yypvt[-4].list, yypvt[-1].list, ASSIGN_DEFAULT ); } break;
 case 11:
-# line 129 "jamgram.y"
+# line 132 "jamgram.y"
 { yyval.parse = pfor( yypvt[-5].string, yypvt[-1].parse, yypvt[-3].list ); } break;
 case 12:
-# line 131 "jamgram.y"
+# line 134 "jamgram.y"
 { yyval.parse = pswitch( yypvt[-3].list, yypvt[-1].parse ); } break;
 case 13:
-# line 133 "jamgram.y"
+# line 136 "jamgram.y"
 { yyval.parse = pif( yypvt[-3].parse, pthen( yypvt[-1].parse, P0 ) ); } break;
 case 14:
-# line 135 "jamgram.y"
+# line 138 "jamgram.y"
 { yyval.parse = pif( yypvt[-5].parse, pthen( yypvt[-3].parse, yypvt[-0].parse ) ); } break;
 case 15:
-# line 137 "jamgram.y"
+# line 140 "jamgram.y"
 { yyval.parse = psetc( yypvt[-1].string, yypvt[-0].parse ); } break;
 case 16:
-# line 139 "jamgram.y"
-{ scan_asstring = 1; } break;
+# line 142 "jamgram.y"
+{ yymode( SCAN_STRING ); } break;
 case 17:
-# line 141 "jamgram.y"
-{ yyval.parse = psete( yypvt[-2].string, yypvt[-0].string, yypvt[-3].number );
-		  scan_asstring = 0; } break;
-case 18:
 # line 144 "jamgram.y"
+{ yyval.parse = psete( yypvt[-2].string, yypvt[-0].string, yypvt[-3].number );
+		  yymode( SCAN_NORMAL ); } break;
+case 18:
+# line 147 "jamgram.y"
 { yyval.parse = yypvt[-1].parse; } break;
 case 19:
-# line 152 "jamgram.y"
+# line 155 "jamgram.y"
 { yyval.number = ASSIGN_SET; } break;
 case 20:
-# line 154 "jamgram.y"
+# line 157 "jamgram.y"
 { yyval.number = ASSIGN_APPEND; } break;
 case 21:
-# line 156 "jamgram.y"
+# line 159 "jamgram.y"
 { yyval.number = ASSIGN_DEFAULT; } break;
 case 22:
-# line 164 "jamgram.y"
+# line 167 "jamgram.y"
 { yyval.parse = pcomp( COND_EXISTS, yypvt[-0].list, L0 ); } break;
 case 23:
-# line 166 "jamgram.y"
+# line 169 "jamgram.y"
 { yyval.parse = pcomp( COND_EQUALS, yypvt[-2].list, yypvt[-0].list ); } break;
 case 24:
-# line 168 "jamgram.y"
+# line 171 "jamgram.y"
 { yyval.parse = pcomp( COND_NOTEQ, yypvt[-2].list, yypvt[-0].list ); } break;
 case 25:
-# line 170 "jamgram.y"
+# line 173 "jamgram.y"
 { yyval.parse = pcomp( COND_LESS, yypvt[-2].list, yypvt[-0].list ); } break;
 case 26:
-# line 172 "jamgram.y"
+# line 175 "jamgram.y"
 { yyval.parse = pcomp( COND_LESSEQ, yypvt[-2].list, yypvt[-0].list ); } break;
 case 27:
-# line 174 "jamgram.y"
+# line 177 "jamgram.y"
 { yyval.parse = pcomp( COND_MORE, yypvt[-2].list, yypvt[-0].list ); } break;
 case 28:
-# line 176 "jamgram.y"
+# line 179 "jamgram.y"
 { yyval.parse = pcomp( COND_MOREEQ, yypvt[-2].list, yypvt[-0].list ); } break;
 case 29:
-# line 178 "jamgram.y"
+# line 181 "jamgram.y"
 { yyval.parse = pcond( COND_NOT, yypvt[-0].parse, P0 ); } break;
 case 30:
-# line 180 "jamgram.y"
+# line 183 "jamgram.y"
 { yyval.parse = pcond( COND_AND, yypvt[-2].parse, yypvt[-0].parse ); } break;
 case 31:
-# line 182 "jamgram.y"
+# line 185 "jamgram.y"
 { yyval.parse = pcond( COND_OR, yypvt[-2].parse, yypvt[-0].parse ); } break;
 case 32:
-# line 184 "jamgram.y"
+# line 187 "jamgram.y"
 { yyval.parse = yypvt[-1].parse; } break;
 case 33:
-# line 195 "jamgram.y"
+# line 198 "jamgram.y"
 { yyval.parse = P0; } break;
 case 34:
-# line 197 "jamgram.y"
+# line 200 "jamgram.y"
 { yyval.parse = pcases( yypvt[-1].parse, yypvt[-0].parse ); } break;
 case 35:
-# line 201 "jamgram.y"
+# line 204 "jamgram.y"
 { yyval.parse = pcase( yypvt[-2].string, yypvt[-0].parse ); } break;
 case 36:
-# line 210 "jamgram.y"
-{ yyval.list = L0; } break;
+# line 213 "jamgram.y"
+{ yymode( SCAN_NORMAL ); } break;
 case 37:
-# line 212 "jamgram.y"
-{ yyval.list = list_new( yypvt[-1].list, copystr( yypvt[-0].string ) ); } break;
+# line 217 "jamgram.y"
+{ yyval.list = L0; yymode( SCAN_PUNCT ); } break;
 case 38:
-# line 216 "jamgram.y"
-{ yyval.list = list_new( L0, copystr( yypvt[-0].string ) ); } break;
+# line 219 "jamgram.y"
+{ yyval.list = list_new( yypvt[-1].list, copystr( yypvt[-0].string ) ); } break;
 case 39:
-# line 225 "jamgram.y"
-{ yyval.number = 0; } break;
+# line 223 "jamgram.y"
+{ yyval.list = list_new( L0, copystr( yypvt[-0].string ) ); } break;
 case 40:
-# line 227 "jamgram.y"
-{ yyval.number = yypvt[-1].number | yypvt[-0].number; } break;
+# line 232 "jamgram.y"
+{ yyval.number = 0; } break;
 case 41:
-# line 231 "jamgram.y"
-{ yyval.number = EXEC_UPDATED; } break;
+# line 234 "jamgram.y"
+{ yyval.number = yypvt[-1].number | yypvt[-0].number; } break;
 case 42:
-# line 233 "jamgram.y"
-{ yyval.number = EXEC_TOGETHER; } break;
+# line 238 "jamgram.y"
+{ yyval.number = EXEC_UPDATED; } break;
 case 43:
-# line 235 "jamgram.y"
-{ yyval.number = EXEC_IGNORE; } break;
+# line 240 "jamgram.y"
+{ yyval.number = EXEC_TOGETHER; } break;
 case 44:
-# line 237 "jamgram.y"
-{ yyval.number = EXEC_QUIETLY; } break;
+# line 242 "jamgram.y"
+{ yyval.number = EXEC_IGNORE; } break;
 case 45:
-# line 239 "jamgram.y"
-{ yyval.number = EXEC_PIECEMEAL; } break;
+# line 244 "jamgram.y"
+{ yyval.number = EXEC_QUIETLY; } break;
 case 46:
-# line 241 "jamgram.y"
+# line 246 "jamgram.y"
+{ yyval.number = EXEC_PIECEMEAL; } break;
+case 47:
+# line 248 "jamgram.y"
 { yyval.number = EXEC_EXISTING; } break;
 	}
 	goto yystack;		/* reset registers in driver code */

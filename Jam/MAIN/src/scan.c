@@ -19,6 +19,7 @@
  *			Also handle tokens abutting EOF by remembering
  *			to return EOF now matter how many times yylex()
  *			reinvokes yyline().
+ * 02/11/95 (seiwald) - honor only punctuation keywords if SCAN_PUNCT.
  */
 
 struct keyword {
@@ -41,12 +42,19 @@ static struct {
 
 static int incdepth = 0;
 
-int scan_asstring = 0;
+static int scanmode = SCAN_NORMAL;
 
 static char *symdump();
 
 /* 
  */
+
+void
+yymode( n )
+int n;
+{
+	scanmode = n;
+}
 
 yyerror( s )
 char *s;
@@ -157,7 +165,7 @@ yylex()
 	{
 	    goto eof;
 	} 
-	else if( c == '{' && scan_asstring )
+	else if( c == '{' && scanmode == SCAN_STRING )
 	{
 		/* look for closing { */
 
@@ -237,18 +245,24 @@ yylex()
 
 		incp->string--;
 
-		/* scan token table, except for $anything and quoted anything */
+		/* scan token table */
+		/* don't scan if it's "anything", $anything, */
+		/* or an alphabetic when were looking for punctuation */
 
 		*b = 0;
 		yylval.type = ARG;
 
-		if( *buf != '$' && !hasquote )
+		if( !hasquote && 
+		    *buf != '$' && 
+		    !( isalpha( *buf ) && scanmode == SCAN_PUNCT ) )
+		{
 		    for( k = keywords; k->word; k++ )
 			if( *buf == *k->word && !strcmp( k->word, buf ) )
-		{
-		    yylval.type = k->type;
-		    yylval.string = k->word;	/* used by symdump */
-		    break;
+		    {
+			yylval.type = k->type;
+			yylval.string = k->word;	/* used by symdump */
+			break;
+		    }
 		}
 
 		if( yylval.type == ARG )

@@ -47,6 +47,9 @@
  * 08/31/94 (seiwald) - Allow ?= as alias for "default =".
  * 09/15/94 (seiwald) - if conditionals take only single arguments, so
  *			that 'if foo == bar' gives syntax error (use =).
+ * 02/11/95 (seiwald) - when scanning arguments to rules, only treat
+ *			punctuation keywords as keywords.  All arg lists
+ *			are terminated with punctuation keywords.
  */
 
 %token ARG STRING
@@ -136,10 +139,10 @@ rule	: INCLUDE args _SEMIC
 	| RULE ARG rule
 		{ $$.parse = psetc( $2.string, $3.parse ); }
 	| ACTIONS eflags ARG 
-		{ scan_asstring = 1; }
+		{ yymode( SCAN_STRING ); }
 	  STRING 
 		{ $$.parse = psete( $3.string, $5.string, $2.number );
-		  scan_asstring = 0; }
+		  yymode( SCAN_NORMAL ); }
 	| _LBRACE rules _RBRACE
 		{ $$.parse = $2.parse; }
 	;
@@ -206,9 +209,13 @@ case	: CASE ARG _COLON rules
  * arg1 - exactly one ARG in a LIST 
  */
 
-args	: /* empty */
-		{ $$.list = L0; }
-	| args ARG
+args	: argsany
+		{ yymode( SCAN_NORMAL ); }
+	;
+
+argsany	: /* empty */
+		{ $$.list = L0; yymode( SCAN_PUNCT ); }
+	| argsany ARG
 		{ $$.list = list_new( $1.list, copystr( $2.string ) ); }
 	;
 

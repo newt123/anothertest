@@ -24,4 +24,8 @@ typedef struct _YYSTYPE {
 
 extern YYSTYPE yylval;
 
-extern int scan_asstring;
+void yymode();	/* adjust lexicon of scanner */
+
+# define SCAN_NORMAL	0	/* normal parsing */
+# define SCAN_STRING	1	/* look only for matching } */
+# define SCAN_PUNCT	2	/* only punctuation keywords */
