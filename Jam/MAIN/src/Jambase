@@ -1477,6 +1477,11 @@ else if $(NT) || $(OS2)
 	copy $(>) $(<)
     }
 
+    actions Install
+    {
+	copy $(>) $(<)
+    }
+
     actions MkDir1
     {
 	$(MKDIR) $(<)
