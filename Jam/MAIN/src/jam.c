@@ -181,8 +181,15 @@ char	**argv;
 
 	for( n = 0; s = getoptval( optv, 'd', n ); n++ )
 	{
-	    int i = atoi( s );
-	    int j;
+	    int i;
+
+	    /* First -d, turn off defaults. */
+
+	    if( !n )
+		for( i = DEBUG_MAX; i; )
+		    globs.debug[i--] = 0;
+
+	    i = atoi( s );
 
 	    if( i < 0 || i >= DEBUG_MAX )
 	    {
@@ -190,13 +197,29 @@ char	**argv;
 		continue;
 	    }
 
+	    /* n turns on levels 1-n */
 	    /* +n turns on level n */
-	    /* Just a number turns on levels 1..n, off n+1..max */
 
 	    if( *s == '+' )
 		globs.debug[i] = 1;
-	    else for( j = 0; j < DEBUG_MAX; j++ )
-		globs.debug[j] = j <= i;
+	    else while( i )
+		globs.debug[i--] = 1;
+	}
+
+	/* Set JAMDATE first */
+
+	{
+	    char *date;
+	    time_t clock;
+	    time( &clock );
+	    date = newstr( ctime( &clock ) );
+
+	    /* Trim newline from date */
+
+	    if( strlen( date ) == 25 )
+		date[ 24 ] = 0;
+
+	    var_set( "JAMDATE", list_new( L0, newstr( date ), VAR_SET ) );
 	}
 
 	/* load up environment variables */

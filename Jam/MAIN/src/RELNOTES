@@ -50,21 +50,6 @@ Changes since 2.1
     is no longer available.  Use InstallBin, InstallFile, InstallLib,
     InstallMan, or InstallShell instead.
 
-    The debugging levels were moved a little: -d3 now includes binding
-    and timestamp information for all targets, so that that single level
-    reports the work of make0().  -d4 now just dumps memory statistics.
-    The whole story is:
-
-	-d1 - trace actions
-	-d2 - dump actions
-	-d3 - trace dependency analysis
-	-d4 - show memory stats
-	-d5 - trace jamfile compilation
-	-d6 - show directory/header file/archive scans
-	-d7 - show variable settings
-	-d8 - show variable fetches
-	-d9 - show variable manipulation, scanner tokens
-
     If a command line is longer than MAXCMD (which is OS dependent),
     jam now issues an error and exits rather than dumping core.
 
@@ -86,6 +71,28 @@ Changes since 2.1
 
     New HDRGRIST variable in Jambase to allow for headers with the same
     name to be distinguished.
+
+    New JAMDATE variable initialized to be `ctime()` for simple date
+    stamping.
+
+    The debugging levels were moved a little (again): -d3 now includes binding
+    and timestamp information for all targets, so that that single level
+    reports the work of make0().  -d4 now just dumps memory statistics.
+    The whole story is:
+
+	-d1 - trace actions
+	-d2 - dump actions, trace quiet actions
+	-d3 - trace dependency analysis
+	-d4 - show shell arguments
+	-d5 - trace jamfile compilation
+	-d6 - show directory/header file/archive scans
+	-d7 - show variable settings
+	-d8 - show variable fetches
+	-d9 - show variable manipulation, scanner tokens
+
+    The debugging flag -d has been changed again.  Now any -d turns off the
+    default (-d1): -dx turns on all levels up to x; -d+x turns on level x.
+    So -d0 turns off everything and -d2 _just_ shows command text.
 
 Release notes for Jam 2.1.
 

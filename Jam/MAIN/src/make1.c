@@ -220,7 +220,7 @@ TARGET	*t;
 	    break;
 
 	case T_FATE_ISTMP:
-	    if( DEBUG_MAKEQ )
+	    if( DEBUG_MAKE )
 		printf( "...using %s...\n", t->name );
 	    break;
 
@@ -276,7 +276,8 @@ TARGET	*t;
 
 	if( cmd && t->status == EXEC_CMD_OK )
 	{
-	    if( cmd->rule->flags & RULE_QUIETLY ? DEBUG_MAKEQ : DEBUG_MAKE )
+	    if( DEBUG_MAKE )
+		if( DEBUG_MAKEQ || ! ( cmd->rule->flags & RULE_QUIETLY ) )
 	    {
 		printf( "%s ", cmd->rule->name );
 		list_print( lol_get( &cmd->args, 0 ) );
@@ -286,15 +287,13 @@ TARGET	*t;
 	    if( DEBUG_EXEC )
 		printf( "%s\n", cmd->buf );
 
-	    if( DEBUG_MAKE && !globs.noexec )
-		fflush( stdout );
-	    
 	    if( globs.noexec )
 	    {
 		make1d( t, EXEC_CMD_OK );
 	    } 
 	    else 
 	    {
+		fflush( stdout );
 		execcmd( cmd->buf, make1d, t, cmd->shell );
 	    }
 	}
@@ -479,7 +478,7 @@ ACTIONS	*a0;
 		int  start;
 		LIST *somes;
 
-		if( DEBUG_EXEC )
+		if( DEBUG_EXECCMD )
 		    printf( "%s: %d args per exec\n", rule->name, chunk );
 
 		for( start = 0;

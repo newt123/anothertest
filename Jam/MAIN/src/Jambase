@@ -98,6 +98,8 @@
 # makeGristedName var : value ;		$(var) = $(value:G=$(SOURCE_GRIST))
 # makeCommon var1 : var2 ;		strip common initial elements
 # makeRelPath var d1 : d2 ;		$(var) = rel path from d1 to d2
+# makeSuffixed var $(SUF) : f1 f2 ... ; $(var) = $(>) with suffixes
+# makeString var : value ... ;          $(var) = contatenated values
 #
 
 # Brief review of the jam language:
@@ -669,7 +671,7 @@ rule LibraryFromObjects
 
 	# If we can't scan the library, we have to leave the .o's around.
 
-	if ! $(NOARSCAN) { RmTemps $(l) : $(s) ; }
+	if ! ( $(NOARSCAN) || $(KEEPOBJS) ) { RmTemps $(l) : $(s) ; }
 }
 
 rule Link
@@ -1074,6 +1076,17 @@ rule Yacc
 #
 # Utility rules; no side effects on these
 #
+
+rule makeString
+{
+	local _t ;
+
+	$(<) = $(>[1]) ;
+	for _t in $(>[2-])
+	{
+		$(<) = $($(<))$(_t) ;
+	}
+}
 
 rule makeSubDir
 {
