@@ -237,7 +237,10 @@ char	**argv;
 
 	/* Now make target */
 
-	status |= make( argc ? argc : 1, argc ? argv : &all, anyhow );
+	if( !argc )
+	    status |= make( 1, &all, anyhow );
+	else
+	    status |= make( argc, argv, anyhow );
 
 	/* Widely scattered cleanup */
 
