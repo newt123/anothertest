@@ -169,6 +169,11 @@ case SOLARIS :	RANLIB default = "" ;
 		AR default = "/usr/ccs/bin/ar ru" ;
 }
 
+if $(OS) = SUNOS && $(TZ)
+{
+	Echo Warning: you are running the SunOS jam on Solaris. ;
+}
+
 if $(UNIX)
 {
 	AR		default = ar ru ;
@@ -243,7 +248,7 @@ else if $(NT)
 	LINKFLAGS	default = $(CCFLAGS) ;
 	STDLIBPATH	default = $(BCCROOT)\\lib ;
 	STDHDRS		default = $(BCCROOT)\\include ;
-	NOLIBSCAN	default = true ;
+	NOARSCAN	default = true ;
     }
     else if $(MSVC)
     {
@@ -265,7 +270,7 @@ else if $(NT)
 				#$(MSVC)\\lib\\kernel32.lib 
 				;
 	LINKLIBS	default = ;
-	NOLIBSCAN	default = true ;
+	NOARSCAN	default = true ;
 	OPTIM		default =  ;
 	STDHDRS		default = $(MSVC)\\include ;
 	UNDEFFLAG	default = "/u _" ;
@@ -325,7 +330,7 @@ else if $(OS2)
 	LINK		default = wcl386 ;
 	LINKFLAGS	default = /zq ; # zq=quiet
 	LINKLIBS	default = ;
-	NOLIBSCAN	default = true ;
+	NOARSCAN	default = true ;
 	OPTIM		default = ;
 	STDHDRS		default = $(watcom)\\h ;
 	UNDEFFLAG	default = "/u _" ;
@@ -581,14 +586,11 @@ rule LibraryFromObjects
 	#
 	# LOCATE on $(<) $(<)($(_s:BS)) = $(LOCATE_TARGET) ;
 
-	if $(NOLIBSCAN) 
+	if $(NOARSCAN) 
 	{ 
 	    # If we can't scan the library to timestamp its contents,
 	    # we have to just make the library depend directly on the
-	    # on-disk object files.  This is somewhat dangerous, as
-	    # parts of the library can be replaced, making it seem up-
-	    # to-date when files (from other directories) haven't been
-	    # recompiled.
+	    # on-disk object files.  
 
 	    DEPENDS $(_l) : $(_s) ;
 	}
@@ -611,9 +613,12 @@ rule LibraryFromObjects
 	if $(CRELIB) { CreLib $(_l) : $(_s[1]) ; }
 
 	Archive $(_l) : $(_s) ;
-	RmTemps $(_l) : $(_s) ;
 
 	if $(RANLIB) { Ranlib $(_l) ; }
+
+	# If we can't scan the library, we have to leave the .o's around.
+
+	if ! $(NOARSCAN) { RmTemps $(_l) : $(_s) ; }
 }
 
 rule Link

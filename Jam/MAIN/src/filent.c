@@ -286,6 +286,17 @@ time_t	*time;
 	return 0;
 }
 
+# ifdef __OS2__
+
+void
+file_archscan( archive, func )
+char *archive;
+void (*func)();
+{
+}
+
+# else __OS2__
+
 /*
  * file_archscan() - scan an archive for files
  */
@@ -403,5 +414,7 @@ void (*func)();
 
 	close( fd );
 }
+
+# endif /* OS2 */
 
 # endif /* NT */
