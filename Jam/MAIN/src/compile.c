@@ -28,8 +28,8 @@
  *	compile_rule() - compile a single user defined rule
  *	compile_rules() - compile a chain of rules
  *	compile_set() - compile the "set variable" statement
- *	compile_setcomp() - support for `compiles` - save parse tree 
- *	compile_setexec() - support for `executes` - save execution string 
+ *	compile_setcomp() - support for `rule` - save parse tree 
+ *	compile_setexec() - support for `actions` - save execution string 
  *	compile_settings() - compile the "on =" (set variable on exec) statement
  *	compile_switch() - compile 'switch' rule
  *
@@ -544,6 +544,7 @@ LOL		*args;
  *	parse->string	rule name
  *	parse->string1	OS command string
  *	parse->num	flags
+ *	parse->llist	`bind` variables
  *
  * Note that the parse flags (as defined in compile.h) are transfered
  * directly to the rule flags (as defined in rules.h).
@@ -559,10 +560,14 @@ LOL		*args;
 	/* Free old one, if present */
 
 	if( rule->actions )
+	{
 	    freestr( rule->actions );
+	    list_free( rule->bindlist );
+	}
 
 	rule->actions = copystr( parse->string1 );
-	rule->flags |= parse->num; /* XXX */
+	rule->bindlist = list_copy( L0, parse->llist );
+	rule->flags |= parse->num; /* XXX translate this properly */
 }
 
 /*

@@ -58,6 +58,7 @@ char 	*rulename;
 	    r->name = newstr( rulename );	/* never freed */
 	    r->procedure = (PARSE *)0;
 	    r->actions = (char *)0;
+	    r->bindlist = L0;
 	    r->flags = 0;
 	}
 

@@ -44,7 +44,7 @@
 # define prules( l,r )	  parse_make( compile_rules,l,r,S0,S0,L0,L0,0 )
 # define pfor( s,p,l )    parse_make( compile_foreach,p,P0,s,S0,l,L0,0 )
 # define psetc( s,p )     parse_make( compile_setcomp,p,P0,s,S0,L0,L0,0 )
-# define psete( s,s1,f )  parse_make( compile_setexec,P0,P0,s,s1,L0,L0,f )
+# define psete( s,l,s1,f ) parse_make( compile_setexec,P0,P0,s,s1,l,L0,f )
 # define pincl( l )       parse_make( compile_include,P0,P0,S0,S0,l,L0,0 )
 # define pswitch( l,p )   parse_make( compile_switch,p,P0,S0,S0,l,L0,0 )
 # define plocal( l,p )	  parse_make( compile_local,p,P0,S0,S0,l,L0,0 );
@@ -119,12 +119,12 @@ rule	: `{` rules `}`
 		{ $$.parse = pif( $2.parse, pthen( $4.parse, $7.parse ) ); }
 	| `rule` ARG rule
 		{ $$.parse = psetc( $2.string, $3.parse ); }
-	| `actions` eflags ARG `{`
+	| `actions` eflags ARG bindlist `{`
 		{ yymode( SCAN_STRING ); }
 	  STRING 
 		{ yymode( SCAN_NORMAL ); }
 	  `}`
-		{ $$.parse = psete( $3.string, $6.string, $2.number ); }
+		{ $$.parse = psete( $3.string,$4.list,$7.string,$2.number ); }
 	;
 
 /*
@@ -238,5 +238,16 @@ eflag	: `updated`
 		{ $$.number = EXEC_PIECEMEAL; }
 	| `existing`
 		{ $$.number = EXEC_EXISTING; }
+	;
+
+
+/*
+ * bindlist - list of variable to bind for an action
+ */
+
+bindlist : /* empty */
+		{ $$.list = L0; }
+	| `bind` args
+		{ $$.list = $2.list; }
 	;
 
