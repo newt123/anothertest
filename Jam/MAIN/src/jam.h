@@ -69,7 +69,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "NT=true","OS=NT","OSPLAT=PPC"
 # else
 # ifdef _ALPHA_
-# define OTHERSYMS "NT=true","OS=NT","OSPLAT=ALPHA"
+# define OTHERSYMS "NT=true","OS=NT","OSPLAT=AXP"
 # else 
 # define OTHERSYMS "NT=true","OS=NT","OSPLAT=X86"
 # endif /* _ALPHA_ */

@@ -153,6 +153,8 @@
 #
 # "default =" - set only if unset
 
+if $(NT) { OS = NT ; }
+
 OSFULL = $(OS)$(OSPLAT)$(OSVER) $(OS)$(OSPLAT) $(OS)$(OSVER) $(OS) ;
 
 #
