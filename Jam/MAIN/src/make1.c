@@ -466,6 +466,13 @@ ACTIONS	*a0;
 
 	    /* Either cut the actions into pieces, or do it whole. */
 
+	    if( chunk < 0 )
+	    {
+		printf( "fatal error: %s command too long (max %d)\n", 
+			rule->name, MAXCMD );
+		exit( EXITBAD );
+	    }
+
 	    if( chunk )
 	    {
 		int  start;
@@ -491,7 +498,8 @@ ACTIONS	*a0;
 		cmds = cmd_new( cmds, rule, nt, ns, list_copy( L0, shell ) );
 	    }
 
-	    /* Free the variables whose values were bound by 'actions xxx bind vars' */
+	    /* Free the variables whose values were bound by */
+	    /* 'actions xxx bind vars' */
 
 	    popsettings( boundvars );
 	    freesettings( boundvars );
@@ -511,7 +519,7 @@ LIST	*targets;
 LIST	*sources;
 {
 	int onesize;
-	int onediff;
+	int twosize;
 	int chunk = 0;
 	char buf[ MAXCMD ];
 	LOL lol;
@@ -524,15 +532,21 @@ LIST	*sources;
 	lol.list[0] = targets;
 
 	lol.list[1] = list_sublist( sources, 0, 1 );
-	onesize = var_string( cmd, buf, &lol );
+	onesize = var_string( cmd, buf, MAXCMD, &lol );
 	list_free( lol.list[1] );
+
+	if( onesize < 0 )
+	    return -1;
 
 	lol.list[1] = list_sublist( sources, 0, 2 );
-	onediff = var_string( cmd, buf, &lol ) - onesize;
+	twosize = var_string( cmd, buf, MAXCMD, &lol );
 	list_free( lol.list[1] );
 
-	if( onediff > 0 )
-	    chunk = 3 * ( MAXCMD - onesize ) / 5 / onediff + 1;
+	if( twosize < 0 )
+	    return -1;
+
+	if( twosize > onesize )
+	    chunk = 3 * ( MAXCMD - onesize ) / 5 / ( twosize - onesize ) + 1;
 
 	return chunk;
 }

@@ -54,12 +54,12 @@ LIST	*shell;
 	lol_add( &cmd->args, targets );
 	lol_add( &cmd->args, sources );
 
-	len = var_string( rule->actions, cmd->buf, &cmd->args );
+	len = var_string( rule->actions, cmd->buf, MAXCMD, &cmd->args );
 	
-	if( len > MAXCMD )
+	if( len < 0 )
 	{
-	    /* Can't do much here - we just blew our buffer! */
-	    printf( "fatal error: command too long (%d>%d)\n", len, MAXCMD );
+	    printf( "fatal error: %s command too long (max %d)\n", 
+		rule->name, MAXCMD );
 	    exit( EXITBAD );
 	}
 

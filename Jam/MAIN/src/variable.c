@@ -134,12 +134,14 @@ LOL	*lol;
  */
 
 int
-var_string( in, out, lol )
+var_string( in, out, outsize, lol )
 char	*in;
 char	*out;
+int	outsize;
 LOL	*lol;
 {
 	char 	*out0 = out;
+	char	*oute = out + outsize - 1;
 
 	while( *in )
 	{
@@ -149,7 +151,12 @@ LOL	*lol;
 	    /* Copy white space */
 
 	    while( isspace( *in ) )
+	    {
+		if( out >= oute )
+		    return -1;
+
 		*out++ = *in++;
+	    }
 
 	    lastword = out;
 
@@ -157,8 +164,12 @@ LOL	*lol;
 
 	    while( *in && !isspace( *in ) )
 	    {
+	        if( out >= oute )
+		    return -1;
+
 		if( in[0] == '$' && in[1] == '(' )
 		    dollar++;
+
 		*out++ = *in++;
 	    }
 
@@ -175,14 +186,23 @@ LOL	*lol;
 
 		for( ; l; l = list_next( l ) )
 		{
+		    int so = strlen( out );
+
+		    if( out + so >= oute )
+			return -1;
+
 		    strcpy( out, l->string );
-		    out += strlen( out );
+		    out += so;
 		    *out++ = ' ';
 		}
 
 		list_free( l );
 	    }
 	}
+
+	if( out >= oute )
+	    return -1;
+
 	*out++ = '\0';
 
 	return out - out0;

@@ -65,6 +65,9 @@ Changes since 2.1
 	-d8 - show variable fetches
 	-d9 - show variable manipulation, scanner tokens
 
+    If a command line is longer than MAXCMD (which is OS dependent),
+    jam now issues an error and exits rather than dumping core.
+
 Release notes for Jam 2.1.
 
 1.  Release info:
