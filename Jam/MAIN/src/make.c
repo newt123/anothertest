@@ -25,6 +25,8 @@
  * 04/08/94 (seiwald) - progress report now reflects only targets with actions
  * 04/11/94 (seiwald) - Combined deps & headers into deps[2] in TARGET.
  * 12/20/94 (seiwald) - NOTIME renamed NOTFILE.
+ * 12/20/94 (seiwald) - make0() headers after determining fate of target, so 
+ *			that headers aren't seen as dependents on themselves.
  */
 
 # include "jam.h"
@@ -199,26 +201,7 @@ int	anyhow;
 	    fate = max( fate, c->target->hfate );
 	}
 
-	/* Step 3b: recursively make0() headers */
-
-	hlast = 0;
-	hfate = T_FATE_STABLE;
-
-	for( c = t->deps[ T_DEPS_INCLUDES ]; c; c = c->next )
-	{
-	    make0( c->target, parent, depth + 1, counts, anyhow );
-	    hlast = max( hlast, c->target->time );
-	    hlast = max( hlast, c->target->htime );
-	    hfate = max( hfate, c->target->fate );
-	    hfate = max( hfate, c->target->hfate );
-	}
-
-	/* 
-	 * Step 4: aftermath: determine fate and propapate dependents time
-	 * and fate.
-	 */
-
-	/* Step 4a: determine fate: rebuild target or what? */
+	/* Step 3b: determine fate: rebuild target or what? */
 	/* If children newer than target or */
 	/* If target doesn't exist, rebuild.  */
 
@@ -247,11 +230,11 @@ int	anyhow;
 	    fate = T_FATE_TOUCHED;
 	}
 
-	/* Step 4b: handle missing files */
+	/* Step 3c: handle missing files */
 	/* If it's missing and there are no actions to create it, boom. */
 	/* If we can't make a target we don't care about, 'sokay */
 
-	if( fate == T_FATE_MISSING && !t->actions && !t->deps[ T_DEPS_DEPENDS ] )
+	if( fate==T_FATE_MISSING && !t->actions && !t->deps[ T_DEPS_DEPENDS ] )
 	{
 	    if( t->flags & T_FLAG_NOCARE )
 	    {
@@ -264,10 +247,30 @@ int	anyhow;
 	    }
 	}
 
-	/* Step 4c: Step 6: propagate dependents' time & fate. */
+	/* Step 3d: propagate dependents' time & fate. */
 
 	t->time = max( t->time, last );
 	t->fate = fate;
+
+	/*
+	 * Step 4: Recursively make0() headers.
+	 */
+
+	/* Step 4a: recursively make0() headers */
+
+	hlast = 0;
+	hfate = T_FATE_STABLE;
+
+	for( c = t->deps[ T_DEPS_INCLUDES ]; c; c = c->next )
+	{
+	    make0( c->target, parent, depth + 1, counts, anyhow );
+	    hlast = max( hlast, c->target->time );
+	    hlast = max( hlast, c->target->htime );
+	    hfate = max( hfate, c->target->fate );
+	    hfate = max( hfate, c->target->hfate );
+	}
+
+	/* Step 4b: propagate dependents' time & fate. */
 
 	t->htime = hlast;
 	t->hfate = hfate;

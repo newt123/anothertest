@@ -66,19 +66,28 @@ static void builtin_flags();
 void
 compile_builtins()
 {
+    bindrule( "Depends" )->procedure = 
     bindrule( "DEPENDS" )->procedure = 
 	parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, T_DEPS_DEPENDS );
+
+    bindrule( "Echo" )->procedure = 
     bindrule( "ECHO" )->procedure = 
 	parse_make( builtin_echo, P0, P0, C0, C0, L0, L0, 0 );
+
+    bindrule( "Includes" )->procedure = 
     bindrule( "INCLUDES" )->procedure = 
 	parse_make( builtin_depends, P0, P0, C0, C0, L0, L0, T_DEPS_INCLUDES );
 
+    bindrule( "NoCare" )->procedure = 
     bindrule( "NOCARE" )->procedure = 
 	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOCARE );
+
     bindrule( "NOTIME" )->procedure = 
-	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOTFILE );
+    bindrule( "NotFile" )->procedure = 
     bindrule( "NOTFILE" )->procedure = 
 	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_NOTFILE );
+
+    bindrule( "Temporary" )->procedure = 
     bindrule( "TEMPORARY" )->procedure = 
 	parse_make( builtin_flags, P0, P0, C0, C0, L0, L0, T_FLAG_TEMP );
 }
