@@ -214,11 +214,14 @@ if $(UNIX)
 }
 else if $(NT)
 {
+	CHMOD		default = chmod ;
     	CP		default = copy ;
 	DOT		default	= . ;
 	DOTDOT		default	= .. ;
+	EXEMODE		default = 711 ;
+	FILEMODE	default = 644 ;
 	MKDIR		default = mkdir ;
-    	MV		default = move ;
+	MV		default = mv -f ;
 	OS			= NT ;		# replace Windows_NT
     	RM		default = del/f/q ;
     	SLASH		default = \\ ;
