@@ -302,8 +302,9 @@ int	cancopyin;
  */
 
 typedef struct {
-	int	downshift;	/* :L -- downshift result */
-	int	upshift;	/* :U -- upshift result */
+	char	downshift;	/* :L -- downshift result */
+	char	upshift;	/* :U -- upshift result */
+	char	parent;		/* :P -- go to parent directory */
 } VAR_ACTS ;
 	
 static void
@@ -342,6 +343,11 @@ char	*out;
 
 	if( new.f_member.ptr )
 	    old.f_member = new.f_member;
+
+	/* If requested, modify old to point to parent */
+
+	if( acts.parent )
+	    file_parent( &old );
 
 	/* Put filename back together */
 
@@ -424,6 +430,12 @@ VAR_ACTS	*acts;
 	    else if( *mods == 'U' )
 	    {
 		acts->upshift = 1;
+		++mods;
+		continue;
+	    }
+	    else if( *mods == 'P' )
+	    {
+		acts->parent = 1;
 		++mods;
 		continue;
 	    }

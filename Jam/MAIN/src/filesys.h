@@ -15,6 +15,9 @@
  * have the same name:  it never appears in the bound name of a target.
  * (member) is an archive member name: the syntax is arbitrary, but must 
  * agree in file_parse(), file_build() and the Jambase.
+ *
+ * On VMS, we keep track of whether the original path was a directory
+ * (without a file), so that $(VAR:D) can climb to the parent.
  */
 
 typedef struct _filename FILENAME;
@@ -30,10 +33,16 @@ struct _filename {
 # define f_base		part[3]
 # define f_suffix	part[4]
 # define f_member	part[5]
+
+# ifdef VMS
+	int		parent;
+# endif
+
 } ;
 
 void file_parse();
 void file_build();
+void file_parent();
 
 void file_archscan();
 void file_dirscan();

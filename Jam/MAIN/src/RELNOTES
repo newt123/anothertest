@@ -129,6 +129,10 @@ Changes since 2.1
     New predefined variables $(OSVER) and $(OSPLAT) are used to distinguish
     (when jam can) among operating system versions and hardware platforms.
 
+    New variable modifier :P reliably gets to parent directory of either
+    a file or directory.  Previously, :D was used, but on VMS :D of a 
+    directory name is just the directory name.
+
 Release notes for Jam 2.1.
 
 1.  Release info:

@@ -126,6 +126,14 @@ file_dirscan( char *dir, void (*func)() )
     if ( !( status & 1 ) )
 	return;
 
+    /* Add bogus directory for [] */
+
+    if( !strcmp( dir, "[]" ) )
+    {
+	(*func)( "[]", 1 /* time valid */, 1 /* old but true */ );
+	(*func)( "[-]", 1 /* time valid */, 1 /* old but true */ );
+    }
+
     while ( (status = sys$search( &xfab )) & 1 )
     {
 	char *s;
@@ -169,12 +177,13 @@ file_dirscan( char *dir, void (*func)() )
 
 	file_build( &f, filename2, 0 );
 
-	/* debugging
-	printf("root '%s' base %.*s suf %.*s = %s\n",
-		dir,
-		xnam.nam$b_name, xnam.nam$l_name, 
-		xnam.nam$b_type, xnam.nam$l_type,
-		 filename2);
+	/*
+	if( DEBUG_SEARCH )
+	    printf("root '%s' base %.*s suf %.*s = %s\n",
+		    dir,
+		    xnam.nam$b_name, xnam.nam$l_name, 
+		    xnam.nam$b_type, xnam.nam$l_type,
+		    filename2);
 	*/
 
 	(*func)( filename2, 1 /* time valid */, time );

@@ -22,6 +22,7 @@
  *
  *	file_parse() - split a file name into dir/base/suffix/member
  *	file_build() - build a filename given dir/base/suffix/member
+ *	file_parent() - make a FILENAME point to its parent dir
  *
  * File_parse() and file_build() just manipuate a string and a structure;
  * they do not make system calls.
@@ -215,6 +216,25 @@ int		binding;
 	    *file++ = ')';
 	}
 	*file = 0;
+}
+
+/*
+ *	file_parent() - make a FILENAME point to its parent dir
+ */
+
+void
+file_parent( f )
+FILENAME *f;
+{
+	/* just set everything else to nothing */
+
+	f->f_base.ptr =
+	f->f_suffix.ptr =
+	f->f_member.ptr = "";
+
+	f->f_base.len = 
+	f->f_suffix.len = 
+	f->f_member.len = 0;
 }
 
 # endif /* unix, NT, OS/2 */

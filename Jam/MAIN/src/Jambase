@@ -398,8 +398,9 @@ else if $(VMS)
 	AS		default = as ;
 	CC		default = cc ;
 	CCFLAGS		default = ;
+	CP		default = copy/replace ;
 	CRELIB		default = true ;
-	DOT		default	= "" ;
+	DOT		default	= [] ;
 	DOTDOT		default	= - ;
 	EXEMODE		default = (w:e) ;
 	FILEMODE	default = (w:r) ;
@@ -411,6 +412,7 @@ else if $(VMS)
 	MV		default = rename ;
 	OPTIM		default = ;
 	RM		default = delete ;
+	RUNVMS		default = mcr ;
 	SED		default = sed ;
 	SHELLMODE	default = (w:er) ;
 	SLASH		default = . ;
@@ -490,7 +492,7 @@ rule Cc
 	    CcMv $(<) : $(>) ;
 	}
 
-	_h = $(HDRS) $(SUBDIRHDRS) ;
+	_h = $(SEARCH_SOURCE) $(HDRS) $(SUBDIRHDRS) ;
 
 	if $(VMS) && $(_h)
 	{
@@ -510,7 +512,7 @@ rule C++
 	    CcMv $(<) : $(>) ;
 	}
 
-	_h = $(HDRS) $(SUBDIRHDRS) ;
+	_h = $(SEARCH_SOURCE) $(HDRS) $(SUBDIRHDRS) ;
 
 	if $(VMS) && $(_h)
 	{
@@ -829,11 +831,9 @@ rule MkDir
 	    Depends dirs : $(<) ;
 
 	    # Recursively make parent directories.
-	    # On UNIX, $(<:D) = $(<)'s parent, & we recurse until root
-	    # On VMS, $(<:D) = $(<), no recursing, but you don't need to 
-	    # create parent directories explicitly there.
+	    # $(<:P) = $(<)'s parent, & we recurse until root
 
-	    s = $(<:D) ;
+	    s = $(<:P) ;
 
 	    if $(NT)
 	    {
@@ -1108,7 +1108,7 @@ rule SubInclude
 
 	if $(VMS)
 	{
-	    s = [$(s)] ;
+	    s = [.$(s)] ;
 	}
 
 	include $(JAMFILE:D=$(s):R=$($(<[1]))) ;
@@ -1141,9 +1141,10 @@ rule Yacc
 
 	# Some places don't have a yacc.
 
+	MakeLocate $(<) $(h) : $(LOCATE_SOURCE) ;
+
 	if $(YACC)
 	{
-	    MakeLocate $(<) $(h) : $(LOCATE_SOURCE) ;
 	    DEPENDS $(<) $(h) : $(>) ;
 	    Yacc1 $(<) $(h) : $(>) ;
 	    Clean clean : $(<) $(h) ;
@@ -1225,7 +1226,7 @@ rule addDirName
 		case * : _s = [$(>[1])] ;
 		}
 
-		for _i in [$(>[2-])]
+		for _i in [.$(>[2-])]
 		{
 		    _s = $(_i:R=$(_s)) ;
 		}

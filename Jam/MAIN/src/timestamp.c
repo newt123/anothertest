@@ -97,14 +97,15 @@ time_t	*time;
 	/* Not found - have to scan for it */
 
 	file_parse( target, &f1 );
-	memset( (char *)&f2, '\0', sizeof( f2 ) );
 
 	/* Scan directory if not already done so */
 
 	{
 	    BINDING binding, *b = &binding;
 
-	    f2.f_dir = f1.f_dir;
+	    f2 = f1;
+	    f2.f_grist.len = 0;
+	    file_parent( &f2 );
 	    file_build( &f2, buf, 0 );
 
 	    b->name = buf;
@@ -127,9 +128,10 @@ time_t	*time;
 	{
 	    BINDING binding, *b = &binding;
 
-	    f2.f_base = f1.f_base;
-	    f2.f_suffix = f1.f_suffix;
-	    file_build( &f2, buf );
+	    f2 = f1;
+	    f2.f_grist.len = 0;
+	    f2.f_member.len = 0;
+	    file_build( &f2, buf, 0 );
 
 	    b->name = buf;
 	    b->time = b->flags = 0;

@@ -6,6 +6,8 @@
 
 # ifdef VMS
 
+# define DEBUG
+
 /*
  * pathvms.c - manipulate file names on VMS
  *
@@ -13,6 +15,7 @@
  *
  *	file_parse() - split a file name into dir/base/suffix/member
  *	file_build() - build a filename given dir/base/suffix/member
+ *	file_parent() - make a FILENAME point to its parent dir
  *
  * File_parse() and file_build() just manipuate a string and a structure;
  * they do not make system calls.
@@ -91,56 +94,129 @@ FILENAME	*f;
 
 	f->f_base.ptr = file;
 	f->f_base.len = end - file;
+
+	/* Is this a directory without a file spec? */
+
+	f->parent = 0;
 }
 
 /*
- * file_flags() - find out what's in a directory name
+ *	dir		mods		result
+ *	---		---		------
+ * Rerooting:
  *
- * VMS directories get complicated.  Valid combinations of root
- * and dir are:
+ *	(none)		:R=dev:		dev:		
+ *	devd:		:R=dev:		devd:
+ *	devd:[dir]	:R=dev:		devd:[dir]
+ *	[.dir]		:R=dev:		dev:[dir]	questionable
+ *	[dir]		:R=dev:		dev:[dir]
  *
- *	root		dir		result
- *	----		---		------
- *					
- *	 		[dir]		[dir]
- *	dev				dev:
- *	dev		[dir]		dev:[dir]
- *	dev:				dev:
- *	dev:		[dir]		dev:[dir]
- *	[dir]				[dir]
- *	[dir]		[dir]		[dir.dir]
- *	dev:[dir]			dev:[dir]
- *	dev:[dir]	[dir]		dev:[dir.dir]
+ *	(none)		:R=[rdir]	[rdir]		questionable
+ *	devd:		:R=[rdir]	devd:
+ *	devd:[dir]	:R=[rdir]	devd:[dir]
+ *	[.dir]		:R=[rdir]	[rdir.dir]	questionable
+ *	[dir]		:R=[rdir]	[rdir]
  *
- *	*		dev		dev
- *	*		dev:		dev:
- *	*		dev:[dir]	dev:[dir]
+ *	(none)		:R=dev:[root]	dev:[root]
+ *	devd:		:R=dev:[root]	devd:
+ *	devd:[dir]	:R=dev:[root]	devd:[dir]
+ *	[.dir]		:R=dev:[root]	dev:[root.dir]
+ *	[dir]		:R=dev:[root]	[dir]
+ *
+ * Climbing to parent:
  *
  */
 
-# define HAS_NOTHING	0
-# define HAS_DEV	0x01
-# define HAS_DIR	0x02
-# define HAS_COLON	0x04
+# define DIR_EMPTY	0	/* empty string */
+# define DIR_DEV	1	/* dev: */
+# define DIR_DEVDIR	2	/* dev:[dir] */
+# define DIR_RELDIR	3	/* [.dir] or [-.dir] */
+# define DIR_ABSDIR	4	/* [dir] */
+# define DIR_ROOT	5	/* [000000] or dev:[000000] */
 
-static int
-file_flags( buf, len )
+# define G_DIR		0	/* take dir */
+# define G_ROOT		1	/* take root */
+# define G_VAD		2	/* root's dev: + abs directory */
+# define G_DRD		3	/* root's dev:[dir] + rel directory */
+# define G_VRD		4	/* root's dev: + rel directory */
+
+static int grid[6][6] = {
+
+/* root 	dir	EMPTY	DEV	DEVDIR	RELDIR	ABSDIR	ROOT */
+/* EMPTY */		G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,	G_DIR,
+/* DEV */		G_ROOT,	G_DIR,	G_DIR,	G_VRD,	G_VAD,	G_VAD,
+/* DEVDIR */		G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_VAD,	G_VAD,
+/* RELDIR */		G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DIR,	G_DIR,
+/* ABSDIR */		G_ROOT,	G_DIR,	G_DIR,	G_DRD,	G_DIR,	G_DIR,
+/* ROOT */		G_ROOT,	G_DIR,	G_DIR,	G_VRD,	G_DIR,	G_DIR,
+
+} ;
+
+struct dirinf {
+	int	flags;
+
+	struct {
+		char	*ptr;
+		int	len;
+	} dev, dir;
+} ;
+
+static char *
+strnchr( buf, c, len )
 char	*buf;
+int	c;
 int	len;
 {
-	int flags = 0;
-
-	if( len && *buf != '[' )
-	    flags |= HAS_DEV;
-
 	while( len-- )
-	    switch( *buf++ )
+	    if( *buf && *buf++ == c )
+		return buf - 1;
+
+	return 0;
+}
+
+static void
+dir_flags( buf, len, i )
+char	*buf;
+int	len;
+struct dirinf *i;
+{
+	char *p;
+
+	if( !buf || !len )
 	{
-	case ':':	flags |= HAS_COLON; break;
-	case '[':	flags |= HAS_DIR; break;
+	    i->flags = DIR_EMPTY;
+	    i->dev.ptr =
+	    i->dir.ptr = 0;
+	    i->dev.len =
+	    i->dir.len = 0;
+	}
+	else if( p = strnchr( buf, ':', len ) )
+	{
+	    i->dev.ptr = buf;
+	    i->dev.len = p + 1 - buf;
+	    i->dir.ptr = buf + i->dev.len;
+	    i->dir.len = len - i->dev.len;
+	    i->flags = i->dir.len && *i->dir.ptr == '[' ? DIR_DEVDIR : DIR_DEV;
+	}
+	else
+	{
+	    i->dev.ptr = buf;
+	    i->dev.len = 0;
+	    i->dir.ptr = buf;
+	    i->dir.len = len;
+
+	    if( *buf == '[' && buf[1] == ']' )
+		i->flags = DIR_EMPTY;
+	    else if( *buf == '[' && ( buf[1] == '.' || buf[1] == '-' ) )
+		i->flags = DIR_RELDIR;
+	    else
+		i->flags = DIR_ABSDIR;
 	}
 
-	return flags;
+	/* But if its rooted in any way */
+
+	if( i->dir.len == 8 && !strncmp( i->dir.ptr, "[000000]", 8 ) )
+	    i->flags = DIR_ROOT;
 }
 
 /*
@@ -154,9 +230,7 @@ char		*file;
 int		binding;
 {
 	char *ofile = file;
-
-	int dir_flags = HAS_DEV;
-	int root_flags = 0;
+	struct dirinf root, dir;
 
 	/* Start with the grist.  If the current grist isn't */
 	/* surrounded by <>'s, add them. */
@@ -169,59 +243,111 @@ int		binding;
 	    if( file[-1] != '>' ) *file++ = '>';
 	}
 
+	/* Get info on root and dir for combining. */
 
-	if( f->f_root.len )
-	{
-	    root_flags = file_flags( f->f_root.ptr, f->f_root.len );
-	    dir_flags = file_flags( f->f_dir.ptr, f->f_dir.len );
-	}
+	dir_flags( f->f_root.ptr, f->f_root.len, &root );
+	dir_flags( f->f_dir.ptr, f->f_dir.len, &dir );
 
-	switch( dir_flags & 0x03 )
+	/* Combine */
+
+	switch( grid[ root.flags ][ dir.flags ] )
 	{
-	case HAS_DIR:
-	case HAS_NOTHING:
-	    switch( root_flags & 0x03 )
-	    {
-	    case HAS_NOTHING:
+	case G_DIR:	
+		/* take dir */
+		memcpy( file, f->f_dir.ptr, f->f_dir.len );
+		file += f->f_dir.len;
 		break;
 
-	    case HAS_DEV:
+	case G_ROOT:	
+		/* take root */
 		memcpy( file, f->f_root.ptr, f->f_root.len );
 		file += f->f_root.len;
-		if( !( root_flags & HAS_COLON ) )
-		    *file++ = ':';
+		break;
+
+	case G_VAD:	
+		/* root's dev + abs directory */
+		memcpy( file, root.dev.ptr, root.dev.len );
+		file += root.dev.len;
+		memcpy( file, dir.dir.ptr, dir.dir.len );
+		file += dir.dir.len;
 		break;
 		
-	    case HAS_DIR:
-	    case HAS_DEV|HAS_DIR:
+	case G_DRD:	
+		/* root's dev:[dir] + rel directory */
 		memcpy( file, f->f_root.ptr, f->f_root.len );
 		file += f->f_root.len;
+
+		/* Two sanity checks: root ended with ], dir begins with [ */
+
+		if( file[-1] == ']' )
+		     --file;	
+		if( dir.dir.ptr[0] == '[' )
+		     dir.dir.ptr++, dir.dir.len--;
+
+		memcpy( file, dir.dir.ptr, dir.dir.len );
+		file += dir.dir.len;
 		break;
-	    }
 
-	    if( dir_flags & HAS_DIR )
-	    {
-		if( root_flags & HAS_DIR )
-		{
-		    file[-1] = '.';
-		    memcpy( file, f->f_dir.ptr + 1, f->f_dir.len - 1 );
-		    file += f->f_dir.len - 1;
-		}
-		else
-		{
-		    memcpy( file, f->f_dir.ptr, f->f_dir.len );
-		    file += f->f_dir.len;
-		}
-	    }
-
-	    break;
-
-	case HAS_DEV:
-	case HAS_DEV|HAS_DIR:
-	    memcpy( file, f->f_dir.ptr, f->f_dir.len );
-	    file += f->f_dir.len;
-	    break;
+	case G_VRD:	
+		/* root's dev + rel directory made abs */
+		memcpy( file, root.dev.ptr, root.dev.len );
+		file += root.dev.len;
+		*file++ = '[';
+		/* skip [. of rel dir */
+		memcpy( file, dir.dir.ptr + 2, dir.dir.len - 2 );
+		file += dir.dir.len - 2;
+		break;
 	}
+
+# ifdef DEBUG
+	if( DEBUG_SEARCH && ( root.flags || dir.flags ) )
+	{
+		*file = 0;
+		printf( "%d x %d = %d (%s)\n", root.flags, dir.flags,
+			grid[ root.flags ][ dir.flags ], ofile );
+	}
+# endif 
+
+	/* 
+	 * Now do the special :P modifier when no file was present.
+	 *	(none)		(none)
+	 *	[dir1.dir2]	[dir1]
+	 *	[dir]		[000000]
+	 *	[.dir]		[]
+	 *	[]		[]
+	 */
+
+	if( file[-1] == ']' && f->parent )
+	{
+	    while( file > ofile )
+	    {
+		if( *--file == '.' )
+		{
+		    *file++ = ']';
+		    break;
+		}
+		else if( *file == '[' )
+		{
+		    if( file[1] == ']' )
+		    {
+		    	file += 2;
+		    }
+		    else if( file[1] == '-' )
+		    {
+			file[1] = ']';
+			file += 2;
+		    }
+		    else
+		    {
+			strcpy( file, "[000000]" );
+			file += 8;
+		    }
+		    break;
+		}
+	    }
+	}
+
+	/* Now copy the file pieces. */
 
 	if( f->f_base.len )
 	{
@@ -251,6 +377,41 @@ int		binding;
 	    *file++ = ')';
 	}
 	*file = 0;
+
+# ifdef DEBUG
+	if( DEBUG_SEARCH )
+	    printf("built %.*s + %.*s / %.*s suf %.*s mem %.*s -> %s\n", 
+		    f->f_root.len, f->f_root.ptr,
+		    f->f_dir.len, f->f_dir.ptr,
+		    f->f_base.len, f->f_base.ptr,
+		    f->f_suffix.len, f->f_suffix.ptr,
+		    f->f_member.len, f->f_member.ptr,
+		    ofile );
+# endif
+}
+
+/*
+ *	file_parent() - make a FILENAME point to its parent dir
+ */
+
+void
+file_parent( f )
+FILENAME *f;
+{
+	if( f->f_base.len )
+	{
+	    f->f_base.ptr =
+	    f->f_suffix.ptr =
+	    f->f_member.ptr = "";
+
+	    f->f_base.len =
+	    f->f_suffix.len =
+	    f->f_member.len = 0;
+	}
+	else
+	{
+	    f->parent = 1;
+	}
 }
 
 # endif /* VMS */
