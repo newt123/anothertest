@@ -204,7 +204,7 @@ int unlink( char *f ); 	/* In filevms.c */
 # ifdef ultrix
 # define OTHERSYMS "UNIX=true","OS=ULTRIX"
 # endif
-# ifdef __USLC__
+# if defined(__USLC__) && !defined(M_XENIX)
 # define OTHERSYMS "UNIX=true","OS=UNIXWARE"
 # endif
 # ifndef OTHERSYMS
