@@ -29,6 +29,8 @@ C++ support in msc.
 warning for NT if root variables not set.
 Jamgram.h included after scan.h so YYSTYPE is defined on Linux.
 SCO ("M_XENIX") now supported.
+Solaris install doesn't take a -c.
+Solaris AR now hardwired into /usr/ccs/bin/ar
 
 Release notes for Jam 2.0.
 
