@@ -231,7 +231,8 @@ yylex()
 
 	    /* We ate the ending brace -- regurgitate it. */
 
-	    yyprev();
+	    if( c != EOF )
+		yyprev();
 
 	    /* Check obvious errors. */
 
@@ -316,7 +317,8 @@ yylex()
 
 	    /* We looked ahead a character - back up. */
 
-	    yyprev();
+	    if( c != EOF )
+		yyprev();
 
 	    /* scan token table */
 	    /* don't scan if it's "anything", $anything, */
