@@ -207,11 +207,11 @@ int unlink( char *f ); 	/* In filevms.c */
 # define OTHERSYMS "UNIX=true","OS=SINIX"
 # endif
 # ifdef sun
+# ifdef __svr4__
+# define OTHERSYMS "UNIX=true","OS=SOLARIS"
+# else
 # define OTHERSYMS "UNIX=true","OS=SUNOS"
 # endif
-# ifdef solaris
-# undef OTHERSYMS
-# define OTHERSYMS "UNIX=true","OS=SOLARIS"
 # endif
 # ifdef ultrix
 # define OTHERSYMS "UNIX=true","OS=ULTRIX"

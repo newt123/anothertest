@@ -9,9 +9,6 @@ CFLAGS =
 # NCR seems to have a broken readdir() -- use gnu
 #CC = gcc
 
-# Solaris 2.0 seem not to have any identifying cpp symbol
-# CFLAGS = -Dsolaris
-
 # AIX needs -lbsd, and has no identifying cpp symbol
 # Use _AIX41 if you're not on 3.2 anymore.
 #LINKLIBS = -lbsd

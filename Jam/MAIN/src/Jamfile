@@ -29,7 +29,6 @@ else if $(VMS) 	{ code = execvms.c filevms.c pathvms.c ; }
 else 		{ code = execunix.c fileunix.c pathunix.c ; }
 
 if $(OS) = NT { CCFLAGS += /DNT ; }
-if $(OS) = SOLARIS { CCFLAGS += -Dsolaris ; }
 if $(OS) = MVS { CCFLAGS += -DMVS ; }
 
 #
