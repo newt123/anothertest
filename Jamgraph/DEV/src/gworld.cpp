@@ -157,6 +157,7 @@ Right click: drag a node\n\
  X: zoom out\n\
  C: auto camera\n\
 \n\
+ P: pause physics\n\
  F: toggle friction\n\
  G: toggle high gravity\n\
 \n\
