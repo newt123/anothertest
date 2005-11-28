@@ -4,6 +4,10 @@
 	Version="7.00"
 	Name="jamgraph"
 	ProjectGUID="{6EDB2CFC-7027-4858-AD48-62006DA646B6}"
+	SccProjectName="Perforce Project"
+	SccAuxPath=""
+	SccLocalPath="."
+	SccProvider="MSSCCI:Perforce SCM"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -78,7 +82,8 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Moving Jamgraph to Jam bin directory"
-				CommandLine="copy $(TargetPath) c:\jam\bin\$(TargetFileName)"
+				CommandLine="copy $(TargetPath) c:\jam\bin\$(TargetFileName)
+"
 				Outputs="c:\jam\bin\$(TargetFileName)"/>
 			<Tool
 				Name="VCLinkerTool"
